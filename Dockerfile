@@ -31,9 +31,13 @@ RUN composer install \
     --prefer-dist \
     --no-interaction \
     --no-progress \
-    --optimize-autoloader
+    --optimize-autoloader \
+    --no-scripts
 
 COPY . .
+
+# Se regenera autoload con el contexto completo
+RUN composer dump-autoload --optimize
 
 
 # ---------- ETAPA 3: PHP ----------
@@ -103,6 +107,8 @@ RUN mkdir -p \
     storage/framework/views \
     bootstrap/cache \
  && chmod -R 775 storage bootstrap/cache
+
+RUN php artisan package:discover --ansi
 
 ENV APP_ENV=production
 ENV APP_DEBUG=false
