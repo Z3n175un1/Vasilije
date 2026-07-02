@@ -1,5 +1,5 @@
 # Stage 1: Build frontend assets
-FROM node:20-alpine AS node-build
+FROM node:20-slim AS node-build
 WORKDIR /build
 COPY package.json package-lock.json vite.config.js ./
 COPY resources/ resources/
