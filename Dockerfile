@@ -1,24 +1,13 @@
 # ---------- ETAPA 1: Frontend ----------
-FROM node:22-slim AS frontend-builder
+FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app
 
-# Instalar herramientas de compilación para bindings nativos Rust/C++
-RUN apt-get update && apt-get install -y build-essential python3
+RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
 
-# Habilitar pnpm v9
-RUN corepack enable && corepack prepare pnpm@9 --activate
-
-# Copiar solo package.json (el lock se regenera por plataforma)
-COPY package.json ./
-
-# Instalar dependencias
-RUN pnpm install --no-frozen-lockfile
-
-# Copiar resto del proyecto
 COPY . .
 
-# Build de Vite
+RUN pnpm install --no-frozen-lockfile
 RUN pnpm run build
 
 
@@ -27,65 +16,51 @@ FROM composer:2 AS vendor
 
 WORKDIR /app
 
-COPY composer.json composer.lock ./
+COPY . .
 
+# Evitar scripts Laravel durante install
 RUN composer install \
     --no-dev \
     --prefer-dist \
     --no-interaction \
     --no-progress \
     --optimize-autoloader \
-    --no-scripts
-
-COPY . .
-
-# Se regenera autoload con el contexto completo
-RUN composer dump-autoload --optimize
+    --no-scripts \
+    --ignore-platform-reqs
 
 
 # ---------- ETAPA 3: PHP ----------
-FROM php:8.3-fpm-alpine
+FROM php:8.2-cli-alpine
 
 WORKDIR /app
 
 # Dependencias del sistema
 RUN apk add --no-cache \
-    postgresql-libs \
-    libpng \
-    libjpeg-turbo \
-    freetype \
-    oniguruma \
-    icu-libs \
-    libzip \
-    unzip \
-    git \
-    bash
-
-# Build deps + extensiones PHP
-RUN apk add --no-cache --virtual .build-deps \
-    $PHPIZE_DEPS \
-    postgresql-dev \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    icu-dev \
+    postgresql-client \
+    libpq-dev \
     libzip-dev \
- && docker-php-ext-configure gd \
-    --with-freetype \
-    --with-jpeg \
- && docker-php-ext-install \
-    pdo \
-    pdo_pgsql \
-    mbstring \
-    bcmath \
-    exif \
-    pcntl \
-    gd \
-    intl \
-    zip \
- && apk del .build-deps
+    libpng-dev \
+    freetype-dev \
+    jpeg-dev \
+    oniguruma-dev \
+    icu-dev \
+    unzip \
+    git
 
-# OPCache (mejora rendimiento)
+# Extensiones PHP
+RUN docker-php-ext-configure gd \
+    --with-freetype \
+    --with-jpeg && \
+    docker-php-ext-install \
+    pdo_mysql \
+    pdo_pgsql \
+    zip \
+    bcmath \
+    intl \
+    gd \
+    opcache
+
+# OPcache
 RUN { \
     echo 'opcache.enable=1'; \
     echo 'opcache.memory_consumption=128'; \
@@ -94,28 +69,25 @@ RUN { \
     echo 'opcache.validate_timestamps=0'; \
 } > /usr/local/etc/php/conf.d/opcache.ini
 
-# Copiar app
+# Copiar aplicación
 COPY . .
 
-# Vendor
+# Copiar vendor
 COPY --from=vendor /app/vendor ./vendor
 
-# Build frontend
+# Copiar frontend build
 COPY --from=frontend-builder /app/public/build ./public/build
 
-# Permisos Laravel
-RUN mkdir -p \
-    storage/framework/cache \
+# Laravel folders
+RUN mkdir -p storage/framework/cache \
     storage/framework/sessions \
     storage/framework/views \
-    bootstrap/cache \
- && chmod -R 775 storage bootstrap/cache
-
-RUN php artisan package:discover --ansi
+    bootstrap/cache && \
+    chmod -R 775 storage bootstrap/cache
 
 ENV APP_ENV=production
 ENV APP_DEBUG=false
 
 EXPOSE 10000
 
-CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
+CMD ["sh", "-c", "chmod -R 775 storage bootstrap/cache && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
