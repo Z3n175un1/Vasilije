@@ -42,26 +42,18 @@ RUN apk add --no-cache \
 
 # Build deps + extensiones PHP
 RUN apk add --no-cache --virtual .build-deps \
-    $PHPIZE_DEPS \
+    gcc \
+    g++ \
+    make \
+    autoconf \
     postgresql-dev \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
-    icu-dev \
+    libxml2-dev \
     libzip-dev \
- && docker-php-ext-configure gd \
-    --with-freetype \
-    --with-jpeg \
- && docker-php-ext-install \
-    pdo \
-    pdo_pgsql \
-    mbstring \
-    bcmath \
-    exif \
-    pcntl \
-    gd \
-    intl \
-    zip \
+ && docker-php-ext-configure gd --with-freetype --with-jpeg \
+ && docker-php-ext-install pdo pdo_pgsql mbstring bcmath gd zip \
  && apk del .build-deps
 
 # OPCache
