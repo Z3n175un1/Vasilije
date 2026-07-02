@@ -8,7 +8,7 @@
         <div class="header-decoration">
             <h1 class="fs-title mb-0 text-black">{{ $gasto ? 'EDITAR' : 'NUEVO' }} GASTO</h1>
             <p class="font-bold small text-black uppercase">Registro de Egresos Operativos</p>
-        </div>
+</div>
         <a href="{{ route('dashboard.index') }}" class="btn-bento btn-bento-outline py-1 px-2 fs-mid font-bold rounded-3 text-decoration-none">
             <i class="fas fa-arrow-left me-1"></i> VOLVER
         </a>
