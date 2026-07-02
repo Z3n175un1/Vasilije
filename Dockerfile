@@ -3,7 +3,10 @@ FROM node:22-slim AS frontend-builder
 
 WORKDIR /app
 
-# Habilitar pnpm v9 (compatible con pnpm-lock.yaml v9)
+# Instalar herramientas de compilación para bindings nativos Rust/C++
+RUN apt-get update && apt-get install -y build-essential python3
+
+# Habilitar pnpm v9
 RUN corepack enable && corepack prepare pnpm@9 --activate
 
 # Copiar solo package.json (el lock se regenera por plataforma)
