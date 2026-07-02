@@ -1,30 +1,26 @@
-# ==========================
-# Stage 1 - Frontend
-# ==========================
-FROM node:22-alpine AS node-build
+# ---------- ETAPA 1: Frontend ----------
+FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app
 
-# Habilitar pnpm
+# Habilitar pnpm correctamente (NO usar latest)
 RUN corepack enable
 
-# Copiar únicamente los archivos necesarios para instalar dependencias
+# Copiar dependencias primero (IMPORTANTE para cache)
 COPY package.json pnpm-lock.yaml ./
 
-# Instalar dependencias usando el lockfile
-RUN pnpm install 
+# Instalar con lockfile (estable y reproducible)
+RUN pnpm install --frozen-lockfile
 
-# Copiar el resto del proyecto
+# Copiar resto del proyecto
 COPY . .
 
-# Compilar Vite
+# Build de Vite
 RUN pnpm run build
 
 
-# ==========================
-# Stage 2 - Composer
-# ==========================
-FROM composer:2 AS composer-build
+# ---------- ETAPA 2: Composer ----------
+FROM composer:2 AS vendor
 
 WORKDIR /app
 
@@ -33,68 +29,84 @@ COPY composer.json composer.lock ./
 RUN composer install \
     --no-dev \
     --prefer-dist \
-    --optimize-autoloader \
     --no-interaction \
-    --no-progress
+    --no-progress \
+    --optimize-autoloader
 
 COPY . .
 
-RUN composer dump-autoload --optimize
 
-
-# ==========================
-# Stage 3 - Runtime
-# ==========================
+# ---------- ETAPA 3: PHP ----------
 FROM php:8.3-fpm-alpine
 
+WORKDIR /app
+
+# Dependencias del sistema
 RUN apk add --no-cache \
     postgresql-libs \
     libpng \
     libjpeg-turbo \
     freetype \
     oniguruma \
-    libxml2 \
     icu-libs \
-    zip \
+    libzip \
     unzip \
-    && apk add --no-cache --virtual .build-deps \
-        $PHPIZE_DEPS \
-        postgresql-dev \
-        libpng-dev \
-        libjpeg-turbo-dev \
-        freetype-dev \
-        icu-dev \
-    && docker-php-ext-configure gd \
-        --with-freetype \
-        --with-jpeg \
-    && docker-php-ext-install \
-        pdo \
-        pdo_pgsql \
-        mbstring \
-        bcmath \
-        exif \
-        pcntl \
-        gd \
-        intl \
-    && apk del .build-deps
+    git \
+    bash
 
-WORKDIR /var/www
+# Build deps + extensiones PHP
+RUN apk add --no-cache --virtual .build-deps \
+    $PHPIZE_DEPS \
+    postgresql-dev \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    icu-dev \
+    libzip-dev \
+ && docker-php-ext-configure gd \
+    --with-freetype \
+    --with-jpeg \
+ && docker-php-ext-install \
+    pdo \
+    pdo_pgsql \
+    mbstring \
+    bcmath \
+    exif \
+    pcntl \
+    gd \
+    intl \
+    zip \
+ && apk del .build-deps
 
-# Copiar aplicación PHP
-COPY --from=composer-build /app .
+# OPCache (mejora rendimiento)
+RUN { \
+    echo 'opcache.enable=1'; \
+    echo 'opcache.memory_consumption=128'; \
+    echo 'opcache.interned_strings_buffer=16'; \
+    echo 'opcache.max_accelerated_files=10000'; \
+    echo 'opcache.validate_timestamps=0'; \
+} > /usr/local/etc/php/conf.d/opcache.ini
 
-# Copiar assets compilados
-COPY --from=node-build /app/public/build ./public/build
+# Copiar app
+COPY . .
 
-# Directorios necesarios para Laravel
+# Vendor
+COPY --from=vendor /app/vendor ./vendor
+
+# Build frontend
+COPY --from=frontend-builder /app/public/build ./public/build
+
+# Permisos Laravel
 RUN mkdir -p \
     storage/framework/cache \
     storage/framework/sessions \
     storage/framework/views \
     bootstrap/cache \
- && chown -R www-data:www-data storage bootstrap/cache \
- && chmod -R ug+rwx storage bootstrap/cache
+ && chmod -R 775 storage bootstrap/cache
 
-EXPOSE 8000
+ENV APP_ENV=production
+ENV APP_DEBUG=false
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+EXPOSE 10000
+
+CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
