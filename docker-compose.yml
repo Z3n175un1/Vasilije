@@ -1,0 +1,43 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: transporte_app
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: production
+      APP_DEBUG: false
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: NewTransporte
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - storage_data:/var/www/storage
+
+  db:
+    image: postgres:15-alpine
+    container_name: transporte_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: NewTransporte
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  storage_data:

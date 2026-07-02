@@ -1,0 +1,14 @@
+.git
+.gitignore
+node_modules
+vendor
+storage/app/public
+storage/framework/cache/data
+storage/logs/*
+!storage/logs/.gitkeep
+.env
+.phpunit.result.cache
+*.log
+*.md
+.DS_Store
+Thumbs.db
