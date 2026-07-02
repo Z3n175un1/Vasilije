@@ -1,16 +1,16 @@
 # ---------- ETAPA 1: Frontend ----------
-FROM node:20-alpine AS frontend-builder
+FROM node:22-slim AS frontend-builder
 
 WORKDIR /app
 
-# Habilitar pnpm correctamente (NO usar latest)
-RUN corepack enable
+# Habilitar pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copiar dependencias primero (IMPORTANTE para cache)
 COPY package.json pnpm-lock.yaml ./
 
-# Instalar con lockfile (estable y reproducible)
-RUN pnpm install --frozen-lockfile
+# Instalar sin frozen lockfile por compatibilidad multiplataforma
+RUN pnpm install
 
 # Copiar resto del proyecto
 COPY . .
