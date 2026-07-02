@@ -24,10 +24,10 @@ RUN composer dump-autoload --optimize
 # ---------- ETAPA 3: PHP (Debian) ----------
 FROM php:8.3-fpm
 
-RUN apt-get update && apt-get install -y libpq-dev libzip-dev unzip \
+RUN apt-get update && apt-get install -y libpq-dev unzip zip \
  && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install pdo pdo_pgsql mbstring bcmath zip
+RUN docker-php-ext-install -j$(nproc) pgsql pdo_pgsql
 
 WORKDIR /app
 
