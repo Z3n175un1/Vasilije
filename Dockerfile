@@ -1,45 +1,92 @@
-# Stage 1: Build frontend assets
-FROM node:22-slim AS node-build
-WORKDIR /build
-COPY package.json vite.config.js ./
-COPY resources/ resources/
-RUN npm install && npm run build
+# ---------- Stage 1: Build frontend ----------
+FROM node:22-alpine AS node-build
 
-# Stage 2: Build PHP dependencies
-FROM php:8.3-fpm-alpine AS composer-build
-RUN apk add --no-cache postgresql-dev libpng-dev libjpeg-turbo-dev freetype-dev oniguruma-dev libxml2-dev zip unzip \
-    && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-WORKDIR /build
+WORKDIR /app
+
+# Instala dependencias de Node
+COPY package*.json ./
+RUN npm ci
+
+# Copia archivos necesarios para Vite
+COPY resources ./resources
+COPY public ./public
+COPY vite.config.* ./
+COPY jsconfig.json ./
+COPY tailwind.config.* ./
+COPY postcss.config.* ./
+
+RUN npm run build
+
+
+# ---------- Stage 2: Composer ----------
+FROM composer:2 AS composer-build
+
+WORKDIR /app
+
 COPY composer.json composer.lock ./
-RUN composer install --no-interaction --optimize-autoloader --no-dev --no-scripts
 
-# Stage 3: Final runtime image
+RUN composer install \
+    --no-dev \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-interaction \
+    --no-progress
+
+COPY . .
+
+RUN composer dump-autoload --optimize
+
+
+# ---------- Stage 3: Runtime ----------
 FROM php:8.3-fpm-alpine
 
+# Dependencias necesarias para ejecutar Laravel
 RUN apk add --no-cache \
-    postgresql-dev \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    oniguruma-dev \
-    libxml2-dev \
+    postgresql-libs \
+    libpng \
+    libjpeg-turbo \
+    freetype \
+    oniguruma \
+    libxml2 \
     zip \
     unzip \
-    && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
+    icu-libs \
+    && apk add --no-cache --virtual .build-deps \
+        $PHPIZE_DEPS \
+        postgresql-dev \
+        libpng-dev \
+        libjpeg-turbo-dev \
+        freetype-dev \
+        icu-dev \
+    && docker-php-ext-configure gd \
+        --with-freetype \
+        --with-jpeg \
+    && docker-php-ext-install \
+        pdo \
+        pdo_pgsql \
+        mbstring \
+        bcmath \
+        exif \
+        pcntl \
+        gd \
+        intl \
+    && apk del .build-deps
 
 WORKDIR /var/www
 
-COPY --from=composer-build /build/vendor vendor/
-COPY --from=node-build /build/public/build public/build/
-COPY . .
+# Copiar aplicación
+COPY --from=composer-build /app ./
 
-RUN php artisan key:generate --force \
-    && php artisan package:discover --ansi \
-    && php artisan optimize
+# Copiar assets compilados
+COPY --from=node-build /app/public/build ./public/build
 
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
-    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+# Permisos
+RUN mkdir -p storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
 
 EXPOSE 8000
 
