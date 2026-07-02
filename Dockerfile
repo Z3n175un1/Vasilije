@@ -1,20 +1,29 @@
-# ---------- Stage 1: Build frontend ----------
+# ==========================
+# Stage 1 - Frontend
+# ==========================
 FROM node:22-alpine AS node-build
 
 WORKDIR /app
 
-# Copiar dependencias de Node
-COPY package.json ./
-RUN corepack enable && corepack prepare pnpm@latest --activate && pnpm install
+# Habilitar pnpm
+RUN corepack enable
 
-# Copiar el resto del proyecto para que Vite tenga acceso a todos los archivos
+# Copiar únicamente los archivos necesarios para instalar dependencias
+COPY package.json pnpm-lock.yaml ./
+
+# Instalar dependencias usando el lockfile
+RUN pnpm install --frozen-lockfile
+
+# Copiar el resto del proyecto
 COPY . .
 
-# Compilar assets
+# Compilar Vite
 RUN pnpm run build
 
 
-# ---------- Stage 2: Instalar dependencias PHP ----------
+# ==========================
+# Stage 2 - Composer
+# ==========================
 FROM composer:2 AS composer-build
 
 WORKDIR /app
@@ -33,10 +42,11 @@ COPY . .
 RUN composer dump-autoload --optimize
 
 
-# ---------- Stage 3: Runtime ----------
+# ==========================
+# Stage 3 - Runtime
+# ==========================
 FROM php:8.3-fpm-alpine
 
-# Instalar dependencias y extensiones PHP
 RUN apk add --no-cache \
     postgresql-libs \
     libpng \
@@ -44,9 +54,9 @@ RUN apk add --no-cache \
     freetype \
     oniguruma \
     libxml2 \
+    icu-libs \
     zip \
     unzip \
-    icu-libs \
     && apk add --no-cache --virtual .build-deps \
         $PHPIZE_DEPS \
         postgresql-dev \
@@ -70,20 +80,20 @@ RUN apk add --no-cache \
 
 WORKDIR /var/www
 
-# Copiar aplicación
+# Copiar aplicación PHP
 COPY --from=composer-build /app .
 
 # Copiar assets compilados
 COPY --from=node-build /app/public/build ./public/build
 
-# Crear directorios necesarios y permisos
+# Directorios necesarios para Laravel
 RUN mkdir -p \
     storage/framework/cache \
     storage/framework/sessions \
     storage/framework/views \
     bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+ && chown -R www-data:www-data storage bootstrap/cache \
+ && chmod -R ug+rwx storage bootstrap/cache
 
 EXPOSE 8000
 
