@@ -27,15 +27,13 @@ FROM php:8.3-fpm
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
+    libjpeg-dev \
+    libfreetype-dev \
     libzip-dev \
     unzip \
-    git \
  && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
- && docker-php-ext-install pdo pdo_pgsql mbstring bcmath gd zip
+RUN docker-php-ext-install -j$(nproc) pdo pdo_pgsql mbstring bcmath gd zip
 
 WORKDIR /app
 
