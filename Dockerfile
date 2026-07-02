@@ -4,7 +4,7 @@ FROM node:22-slim AS frontend-builder
 WORKDIR /app
 
 # Habilitar pnpm v9 (compatible con pnpm-lock.yaml v9)
-RUN corepack enable && corepack install pnpm@9 --activate
+RUN corepack enable && corepack prepare pnpm@9 --activate
 
 # Copiar solo package.json (el lock se regenera por plataforma)
 COPY package.json ./
