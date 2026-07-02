@@ -3,14 +3,14 @@ FROM node:22-slim AS frontend-builder
 
 WORKDIR /app
 
-# Habilitar pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Habilitar pnpm v9 (compatible con pnpm-lock.yaml v9)
+RUN corepack enable && corepack install pnpm@9 --activate
 
-# Copiar dependencias primero (IMPORTANTE para cache)
-COPY package.json pnpm-lock.yaml ./
+# Copiar solo package.json (el lock se regenera por plataforma)
+COPY package.json ./
 
-# Instalar sin frozen lockfile por compatibilidad multiplataforma
-RUN pnpm install
+# Instalar dependencias
+RUN pnpm install --no-frozen-lockfile
 
 # Copiar resto del proyecto
 COPY . .

@@ -15,6 +15,7 @@
 /auth.json
 /node_modules
 /package-lock.json
+/pnpm-lock.yaml
 /public/build
 /public/fonts-manifest.dev.json
 /public/hot
