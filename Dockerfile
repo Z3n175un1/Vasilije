@@ -1,9 +1,9 @@
 # Stage 1: Build frontend assets
-FROM node:20-slim AS node-build
+FROM node:22-slim AS node-build
 WORKDIR /build
-COPY package.json package-lock.json vite.config.js ./
+COPY package.json vite.config.js ./
 COPY resources/ resources/
-RUN npm ci && npm run build
+RUN npm install && npm run build
 
 # Stage 2: Build PHP dependencies
 FROM php:8.3-fpm-alpine AS composer-build
