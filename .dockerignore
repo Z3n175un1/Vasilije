@@ -2,14 +2,10 @@
 .github
 vendor
 node_modules
+.env
+.env.*
 storage/logs/*
 storage/framework/cache/*
 storage/framework/sessions/*
 storage/framework/views/*
-storage/framework/testing/*
 bootstrap/cache/*.php
-.env
-.env.*
-Dockerfile
-docker-compose.yml
-README.md

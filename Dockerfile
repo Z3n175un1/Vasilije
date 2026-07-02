@@ -3,22 +3,18 @@ FROM node:22-alpine AS node-build
 
 WORKDIR /app
 
-# Instala dependencias de Node
+# Copiar dependencias de Node
 COPY package*.json ./
 RUN npm ci
 
-# Copia archivos necesarios para Vite
-COPY resources ./resources
-COPY public ./public
-COPY vite.config.* ./
-COPY jsconfig.json ./
-COPY tailwind.config.* ./
-COPY postcss.config.* ./
+# Copiar el resto del proyecto para que Vite tenga acceso a todos los archivos
+COPY . .
 
+# Compilar assets
 RUN npm run build
 
 
-# ---------- Stage 2: Composer ----------
+# ---------- Stage 2: Instalar dependencias PHP ----------
 FROM composer:2 AS composer-build
 
 WORKDIR /app
@@ -40,7 +36,7 @@ RUN composer dump-autoload --optimize
 # ---------- Stage 3: Runtime ----------
 FROM php:8.3-fpm-alpine
 
-# Dependencias necesarias para ejecutar Laravel
+# Instalar dependencias y extensiones PHP
 RUN apk add --no-cache \
     postgresql-libs \
     libpng \
@@ -75,13 +71,14 @@ RUN apk add --no-cache \
 WORKDIR /var/www
 
 # Copiar aplicación
-COPY --from=composer-build /app ./
+COPY --from=composer-build /app .
 
 # Copiar assets compilados
 COPY --from=node-build /app/public/build ./public/build
 
-# Permisos
-RUN mkdir -p storage/framework/cache \
+# Crear directorios necesarios y permisos
+RUN mkdir -p \
+    storage/framework/cache \
     storage/framework/sessions \
     storage/framework/views \
     bootstrap/cache \
