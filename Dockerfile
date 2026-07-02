@@ -4,14 +4,14 @@ FROM node:22-alpine AS node-build
 WORKDIR /app
 
 # Copiar dependencias de Node
-COPY package*.json ./
-RUN npm ci
+COPY package.json ./
+RUN corepack enable && corepack prepare pnpm@latest --activate && pnpm install
 
 # Copiar el resto del proyecto para que Vite tenga acceso a todos los archivos
 COPY . .
 
 # Compilar assets
-RUN npm run build
+RUN pnpm run build
 
 
 # ---------- Stage 2: Instalar dependencias PHP ----------
