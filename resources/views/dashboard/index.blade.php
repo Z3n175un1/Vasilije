@@ -60,6 +60,7 @@
                 <table class="table-excel mb-0" id="vehiculosTable">
                     <thead>
                         <tr>
+                        
                             <th class="text-center">Estado</th>
                             <th class="text-center">Placa</th>
                             <th class="text-center">Categoría</th>
