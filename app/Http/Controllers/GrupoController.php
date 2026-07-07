@@ -38,7 +38,7 @@ class GrupoController extends Controller
     public function update(Request $request, $id)
     {
         $data = $request->validate([
-            'nombre' => 'required|string|max:100',
+            'nombre' => 'required|string|max:100|unique:global.categorias_almacen,nombre,' . $id . ',id_categoria',
             'descripcion' => 'nullable|string',
         ]);
 
@@ -48,7 +48,12 @@ class GrupoController extends Controller
 
     public function destroy($id)
     {
-        $tieneProductos = DB::table('global.inventario')->where('id_categoria', $id)->exists();
+        $grupo = DB::table('global.categorias_almacen')->where('id_categoria', $id)->first();
+        $tieneProductos = DB::table('global.inventario')
+            ->where(function($q) use ($id, $grupo) {
+                $q->where('id_categoria', $id);
+                if ($grupo) $q->orWhere('categoria', $grupo->nombre);
+            })->exists();
         if ($tieneProductos) {
             return redirect()->route('grupos.index')->with('error', 'No se puede eliminar: grupo tiene productos asociados');
         }
@@ -60,7 +65,7 @@ class GrupoController extends Controller
     {
         $data = DB::table('global.categorias_almacen')
             ->select('global.categorias_almacen.*',
-                DB::raw('(SELECT COUNT(*) FROM global.inventario WHERE global.inventario.id_categoria = global.categorias_almacen.id_categoria) as total_productos'))
+                DB::raw('(SELECT COUNT(*) FROM global.inventario WHERE global.inventario.categoria = global.categorias_almacen.nombre) as total_productos'))
             ->orderBy('nombre')
             ->get();
         return response()->json(['success' => true, 'data' => $data]);

@@ -31,7 +31,7 @@ class AlmacenController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'codigo' => 'required|string|max:20',
+            'codigo' => 'required|string|max:20|unique:global.inventario,codigo',
             'nombre_producto' => 'required|string|max:100',
             'categoria' => 'required|string|max:50',
             'unidad_medida' => 'required|string|max:20',
@@ -45,7 +45,7 @@ class AlmacenController extends Controller
         ]);
         $data['estado'] = 'ACTIVO';
 
-        $id = DB::table('global.inventario')->insertGetId($data);
+        $id = DB::table('global.inventario')->insertGetId($data, 'id_inventario');
 
         if ($data['stock_actual'] > 0) {
             $lote = 'LTE-' . str_pad($id, 5, '0', STR_PAD_LEFT);
@@ -65,7 +65,7 @@ class AlmacenController extends Controller
     public function update(Request $request, $id)
     {
         $data = $request->validate([
-            'codigo' => 'required|string|max:20',
+            'codigo' => 'required|string|max:20|unique:global.inventario,codigo,' . $id . ',id_inventario',
             'nombre_producto' => 'required|string|max:100',
             'categoria' => 'required|string|max:50',
             'unidad_medida' => 'required|string|max:20',

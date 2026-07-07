@@ -4,12 +4,6 @@
 
 @section('content')
 <div class="main-container w-full">
-    @if(session('success'))
-        <div class="alert alert-success font-bold text-center mb-4" style="border:3px solid #000;border-radius:0;">
-            <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
-        </div>
-    @endif
-
     <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 bg-white text-black p-4 rounded-3 shadow-heavy">
         <div class="header-decoration">
             <h1 class="fs-title mb-0 text-black">PERSONAL</h1>

@@ -4,6 +4,12 @@
 
 @section('content')
 <div class="main-container w-full">
+    @if($errors->any())
+        <div class="alert alert-danger font-bold mb-4" style="border:3px solid #000;border-radius:0;">
+            <i class="fas fa-exclamation-triangle me-2"></i> CORREGIR LOS ERRORES
+            <ul class="mb-0 mt-2">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
+        </div>
+    @endif
     <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 bg-white text-black p-4 rounded-3 shadow-heavy">
         <div class="header-decoration">
             <h1 class="fs-title mb-0 text-black">{{ $item ? 'EDITAR' : 'NUEVO' }} ÍTEM</h1>
@@ -37,11 +43,11 @@
             <div class="row g-4 mb-4">
                 <div class="col-md-4">
                     <div class="form-group mb-0">
-                        <label>CATEGORÍA</label>
-                        <select name="categoria">
+                        <label>GRUPO</label>
+                        <select name="id_categoria">
                             <option value="">SELECCIONE...</option>
                             @foreach($categorias as $c)
-                                <option value="{{ $c->nombre }}" {{ old('categoria', $item->categoria ?? '') == $c->nombre ? 'selected' : '' }}>{{ $c->nombre }}</option>
+                                <option value="{{ $c->id_categoria }}" {{ old('id_categoria', $item->id_categoria ?? '') == $c->id_categoria ? 'selected' : '' }}>{{ $c->nombre }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -58,35 +64,8 @@
                 </div>
                 <div class="col-md-4">
                     <div class="form-group mb-0">
-                        <label>MARCA</label>
-                        <input type="text" name="marca" value="{{ old('marca', $item->marca ?? '') }}" placeholder="MARCA">
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-4 mb-4">
-                <div class="col-md-3">
-                    <div class="form-group mb-0">
-                        <label>STOCK</label>
-                        <input type="number" step="0.01" name="stock_actual" value="{{ old('stock_actual', $item->stock_actual ?? '0') }}" min="0">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group mb-0">
-                        <label>STOCK MÍN.</label>
+                        <label>STOCK MÍNIMO</label>
                         <input type="number" step="0.01" name="stock_minimo" value="{{ old('stock_minimo', $item->stock_minimo ?? '0') }}" min="0">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group mb-0">
-                        <label>PRECIO COMPRA</label>
-                        <input type="number" step="0.01" name="precio_compra" value="{{ old('precio_compra', $item->precio_compra ?? '0') }}" min="0">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group mb-0">
-                        <label>PRECIO VENTA</label>
-                        <input type="number" step="0.01" name="precio_venta" value="{{ old('precio_venta', $item->precio_venta ?? '0') }}" min="0">
                     </div>
                 </div>
             </div>

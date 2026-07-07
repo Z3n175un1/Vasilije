@@ -54,25 +54,19 @@ function initLogout() {
     });
 }
 
-window.showNotification = function(message, type = 'info', duration = 3000) {
-    const colors = {
-        success: '#28a745', error: '#dc3545',
-        warning: '#ffc107', info: '#17a2b8'
-    };
-    const notif = document.createElement('div');
-    notif.style.cssText = `
-        position: fixed; top: 20px; right: 20px; padding: 15px 20px;
-        background: ${colors[type]}; color: ${type === 'warning' ? '#333' : 'white'};
-        z-index: 2000; min-width: 300px; border-radius: 8px;
-        font-weight: 700; text-transform: uppercase; font-size: 0.9rem;
-        animation: slideIn 0.3s ease; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        display: flex; justify-content: space-between; align-items: center; gap: 15px;
-    `;
-    notif.innerHTML = `<span>${message}</span><button onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;font-size:20px;cursor:pointer;">✕</button>`;
-    document.body.appendChild(notif);
-    setTimeout(() => { if (notif.parentElement) notif.remove(); }, duration);
+window.showNotification = function(message, type = 'success', duration = 2500) {
+    const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+    const colors = { success: '#28a745', error: '#dc3545', warning: '#ffc107', info: '#17a2b8' };
+    Swal.fire({
+        text: message,
+        icon: type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warning' ? 'warning' : 'info',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: duration,
+        timerProgressBar: true,
+        background: '#fff',
+        color: '#000',
+        customClass: { popup: 'fw-bold' },
+    });
 };
-
-const style = document.createElement('style');
-style.textContent = `@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }`;
-document.head.appendChild(style);

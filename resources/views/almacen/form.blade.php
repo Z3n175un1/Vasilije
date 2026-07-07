@@ -4,6 +4,12 @@
 
 @section('content')
 <div class="main-container w-full">
+    @if($errors->any())
+        <div class="alert alert-danger font-bold mb-4" style="border:3px solid #000;border-radius:0;">
+            <i class="fas fa-exclamation-triangle me-2"></i> CORREGIR LOS ERRORES
+            <ul class="mb-0 mt-2">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
+        </div>
+    @endif
     <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 bg-white text-black p-4 rounded-3 shadow-heavy">
         <div class="header-decoration">
             <h1 class="fs-title mb-0 text-black">{{ $producto ? 'EDITAR' : 'NUEVO' }} PRODUCTO</h1>

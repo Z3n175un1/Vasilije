@@ -36,6 +36,9 @@ class VehiculoController extends Controller
             'anho' => 'nullable|integer',
             'color' => 'nullable|string',
             'capacidad' => 'nullable|numeric',
+            'tara_kg' => 'nullable|numeric',
+            'peso_bruto_kg' => 'nullable|numeric',
+            'peso_neto_kg' => 'nullable|numeric',
             'kilometraje' => 'nullable|numeric',
             'estado' => 'required|integer',
         ]);
@@ -54,6 +57,9 @@ class VehiculoController extends Controller
             'anho' => 'nullable|integer',
             'color' => 'nullable|string',
             'capacidad' => 'nullable|numeric',
+            'tara_kg' => 'nullable|numeric',
+            'peso_bruto_kg' => 'nullable|numeric',
+            'peso_neto_kg' => 'nullable|numeric',
             'kilometraje' => 'nullable|numeric',
             'estado' => 'required|integer',
         ]);

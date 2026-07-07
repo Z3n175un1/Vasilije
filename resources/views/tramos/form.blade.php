@@ -47,6 +47,12 @@
                         <input type="number" step="0.01" name="precio_total" value="{{ old('precio_total', $tramo->precio_total ?? '') }}" required min="0" placeholder="0.00">
                     </div>
                 </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-0">
+                        <label>PRECIO $/TONELADA</label>
+                        <input type="number" step="0.01" name="precio_dolar_tonelada" value="{{ old('precio_dolar_tonelada', $tramo->precio_dolar_tonelada ?? '0') }}" min="0" placeholder="0.00">
+                    </div>
+                </div>
             </div>
 
             <div class="row g-4 mb-4">

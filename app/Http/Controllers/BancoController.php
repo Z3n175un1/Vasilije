@@ -52,6 +52,10 @@ class BancoController extends Controller
             'saldo_inicial' => 'required|numeric',
         ]);
 
+        $banco = DB::table('global.bancos')->where('id_banco', $id)->first();
+        $diferencia = $data['saldo_inicial'] - $banco->saldo_inicial;
+        $data['saldo_actual'] = $banco->saldo_actual + $diferencia;
+
         DB::table('global.bancos')->where('id_banco', $id)->update($data);
         return redirect()->route('bancos.index')->with('success', 'Banco actualizado exitosamente');
     }

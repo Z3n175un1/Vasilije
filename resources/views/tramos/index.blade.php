@@ -4,12 +4,6 @@
 
 @section('content')
 <div class="main-container w-full">
-    @if(session('success'))
-        <div class="alert alert-success font-bold text-center mb-4" style="border:3px solid #000;border-radius:0;">
-            <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
-        </div>
-    @endif
-
     <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 bg-white text-black p-4 rounded-3 shadow-heavy">
         <div class="header-decoration">
             <h1 class="fs-title mb-0 text-black">RUTAS</h1>
@@ -32,6 +26,7 @@
                         <th>Destino</th>
                         <th>Km</th>
                         <th>Precio Total</th>
+                        <th>$/Ton</th>
                         <th>Gasolina</th>
                         <th>Diesel</th>
                         <th>Gas</th>
@@ -39,7 +34,7 @@
                     </tr>
                 </thead>
                 <tbody id="tramosList">
-                    <tr><td colspan="8" class="text-center py-5 opacity-50">CARGANDO...</td></tr>
+                    <tr><td colspan="9" class="text-center py-5 opacity-50">CARGANDO...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -63,12 +58,13 @@ function loadTramos() {
             tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5 opacity-50">NO HAY TRAMOS REGISTRADOS</td></tr>';
             return;
         }
-        tbody.innerHTML = res.data.map(t => `
+            tbody.innerHTML = res.data.map(t => `
             <tr>
                 <td class="font-bold">${t.origen}</td>
                 <td class="font-bold">${t.destino}</td>
                 <td class="font-bold">${parseFloat(t.kilometros || 0).toFixed(2)}</td>
                 <td class="font-bold" style="color:#007400;">Bs. ${parseFloat(t.precio_total || 0).toFixed(2)}</td>
+                <td class="font-bold">$${parseFloat(t.precio_dolar_tonelada || 0).toFixed(2)}</td>
                 <td class="font-bold">Bs. ${parseFloat(t.gasolina_promedio || 0).toFixed(2)}</td>
                 <td class="font-bold">Bs. ${parseFloat(t.diesel_promedio || 0).toFixed(2)}</td>
                 <td class="font-bold">Bs. ${parseFloat(t.gas_promedio || 0).toFixed(2)}</td>

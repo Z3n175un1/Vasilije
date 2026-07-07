@@ -4,12 +4,6 @@
 
 @section('content')
 <div class="main-container w-full">
-    @if(session('success'))
-        <div class="alert alert-success font-bold text-center mb-4" style="border:3px solid #000;border-radius:0;">
-            <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
-        </div>
-    @endif
-
     <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 bg-white text-black p-4 rounded-3 shadow-heavy animate-slide-up">
         <div class="header-decoration">
             <h1 class="fs-title mb-0 text-black">VEHÍCULOS</h1>
@@ -32,12 +26,13 @@
                         <th>Tipo</th>
                         <th>Marca</th>
                         <th>Modelo</th>
+                        <th>Tara</th>
                         <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="vehiculosList">
-                    <tr><td colspan="6" class="text-center py-5 opacity-50">CARGANDO...</td></tr>
+                    <tr><td colspan="7" class="text-center py-5 opacity-50">CARGANDO...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -69,6 +64,7 @@ function loadVehiculos() {
                 <td class="uppercase font-bold">${v.tipo_vehiculo || '—'}</td>
                 <td class="font-bold">${v.marca || '—'}</td>
                 <td class="font-bold">${v.modelo || '—'}</td>
+                <td class="font-bold">${v.tara_kg ? parseFloat(v.tara_kg).toFixed(0) + ' kg' : '—'}</td>
                 <td><span class="badge font-bold uppercase px-3 py-2" style="background:${v.estado === 1 ? '#e2ffd6' : v.estado === 2 ? '#fffcd4' : '#ffdcd6'};color:${v.estado === 1 ? '#007400' : v.estado === 2 ? '#746700' : '#740000'};border:2px solid #000;">${v.estado === 1 ? 'ACTIVO' : v.estado === 2 ? 'MANTENIMIENTO' : 'VENDIDO'}</span></td>
                 <td>
                     <div class="d-flex gap-2 justify-content-center">

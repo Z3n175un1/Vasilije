@@ -134,18 +134,9 @@
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
-                    <div class="col-md-6">
+                    <div class="col-12">
                         <label class="fw-bold small text-uppercase">CLIENTE</label>
                         <input type="text" class="form-control fw-bold" id="fd_cliente_nombre" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="Nombre del cliente">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">TIPO PAGO</label>
-                        <select class="form-control fw-bold" id="fd_tipo_pago" style="border-radius:0;border:3px solid #000;padding:10px;">
-                            <option value="EFECTIVO">EFECTIVO</option>
-                            <option value="TRANSFERENCIA">TRANSFERENCIA</option>
-                            <option value="CHEQUE">CHEQUE</option>
-                            <option value="OTRO">OTRO</option>
-                        </select>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
@@ -164,8 +155,8 @@
                 </div>
                 <div class="row g-3 mb-3">
                     <div class="col-md-8">
-                        <label class="fw-bold small text-uppercase">CONCEPTO <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control fw-bold" id="fd_concepto" style="border-radius:0;border:3px solid #000;padding:10px;" required placeholder="Descripción del flete">
+                        <label class="fw-bold small text-uppercase">CONCEPTO</label>
+                        <input type="text" class="form-control fw-bold" id="fd_concepto" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="Descripción del flete">
                     </div>
                     <div class="col-md-4">
                         <label class="fw-bold small text-uppercase">FECHA</label>
@@ -189,10 +180,14 @@
 let vehiculos = [];
 let tramos = [];
 let currentFilter = '1';
+let configDataDash = { tipo_cambio: 6.96, precio_tonelada_usd: 13 };
 
 document.addEventListener('DOMContentLoaded', function() {
     loadVehiculos();
     loadTramos();
+    fetch('{{ url("api/config") }}', { headers: { 'Accept': 'application/json' } })
+        .then(r => r.json())
+        .then(res => { if (res.success) configDataDash = res.data; });
 
     document.getElementById('estadoFilter')?.addEventListener('click', function(e) {
         const btn = e.target.closest('button');
@@ -301,9 +296,28 @@ function seleccionarRuta(select) {
     if (t) {
         document.getElementById('fd_origen').value = t.origen || '';
         document.getElementById('fd_destino').value = t.destino || '';
-        document.getElementById('fd_monto').value = t.precio_total || '';
+        const ton = parseFloat(document.getElementById('fd_toneladas').value) || 0;
+        const dolarTon = parseFloat(t.precio_dolar_tonelada || 13);
+        const tc = parseFloat(configDataDash.tipo_cambio || 6.96);
+        const monto = ton > 0 ? ton * dolarTon * tc : t.precio_total || '';
+        document.getElementById('fd_monto').value = monto || t.precio_total || '';
     }
 }
+
+document.addEventListener('input', function(e) {
+    if (e.target.id === 'fd_toneladas') {
+        const sel = document.getElementById('fd_id_tramo');
+        if (sel && sel.value) {
+            const t = tramos.find(x => x.id_tramo === parseInt(sel.value));
+            if (t && t.precio_dolar_tonelada > 0) {
+                const ton = parseFloat(e.target.value) || 0;
+                const dolarTon = parseFloat(t.precio_dolar_tonelada);
+                const tc = parseFloat(configDataDash.tipo_cambio || 6.96);
+                document.getElementById('fd_monto').value = (ton * dolarTon * tc).toFixed(2);
+            }
+        }
+    }
+});
 
 function filtrarPorEstado(estado) {
     currentFilter = String(estado);
@@ -380,7 +394,6 @@ function prepararIngreso(id) {
     document.getElementById('fd_toneladas').value = '0';
     document.getElementById('fd_concepto').value = '';
     document.getElementById('fd_fecha_ingreso').value = new Date().toISOString().split('T')[0];
-    document.getElementById('fd_tipo_pago').value = 'EFECTIVO';
 
     fetch('{{ url("api/personal") }}', {
         headers: { 'Accept': 'application/json' }
@@ -391,7 +404,7 @@ function prepararIngreso(id) {
         if (res.success) {
             sel.innerHTML = '<option value="">SELECCIONE...</option>' +
                 (res.data || []).filter(p => p.estado == 1).map(p =>
-                    `<option value="${p.id_personal}">${p.nombres || ''} ${p.apellidos || ''}</option>`).join('');
+                    `<option value="${p.id_personal}" ${p.id_personal == v.id_personal ? 'selected' : ''}>${p.nombres || ''} ${p.apellidos || ''}</option>`).join('');
         }
     });
 
@@ -414,10 +427,8 @@ function guardarFleteDash(event) {
         toneladas: document.getElementById('fd_toneladas').value || 0,
         concepto: document.getElementById('fd_concepto').value,
         fecha_ingreso: document.getElementById('fd_fecha_ingreso').value,
-        tipo_pago: document.getElementById('fd_tipo_pago').value,
     };
     if (!data.monto || parseFloat(data.monto) <= 0) { Swal.fire('Requerido', 'El monto debe ser mayor a 0', 'warning'); return; }
-    if (!data.concepto) { Swal.fire('Requerido', 'El concepto es obligatorio', 'warning'); return; }
 
     document.getElementById('btnGuardarFleteDash').disabled = true;
     document.getElementById('btnGuardarFleteDash').innerHTML = '<i class="fas fa-spinner fa-spin"></i> GUARDANDO...';

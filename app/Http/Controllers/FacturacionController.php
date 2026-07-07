@@ -38,7 +38,7 @@ class FacturacionController extends Controller
     {
         $validated = $request->validate([
             'id_vehiculo' => 'required|integer',
-            'concepto' => 'required|string|max:200',
+            'concepto' => 'nullable|string|max:200',
             'monto' => 'required|numeric',
             'fecha_ingreso' => 'required|date',
             'fecha_vencimiento' => 'nullable|date',

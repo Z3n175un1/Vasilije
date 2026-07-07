@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
@@ -106,7 +107,19 @@ Route::middleware('auth')->group(function () {
     Route::delete('/grupos/{id}', [GrupoController::class, 'destroy'])->name('grupos.destroy');
 
     // Configuracion
-    Route::view('/configuracion', 'configuracion.index')->name('configuracion.index');
+    Route::get('/configuracion', function () {
+        $config = DB::table('global.configuracion')->pluck('valor', 'llave');
+        return view('configuracion.index', ['config' => $config]);
+    })->name('configuracion.index');
+    Route::post('/configuracion', function (Request $request) {
+        $data = $request->validate([
+            'tipo_cambio' => 'required|numeric',
+            'precio_tonelada_usd' => 'required|numeric',
+        ]);
+        DB::table('global.configuracion')->where('llave', 'tipo_cambio')->update(['valor' => $data['tipo_cambio']]);
+        DB::table('global.configuracion')->where('llave', 'precio_tonelada_usd')->update(['valor' => $data['precio_tonelada_usd']]);
+        return redirect()->route('configuracion.index')->with('success', 'Configuración actualizada exitosamente');
+    })->name('configuracion.update');
 });
 
 // API routes (for AJAX calls)
@@ -146,5 +159,9 @@ Route::prefix('api')->middleware('auth')->group(function () {
             'success' => true,
             'data' => DB::table('global.proveedores')->where('estado', 1)->orderBy('nombre_proveedor')->get()
         ]);
+    });
+    Route::get('/config', function () {
+        $config = DB::table('global.configuracion')->pluck('valor', 'llave');
+        return response()->json(['success' => true, 'data' => $config]);
     });
 });

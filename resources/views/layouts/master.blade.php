@@ -35,11 +35,13 @@
 
         <div class="menu-sidebar-drawer" id="menuDrawer">
             <div class="drawer-content-wrapper">
-                <div class="drawer-header border-bottom border-black pb-3 mb-4">
-                    <h1 class="text-black font-black mb-0 fs-mid d-flex flex-wrap align-items-center gap-1 animate-pulse">
-                        <span>CONTROL</span>
-                        <span class="rounded-3 bg-black text-warning px-2 py-1" style="font-size: 0.9rem;">FLOTA</span>
+                <div class="drawer-header pb-3 mb-4">
+                    <h1 class="text-black font-black mb-0 fs-mid d-flex flex-wrap align-items-center gap-1">
+                        <span>VASILIJE</span>
                     </h1>
+                    <p class="small fw-bold text-black mt-2 mb-0" style="opacity:0.7;">
+                        <i class="fas fa-user me-1"></i> {{ auth()->user()->name }}
+                    </p>
                 </div>
 
                 <nav class="drawer-nav-links d-flex flex-column gap-2" style="transition-delay: calc(0.05s * var(--i, 0));">
@@ -66,13 +68,13 @@
                 </nav>
             </div>
 
-            <div class="drawer-footer border-top border-black pt-3">
+            <div class="drawer-footer pt-3">
                 <form method="POST" action="{{ route('logout') }}" id="logoutForm">
                     @csrf
                     <button type="button"
-                            class="btn-bento btn-bento-primary bg-black text-warning border-black py-2 w-100 font-bold hover-scale"
+                            class="btn font-bold w-100 py-3"
                             id="logoutBtn"
-                            style="border-width: 4px !important; border-radius: 0 !important; font-size: 0.9rem;">
+                            style="border: 2px solid #000; border-radius: 12px; font-size: 0.9rem; background: #fff; color: #000;">
                         <i class="fas fa-power-off me-2"></i> CERRAR SESION
                     </button>
                 </form>

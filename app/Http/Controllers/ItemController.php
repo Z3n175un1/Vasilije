@@ -29,18 +29,22 @@ class ItemController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'codigo' => 'required|string|max:20',
+            'codigo' => 'required|string|max:20|unique:global.inventario,codigo',
             'nombre_producto' => 'required|string|max:100',
-            'categoria' => 'required|string|max:50',
+            'id_categoria' => 'nullable|integer|exists:global.categorias_almacen,id_categoria',
             'unidad_medida' => 'required|string|max:20',
-            'precio_compra' => 'nullable|numeric',
-            'precio_venta' => 'nullable|numeric',
-            'marca' => 'nullable|string|max:50',
-            'descripcion' => 'nullable|string',
-            'stock_actual' => 'required|numeric',
             'stock_minimo' => 'nullable|numeric',
+            'descripcion' => 'nullable|string',
         ]);
         $data['estado'] = 'ACTIVO';
+        $data['stock_actual'] = 0;
+
+        if (!empty($data['id_categoria'])) {
+            $cat = DB::table('global.categorias_almacen')->where('id_categoria', $data['id_categoria'])->first();
+            $data['categoria'] = $cat ? $cat->nombre : '';
+        } else {
+            $data['categoria'] = '';
+        }
 
         DB::table('global.inventario')->insert($data);
         return redirect()->route('items.index')->with('success', 'Ítem registrado exitosamente');
@@ -49,17 +53,20 @@ class ItemController extends Controller
     public function update(Request $request, $id)
     {
         $data = $request->validate([
-            'codigo' => 'required|string|max:20',
+            'codigo' => 'required|string|max:20|unique:global.inventario,codigo,' . $id . ',id_inventario',
             'nombre_producto' => 'required|string|max:100',
-            'categoria' => 'required|string|max:50',
+            'id_categoria' => 'nullable|integer|exists:global.categorias_almacen,id_categoria',
             'unidad_medida' => 'required|string|max:20',
-            'precio_compra' => 'nullable|numeric',
-            'precio_venta' => 'nullable|numeric',
-            'marca' => 'nullable|string|max:50',
-            'descripcion' => 'nullable|string',
-            'stock_actual' => 'required|numeric',
             'stock_minimo' => 'nullable|numeric',
+            'descripcion' => 'nullable|string',
         ]);
+
+        if (!empty($data['id_categoria'])) {
+            $cat = DB::table('global.categorias_almacen')->where('id_categoria', $data['id_categoria'])->first();
+            $data['categoria'] = $cat ? $cat->nombre : '';
+        } else {
+            $data['categoria'] = '';
+        }
 
         DB::table('global.inventario')->where('id_inventario', $id)->update($data);
         return redirect()->route('items.index')->with('success', 'Ítem actualizado exitosamente');

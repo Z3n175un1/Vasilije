@@ -58,12 +58,6 @@
 
 @section('content')
 <div class="main-container w-full">
-    @if(session('success'))
-        <div class="alert alert-success font-bold text-center mb-4" style="border:3px solid #000;border-radius:0;">
-            <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
-        </div>
-    @endif
-
     <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 bg-white text-black p-4 rounded-3 shadow-heavy">
         <div class="header-decoration">
             <h1 class="fs-title mb-0 text-black">FACTURACIÓN</h1>
@@ -192,7 +186,7 @@
                 </div>
             </div>
         </div>
-        <div id="selectionBar" class="d-flex justify-content-between align-items-center mb-3 p-3" style="background:#fff;border:4px solid #000;display:none!important;">
+        <div id="selectionBar" class="d-flex justify-content-between align-items-center mb-3 p-3" style="background:#fff;border:4px solid #000;display:none;">
             <div class="d-flex align-items-center gap-3">
                 <span class="fw-bold fs-5" id="selectedCount">0 seleccionado(s)</span>
                 <span class="fw-bold fs-5" style="color:#007400;" id="selectedTotal">Total: Bs. 0.00</span>
@@ -349,10 +343,14 @@ let pendientesData = [];
 let vehiculosList = [];
 let personalList = [];
 let tramosList = [];
+let configData = { tipo_cambio: 6.96, precio_tonelada_usd: 13 };
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('nf_fecha_ingreso').value = new Date().toISOString().split('T')[0];
     document.getElementById('modalFechaFactura').value = new Date().toISOString().split('T')[0];
+    fetch('{{ url("api/config") }}', { headers: { 'Accept': 'application/json' } })
+        .then(r => r.json())
+        .then(res => { if (res.success) configData = res.data; });
     cargarCombos();
     cargarFletes();
     cargarListado();
@@ -504,9 +502,28 @@ function seleccionarRutaNF(select) {
     if (t) {
         document.getElementById('nf_origen').value = t.origen || '';
         document.getElementById('nf_destino').value = t.destino || '';
-        document.getElementById('nf_monto').value = t.precio_total || '';
+        const ton = parseFloat(document.getElementById('nf_toneladas').value) || 0;
+        const dolarTon = parseFloat(t.precio_dolar_tonelada || 13);
+        const tc = parseFloat(configData.tipo_cambio || 6.96);
+        const monto = ton > 0 ? ton * dolarTon * tc : t.precio_total || '';
+        document.getElementById('nf_monto').value = monto || t.precio_total || '';
     }
 }
+
+document.addEventListener('input', function(e) {
+    if (e.target.id === 'nf_toneladas') {
+        const sel = document.getElementById('nf_id_tramo');
+        if (sel && sel.value) {
+            const t = tramosList.find(x => x.id_tramo === parseInt(sel.value));
+            if (t && t.precio_dolar_tonelada > 0) {
+                const ton = parseFloat(e.target.value) || 0;
+                const dolarTon = parseFloat(t.precio_dolar_tonelada);
+                const tc = parseFloat(configData.tipo_cambio || 6.96);
+                document.getElementById('nf_monto').value = (ton * dolarTon * tc).toFixed(2);
+            }
+        }
+    }
+});
 
 // --- Modal Nuevo Flete ---
 function abrirModalNuevoFlete() {
@@ -673,10 +690,12 @@ function cargarPendientes() {
     seleccionadas.clear();
     const params = new URLSearchParams();
     params.append('page', '1'); params.append('limit', '100'); params.append('estado', 'PENDIENTE');
-    ['filterFechaInicio','filterFechaFin','filterCliente'].forEach(id => {
-        const v = document.getElementById(id).value;
-        if (v) params.append(id.replace('filter','').toLowerCase(), v);
-    });
+    const fi = document.getElementById('filterFechaInicio').value;
+    const ff = document.getElementById('filterFechaFin').value;
+    const fc = document.getElementById('filterCliente').value;
+    if (fi) params.append('fecha_inicio', fi);
+    if (ff) params.append('fecha_fin', ff);
+    if (fc) params.append('cliente', fc);
     document.getElementById('pendientesLoading').style.display = 'block';
     document.getElementById('pendientesContainer').innerHTML = '';
     actualizarSelectionBar();

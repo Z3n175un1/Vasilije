@@ -9,7 +9,7 @@
             <h1 class="fs-title mb-0 text-black">{{ $vehiculo ? 'EDITAR' : 'NUEVA' }} UNIDAD</h1>
             <p class="font-bold small text-black uppercase">Registro de Vehículo de Transporte</p>
         </div>
-        <a href="{{ route('vehiculos.index') }}" class="btn-bento btn-bento-outline py-1 px-2 fs-mid font-bold rounded-3 text-decoration-none">
+        <a href="{{ route('dashboard.index') }}" class="btn-bento btn-bento-outline py-1 px-2 fs-mid font-bold rounded-3 text-decoration-none">
             <i class="fas fa-arrow-left me-1"></i> VOLVER
         </a>
     </header>
@@ -74,6 +74,27 @@
                 </div>
                 <div class="col-md-4">
                     <div class="form-group mb-0">
+                        <label>TARA (Kg) <i class="fas fa-info-circle" title="Peso del vehículo vacío"></i></label>
+                        <input type="number" step="0.01" name="tara_kg" value="{{ old('tara_kg', $vehiculo->tara_kg ?? '') }}" min="0" placeholder="Peso vacío">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-0">
+                        <label>PESO BRUTO (Kg) <i class="fas fa-info-circle" title="Vehículo con carga"></i></label>
+                        <input type="number" step="0.01" name="peso_bruto_kg" value="{{ old('peso_bruto_kg', $vehiculo->peso_bruto_kg ?? '') }}" min="0" placeholder="Vehículo + carga">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="form-group mb-0">
+                        <label>PESO NETO (Kg) <i class="fas fa-info-circle" title="Solo la carga"></i></label>
+                        <input type="number" step="0.01" name="peso_neto_kg" value="{{ old('peso_neto_kg', $vehiculo->peso_neto_kg ?? '') }}" min="0" placeholder="Solo carga">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-0">
                         <label>KILOMETRAJE</label>
                         <input type="number" name="kilometraje" value="{{ old('kilometraje', $vehiculo->kilometraje ?? 0) }}" min="0">
                     </div>
@@ -91,7 +112,7 @@
             </div>
 
             <div class="d-flex justify-content-end gap-3 mt-5">
-                <a href="{{ route('vehiculos.index') }}" class="btn-bento btn-bento-outline font-bold" style="border-width:4px!important;text-decoration:none;">CANCELAR</a>
+                <a href="{{ route('dashboard.index') }}" class="btn-bento btn-bento-outline font-bold" style="border-width:4px!important;text-decoration:none;">CANCELAR</a>
                 <button type="submit" class="btn-bento btn-bento-primary px-5 font-bold" style="border-width:4px!important;">
                     <i class="fas fa-save me-2"></i> {{ $vehiculo ? 'GUARDAR CAMBIOS' : 'REGISTRAR UNIDAD' }}
                 </button>

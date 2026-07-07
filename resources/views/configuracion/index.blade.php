@@ -10,10 +10,35 @@
             <p class="font-bold small text-black uppercase">Ajustes del Sistema</p>
         </div>
     </header>
-    <div class="bento-card text-center" style="border: 4px solid #000;">
-        <i class="fas fa-cogs" style="font-size: 4rem; color: var(--primary); margin-bottom: 1.5rem;"></i>
-        <h2 class="fs-title mb-3">CONFIGURACIÓN</h2>
-        <p class="opacity-50 mb-4">Módulo de configuración en implementación</p>
+
+    <div class="bento-card" style="border: 6px solid #000;">
+        <form method="POST" action="{{ route('configuracion.update') }}" class="form-bento">
+            @csrf
+            <h4 class="fw-black mb-4 pb-2 border-bottom border-black d-flex align-items-center gap-2">
+                <span class="badge bg-black text-warning px-3 py-2">FLETE</span> CÁLCULO POR TONELADA
+            </h4>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="form-group mb-0">
+                        <label>TIPO DE CAMBIO (Bs/$us)</label>
+                        <input type="number" step="0.01" name="tipo_cambio" value="{{ old('tipo_cambio', $config['tipo_cambio'] ?? 6.96) }}" min="0" placeholder="6.96">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-0">
+                        <label>PRECIO POR TONELADA ($us)</label>
+                        <input type="number" step="0.01" name="precio_tonelada_usd" value="{{ old('precio_tonelada_usd', $config['precio_tonelada_usd'] ?? 13) }}" min="0" placeholder="13">
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-3 mt-5">
+                <button type="submit" class="btn-bento btn-bento-primary px-5 font-bold" style="border-width:4px!important;">
+                    <i class="fas fa-save me-2"></i> GUARDAR CONFIGURACIÓN
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection
