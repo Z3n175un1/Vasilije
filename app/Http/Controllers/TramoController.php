@@ -14,14 +14,16 @@ class TramoController extends Controller
 
     public function create()
     {
-        return view('tramos.form', ['tramo' => null]);
+        $precioTonUsd = DB::table('global.configuracion')->where('llave', 'precio_tonelada_usd')->value('valor') ?? 13;
+        return view('tramos.form', ['tramo' => null, 'precioTonUsd' => $precioTonUsd]);
     }
 
     public function edit($id)
     {
         $tramo = DB::table('global.tramos')->where('id_tramo', $id)->first();
         if (!$tramo) return redirect()->route('tramos.index')->with('error', 'Tramo no encontrado');
-        return view('tramos.form', ['tramo' => $tramo]);
+        $precioTonUsd = DB::table('global.configuracion')->where('llave', 'precio_tonelada_usd')->value('valor') ?? 13;
+        return view('tramos.form', ['tramo' => $tramo, 'precioTonUsd' => $precioTonUsd]);
     }
 
     public function store(Request $request)
