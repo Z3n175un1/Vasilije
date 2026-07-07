@@ -26,16 +26,16 @@ body {
   font-family: 'Uncut Sans', sans-serif;
   background-color: #fff;
   color: #000;
-  height: 100vh;
+  min-height: 100vh;
   font-size: 1.15rem;
   line-height: 1.4;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 @media (max-width: 768px) {
   body {
-    height: auto;
-    overflow: auto;
+    min-height: auto;
   }
 }
 

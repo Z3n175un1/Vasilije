@@ -100,10 +100,24 @@
             </a>
         </div>
 
-        <div class="col-md-4" style="position:relative;">
+        <div class="col-md-4">
             <div class="btn-inicio w-100" onclick="abrirNomen()" style="cursor:pointer;user-select:none;">
                 <i class="fas fa-folder-tree"></i>
                 <span>NOMENCLATURAS</span>
+            </div>
+            <div id="nomenTableArea" class="mt-3">
+                <div class="bento-card p-0 border-black" style="border-width:4px;overflow:hidden;">
+                    <div class="bg-white text-black font-bold p-3 border-bottom border-black d-flex justify-content-between align-items-center">
+                        <span id="nomenTableTitle"><i class="fas fa-table me-2"></i> NOMENCLATURAS</span>
+                        <button class="btn btn-sm fw-bold" style="background:#000;color:#ffc107;border:2px solid #000;padding:4px 12px;" onclick="abrirNomen()">CAMBIAR</button>
+                    </div>
+                    <div class="table-responsive-brutalist">
+                        <table class="table-excel mb-0" style="font-size:.85rem;">
+                            <thead id="nomenTableHead"><tr><td class="text-center py-4 fw-bold">SELECCIONE UNA OPCIÓN EN NOMENCLATURAS</td></tr></thead>
+                            <tbody id="nomenTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -135,22 +149,6 @@
             </a>
         </div>
     </div>
-
-    <div id="nomenTableArea">
-        <div class="bento-card p-0 border-black" style="border-width:4px;overflow:hidden;">
-            <div class="bg-white text-black font-bold p-3 border-bottom border-black d-flex justify-content-between align-items-center">
-                <span id="nomenTableTitle"><i class="fas fa-table me-2"></i> NOMENCLATURAS</span>
-                <button class="btn btn-sm fw-bold" style="background:#000;color:#ffc107;border:2px solid #000;padding:4px 12px;" onclick="abrirNomen()">CAMBIAR</button>
-            </div>
-            <div class="table-responsive-brutalist">
-                <table class="table-excel mb-0" style="font-size:.85rem;">
-                    <thead id="nomenTableHead"><tr><td class="text-center py-4 fw-bold">SELECCIONE UNA OPCIÓN EN NOMENCLATURAS</td></tr></thead>
-                    <tbody id="nomenTableBody"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
 
 <div class="nomen-overlay" id="nomenOverlay" onclick="if(event.target===this)cerrarNomen()">
     <div class="nomen-popup">
