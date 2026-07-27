@@ -94,4 +94,49 @@ class PersonalController extends Controller
         $personal = DB::table('global.personal')->where('id_personal', $id)->first();
         return response()->json(['success' => true, 'data' => $personal]);
     }
+
+    public function sueldo($id)
+    {
+        $personal = DB::table('global.personal')->where('id_personal', $id)->first();
+        if (!$personal) return redirect()->route('personal.index')->with('error', 'Personal no encontrado');
+        return view('personal.sueldo', compact('personal'));
+    }
+
+    public function viatico($id)
+    {
+        $personal = DB::table('global.personal')->where('id_personal', $id)->first();
+        if (!$personal) return redirect()->route('personal.index')->with('error', 'Personal no encontrado');
+        return view('personal.viatico', compact('personal'));
+    }
+
+    public function storeGasto(Request $request)
+    {
+        $data = $request->validate([
+            'id_personal' => 'required|integer',
+            'tipo_gasto' => 'required|string|in:Sueldo,Viático',
+            'concepto' => 'required|string',
+            'monto' => 'required|numeric',
+            'fecha_gasto' => 'required|date',
+            'descripcion' => 'nullable|string',
+        ]);
+
+        $ultimo = DB::table('global.gastos')->where('nro_documento', 'like', 'E_%')->orderBy('id_gasto', 'desc')->first();
+        $contador = $ultimo ? intval(substr($ultimo->nro_documento, 2)) + 1 : 1;
+        $data['nro_documento'] = 'E_' . str_pad($contador, 5, '0', STR_PAD_LEFT);
+        $data['fecha_gasto'] = $data['fecha_gasto'] ?? date('Y-m-d');
+
+        DB::table('global.gastos')->insert([
+            'id_vehiculo' => null,
+            'id_personal' => $data['id_personal'],
+            'tipo_gasto' => $data['tipo_gasto'],
+            'concepto' => $data['concepto'],
+            'monto' => $data['monto'],
+            'fecha_gasto' => $data['fecha_gasto'],
+            'descripcion' => $data['descripcion'] ?? null,
+            'nro_documento' => $data['nro_documento'],
+            'proveedor' => null,
+        ]);
+
+        return redirect()->route('personal.index')->with('success', ucfirst($data['tipo_gasto']) . ' registrado exitosamente');
+    }
 }

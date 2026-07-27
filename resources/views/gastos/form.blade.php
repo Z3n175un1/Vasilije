@@ -37,7 +37,7 @@
                     <div class="form-group mb-0">
                         <label>TIPO GASTO <span class="text-danger">*</span></label>
                         <select name="tipo_gasto" id="tipoGasto" required onchange="toggleCombustible()">
-                            @foreach(['Combustible', 'Mantenimiento', 'Peaje', 'Sueldo', 'Viático', 'Seguro', 'Lubricante', 'Llantas', 'Otro'] as $tipo)
+                            @foreach(['Combustible', 'Mantenimiento', 'Peaje', 'Seguro', 'Lubricante', 'Llantas', 'Otro'] as $tipo)
                                 <option value="{{ $tipo }}" {{ old('tipo_gasto', $gasto->tipo_gasto ?? '') == $tipo ? 'selected' : '' }}>{{ $tipo }}</option>
                             @endforeach
                         </select>

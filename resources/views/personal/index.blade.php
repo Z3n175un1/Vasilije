@@ -67,8 +67,10 @@ function loadPersonal() {
                 <td class="font-bold" style="color:#007400;">Bs. ${parseFloat(p.sueldo || 0).toFixed(2)}</td>
                 <td><span class="badge font-bold px-3 py-2" style="background:${p.estado == 1 ? '#e2ffd6' : '#ffdcd6'};color:${p.estado == 1 ? '#007400' : '#740000'};border:2px solid #000;">${p.estado == 1 ? 'ACTIVO' : 'INACTIVO'}</span></td>
                 <td>
-                    <div class="d-flex gap-2 justify-content-center">
+                    <div class="d-flex gap-1 justify-content-center" style="flex-wrap:wrap;">
                         <button class="btn btn-sm btn-warning border-black font-bold" onclick="window.location.href='{{ url("personal") }}/${p.id_personal}/editar'" title="EDITAR"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-success border-black font-bold" onclick="window.location.href='{{ url("personal") }}/${p.id_personal}/sueldo'" title="REGISTRAR SUELDO"><i class="fas fa-money-bill-wave"></i></button>
+                        <button class="btn btn-sm btn-info border-black font-bold text-white" onclick="window.location.href='{{ url("personal") }}/${p.id_personal}/viatico'" title="REGISTRAR VIÁTICO"><i class="fas fa-plane"></i></button>
                         <button class="btn btn-sm btn-danger border-black font-bold" onclick="eliminarPersonal(${p.id_personal})" title="ELIMINAR"><i class="fas fa-trash"></i></button>
                     </div>
                 </td>

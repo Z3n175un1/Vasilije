@@ -49,6 +49,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/personal/{id}/editar', [PersonalController::class, 'edit'])->name('personal.edit');
     Route::post('/personal', [PersonalController::class, 'store'])->name('personal.store');
     Route::put('/personal/{id}', [PersonalController::class, 'update'])->name('personal.update');
+    Route::get('/personal/{id}/sueldo', [PersonalController::class, 'sueldo'])->name('personal.sueldo');
+    Route::get('/personal/{id}/viatico', [PersonalController::class, 'viatico'])->name('personal.viatico');
+    Route::post('/personal/gasto', [PersonalController::class, 'storeGasto'])->name('personal.gasto.store');
     Route::delete('/personal/{id}', [PersonalController::class, 'destroy'])->name('personal.destroy');
 
     // Almacen
