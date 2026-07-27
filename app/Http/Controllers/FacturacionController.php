@@ -125,9 +125,10 @@ class FacturacionController extends Controller
     {
         $query = DB::table('global.ingresos')
             ->leftJoin('global.vehiculos', 'global.ingresos.id_vehiculo', '=', 'global.vehiculos.id_vehiculo')
+            ->leftJoin('global.personal', 'global.ingresos.id_personal', '=', 'global.personal.id_personal')
             ->where('global.ingresos.estado_factura', 'PENDIENTE')
             ->select('global.ingresos.*', 'global.vehiculos.placa_vehiculo',
-                DB::raw('COALESCE(global.ingresos.conductor_asignado, global.vehiculos.conductor_asignado) as chofer'));
+                DB::raw("COALESCE(global.ingresos.conductor_asignado, CONCAT(global.personal.nombres, ' ', global.personal.apellidos)) as chofer"));
 
         if ($request->fecha_inicio) $query->where('global.ingresos.fecha_ingreso', '>=', $request->fecha_inicio);
         if ($request->fecha_fin) $query->where('global.ingresos.fecha_ingreso', '<=', $request->fecha_fin);
