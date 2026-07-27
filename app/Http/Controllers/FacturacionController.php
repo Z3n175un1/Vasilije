@@ -36,45 +36,55 @@ class FacturacionController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'id_vehiculo' => 'required|integer',
-            'concepto' => 'nullable|string|max:200',
-            'monto' => 'required|numeric',
-            'fecha_ingreso' => 'required|date',
-            'fecha_vencimiento' => 'nullable|date',
-            'observaciones' => 'nullable|string',
-            'cliente_nombre' => 'nullable|string|max:200',
-            'cliente_telefono' => 'nullable|string|max:30',
-            'origen' => 'nullable|string|max:200',
-            'destino' => 'nullable|string|max:200',
-            'toneladas' => 'nullable|numeric',
-            'kilometraje_conducido' => 'nullable|numeric',
-            'id_personal' => 'nullable|integer',
-            'tipo_pago' => 'nullable|string|max:30',
-            'nro_documento' => 'nullable|string|max:20',
-        ]);
-
-        $validated['estado_factura'] = 'PENDIENTE';
-
-        $ultimo = DB::table('global.ingresos')
-            ->where('nro_documento', 'like', 'I_%')
-            ->orderBy('id_ingreso', 'desc')
-            ->first();
-        $contador = $ultimo ? intval(substr($ultimo->nro_documento, 2)) + 1 : 1;
-        $validated['nro_documento'] = $validated['nro_documento'] ?? 'I_' . str_pad($contador, 5, '0', STR_PAD_LEFT);
-
-        $id = DB::table('global.ingresos')->insertGetId($validated, 'id_ingreso');
-        $ingreso = DB::table('global.ingresos')->where('id_ingreso', $id)->first();
-
-        if ($request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => "Flete {$ingreso->nro_documento} registrado exitosamente",
-                'nro_documento' => $ingreso->nro_documento,
-                'id_ingreso' => $id,
+        try {
+            $validated = $request->validate([
+                'id_vehiculo' => 'required|integer',
+                'concepto' => 'nullable|string|max:200',
+                'monto' => 'required|numeric',
+                'fecha_ingreso' => 'required|date',
+                'fecha_vencimiento' => 'nullable|date',
+                'observaciones' => 'nullable|string',
+                'cliente_nombre' => 'nullable|string|max:200',
+                'cliente_telefono' => 'nullable|string|max:30',
+                'origen' => 'nullable|string|max:200',
+                'destino' => 'nullable|string|max:200',
+                'toneladas' => 'nullable|numeric',
+                'kilometraje_conducido' => 'nullable|numeric',
+                'id_personal' => 'nullable|integer',
+                'tipo_pago' => 'nullable|string|max:30',
+                'nro_documento' => 'nullable|string|max:20',
             ]);
+
+            $validated['estado_factura'] = 'PENDIENTE';
+
+            $ultimo = DB::table('global.ingresos')
+                ->where('nro_documento', 'like', 'I_%')
+                ->orderBy('id_ingreso', 'desc')
+                ->first();
+            $contador = $ultimo ? intval(substr($ultimo->nro_documento, 2)) + 1 : 1;
+            $validated['nro_documento'] = $validated['nro_documento'] ?? 'I_' . str_pad($contador, 5, '0', STR_PAD_LEFT);
+
+            $id = DB::table('global.ingresos')->insertGetId($validated, 'id_ingreso');
+            $ingreso = DB::table('global.ingresos')->where('id_ingreso', $id)->first();
+
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Flete {$ingreso->nro_documento} registrado exitosamente",
+                    'nro_documento' => $ingreso->nro_documento,
+                    'id_ingreso' => $id,
+                ]);
+            }
+            return redirect()->route('facturacion.index')->with('success', "Flete {$ingreso->nro_documento} registrado exitosamente");
+        } catch (\Exception $e) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 500);
+            }
+            return back()->with('error', $e->getMessage())->withInput();
         }
-        return redirect()->route('facturacion.index')->with('success', "Flete {$ingreso->nro_documento} registrado exitosamente");
     }
 
     public function update(Request $request, $id)
