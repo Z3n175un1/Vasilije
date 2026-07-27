@@ -43,6 +43,34 @@
     </div>
 
     <div id="dashboardContent" class="scroll-content" style="display:none;">
+        <!-- Reportes Rápidos -->
+        <div id="quickStats" class="row g-3 mb-4" style="display:none;">
+            <div class="col-md-3 col-6">
+                <div class="p-3 text-center" style="background:#e2ffd6;border:4px solid #000;">
+                    <div class="small fw-bold text-uppercase" style="color:#555;">Unidades Activas</div>
+                    <div class="fs-4 fw-bold" style="color:#007400;" id="statUnidadesActivas">0</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="p-3 text-center" style="background:#fff3cd;border:4px solid #000;">
+                    <div class="small fw-bold text-uppercase" style="color:#555;">Ingresos del Mes</div>
+                    <div class="fs-4 fw-bold" style="color:#007400;" id="statIngresosMes">Bs. 0.00</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="p-3 text-center" style="background:#ffdcd6;border:4px solid #000;">
+                    <div class="small fw-bold text-uppercase" style="color:#555;">Gastos del Mes</div>
+                    <div class="fs-4 fw-bold" style="color:#740000;" id="statGastosMes">Bs. 0.00</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="p-3 text-center" style="background:#e2e3e5;border:4px solid #000;">
+                    <div class="small fw-bold text-uppercase" style="color:#555;">Pendientes Fact.</div>
+                    <div class="fs-4 fw-bold" id="statPendientesFacturar">0</div>
+                </div>
+            </div>
+        </div>
+
         <div class="d-flex flex-wrap gap-2 mb-3" id="estadoFilter">
             <button class="btn font-bold uppercase btn-filtro-activo" data-estado="1">ACTIVO</button>
             <button class="btn font-bold uppercase btn-filtro-inactivo" data-estado="2">MANTENIMIENTO</button>
@@ -185,6 +213,7 @@ let configDataDash = { tipo_cambio: 6.96, precio_tonelada_usd: 13 };
 
 document.addEventListener('DOMContentLoaded', function() {
     loadVehiculos();
+    loadDashboardStats();
     loadTramos();
     fetch('{{ url("api/config") }}', { headers: { 'Accept': 'application/json' } })
         .then(r => r.json())
@@ -201,6 +230,25 @@ document.addEventListener('DOMContentLoaded', function() {
         loadVehiculos();
     });
 });
+
+function loadDashboardStats() {
+    fetch('{{ url("api/dashboard/stats") }}', {
+        headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (!res.success || !res.data) return;
+        const d = res.data;
+        document.getElementById('quickStats').style.display = 'flex';
+        if (d.vehiculos) {
+            document.getElementById('statUnidadesActivas').textContent = d.vehiculos.activos || 0;
+        }
+        document.getElementById('statIngresosMes').textContent = 'Bs. ' + parseFloat(d.ingresos_mes || 0).toFixed(2);
+        document.getElementById('statGastosMes').textContent = 'Bs. ' + parseFloat(d.gastos_mes || 0).toFixed(2);
+        document.getElementById('statPendientesFacturar').textContent = d.pendientes_facturar || 0;
+    })
+    .catch(() => {});
+}
 
 function loadVehiculos() {
     const url = `{{ url('api/vehiculos') }}?estado=${currentFilter}`;

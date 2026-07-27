@@ -51,9 +51,12 @@ function loadBancos() {
     })
     .then(r => r.json())
     .then(res => {
-        if (!res.success) return;
         const tbody = document.getElementById('bancosList');
-        if (!res.data || res.data.length === 0) {
+        if (!res.success || !res.data) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5 opacity-50 text-danger">ERROR AL CARGAR DATOS</td></tr>';
+            return;
+        }
+        if (res.data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5 opacity-50">NO HAY BANCOS REGISTRADOS</td></tr>';
             return;
         }
@@ -74,6 +77,9 @@ function loadBancos() {
                 </td>
             </tr>
         `).join('');
+    })
+    .catch(() => {
+        document.getElementById('bancosList').innerHTML = '<tr><td colspan="8" class="text-center py-5 opacity-50 text-danger">ERROR DE CONEXIÓN</td></tr>';
     });
 }
 

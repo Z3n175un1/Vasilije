@@ -39,6 +39,11 @@ class PersonalController extends Controller
             'estado' => 'required|integer',
         ]);
 
+        $allowed = ['nombres', 'apellidos', 'ci', 'cargo', 'telefono', 'licencia', 'sueldo', 'direccion', 'email', 'estado'];
+        $data = array_filter($data, function($key) use ($allowed) {
+            return in_array($key, $allowed);
+        }, ARRAY_FILTER_USE_KEY);
+
         DB::table('global.personal')->insert($data);
         return redirect()->route('personal.index')->with('success', 'Personal registrado exitosamente');
     }
@@ -58,7 +63,12 @@ class PersonalController extends Controller
             'estado' => 'required|integer',
         ]);
 
-        DB::table('global.personal')->where('id_personal', $id)->update($data);
+        $allowed = ['nombres', 'apellidos', 'ci', 'cargo', 'telefono', 'licencia', 'sueldo', 'direccion', 'email', 'estado'];
+        $filtered = array_filter($data, function($key) use ($allowed) {
+            return in_array($key, $allowed);
+        }, ARRAY_FILTER_USE_KEY);
+
+        DB::table('global.personal')->where('id_personal', $id)->update($filtered);
         return redirect()->route('personal.index')->with('success', 'Personal actualizado exitosamente');
     }
 

@@ -49,9 +49,12 @@ function loadPersonal() {
     })
     .then(r => r.json())
     .then(res => {
-        if (!res.success) return;
         const tbody = document.getElementById('personalList');
-        if (!res.data || res.data.length === 0) {
+        if (!res.success || !res.data) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5 opacity-50 text-danger">ERROR AL CARGAR DATOS</td></tr>';
+            return;
+        }
+        if (res.data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5 opacity-50">NO HAY PERSONAL REGISTRADO</td></tr>';
             return;
         }
@@ -71,6 +74,9 @@ function loadPersonal() {
                 </td>
             </tr>
         `).join('');
+    })
+    .catch(() => {
+        document.getElementById('personalList').innerHTML = '<tr><td colspan="7" class="text-center py-5 opacity-50 text-danger">ERROR DE CONEXIÓN</td></tr>';
     });
 }
 

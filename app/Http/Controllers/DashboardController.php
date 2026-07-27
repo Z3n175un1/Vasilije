@@ -23,10 +23,28 @@ class DashboardController extends Controller
             ")
             ->first();
 
+        $mesActual = date('Y-m');
+        $ingresosMes = DB::table('global.ingresos')
+            ->where('estado_factura', '!=', 'ANULADA')
+            ->whereRaw("to_char(fecha_ingreso, 'YYYY-MM') = ?", [$mesActual])
+            ->sum('monto');
+
+        $gastosMes = DB::table('global.gastos')
+            ->whereRaw("to_char(fecha_gasto, 'YYYY-MM') = ?", [$mesActual])
+            ->sum('monto');
+
+        $personalActivo = DB::table('global.personal')->where('estado', 1)->count();
+        $pendientesFacturar = DB::table('global.ingresos')->where('estado_factura', 'PENDIENTE')->count();
+
         return response()->json([
             'success' => true,
             'data' => [
                 'vehiculos' => $vehiculos,
+                'ingresos_mes' => (float) $ingresosMes,
+                'gastos_mes' => (float) $gastosMes,
+                'balance_mes' => (float) $ingresosMes - (float) $gastosMes,
+                'personal_activo' => $personalActivo,
+                'pendientes_facturar' => $pendientesFacturar,
             ]
         ]);
     }

@@ -406,7 +406,10 @@ function switchTab(tab) {
     document.getElementById('tabContentFacturacion').style.display = tab === 'facturacion' ? 'block' : 'none';
     const map = { fletes: 'Fletes', listado: 'Listado', facturacion: 'Facturacion' };
     document.getElementById('tab' + map[tab]).classList.add('active');
-    if (tab === 'facturacion') actualizarSelectionBar();
+    if (tab === 'facturacion') {
+        actualizarSelectionBar();
+        cargarPendientes();
+    }
 }
 
 // ================================================================
@@ -431,7 +434,12 @@ function cargarFletes() {
     .then(r => r.json())
     .then(res => {
         document.getElementById('fletesLoading').style.display = 'none';
-        if (!res.success || !res.data || res.data.length === 0) {
+        if (!res.success || !res.data) {
+            document.getElementById('fletesEmpty').innerHTML = '<i class="fas fa-truck" style="font-size:64px;opacity:.2;"></i><h3 class="mt-3 fw-bold text-danger">ERROR AL CARGAR FLETES</h3>';
+            document.getElementById('fletesEmpty').style.display = 'block';
+            return;
+        }
+        if (res.data.length === 0) {
             document.getElementById('fletesEmpty').style.display = 'block';
             return;
         }
@@ -462,6 +470,11 @@ function cargarFletes() {
                 </td>
             </tr>`;
         }).join('');
+    })
+    .catch(() => {
+        document.getElementById('fletesLoading').style.display = 'none';
+        document.getElementById('fletesEmpty').innerHTML = '<i class="fas fa-truck" style="font-size:64px;opacity:.2;"></i><h3 class="mt-3 fw-bold text-danger">ERROR DE CONEXIÓN</h3>';
+        document.getElementById('fletesEmpty').style.display = 'block';
     });
 }
 
@@ -603,11 +616,21 @@ function cargarListado() {
     .then(r => r.json())
     .then(res => {
         document.getElementById('listadoLoading').style.display = 'none';
-        if (!res.success || !res.data || res.data.length === 0) {
+        if (!res.success || !res.data) {
+            document.getElementById('listadoEmpty').innerHTML = '<i class="fas fa-file-invoice" style="font-size:64px;opacity:.2;"></i><h3 class="mt-3 fw-bold text-danger">ERROR AL CARGAR FACTURAS</h3>';
+            document.getElementById('listadoEmpty').style.display = 'block';
+            return;
+        }
+        if (res.data.length === 0) {
             document.getElementById('listadoEmpty').style.display = 'block';
             return;
         }
         document.getElementById('listadoContainer').innerHTML = res.data.map(f => renderFacturaCard(f)).join('');
+    })
+    .catch(() => {
+        document.getElementById('listadoLoading').style.display = 'none';
+        document.getElementById('listadoEmpty').innerHTML = '<i class="fas fa-file-invoice" style="font-size:64px;opacity:.2;"></i><h3 class="mt-3 fw-bold text-danger">ERROR DE CONEXIÓN</h3>';
+        document.getElementById('listadoEmpty').style.display = 'block';
     });
 }
 
@@ -703,9 +726,16 @@ function cargarPendientes() {
     .then(r => r.json())
     .then(res => {
         document.getElementById('pendientesLoading').style.display = 'none';
-        if (!res.success) return;
-        pendientesData = res.data || [];
+        if (!res.success || !res.data) {
+            document.getElementById('pendientesContainer').innerHTML = '<div class="text-center py-5 fw-bold fs-5 text-danger" style="border:4px solid #000;">ERROR AL CARGAR PENDIENTES</div>';
+            return;
+        }
+        pendientesData = res.data;
         renderPendientes();
+    })
+    .catch(() => {
+        document.getElementById('pendientesLoading').style.display = 'none';
+        document.getElementById('pendientesContainer').innerHTML = '<div class="text-center py-5 fw-bold fs-5 text-danger" style="border:4px solid #000;">ERROR DE CONEXIÓN</div>';
     });
 }
 
