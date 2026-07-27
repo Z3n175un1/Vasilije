@@ -1,6 +1,6 @@
 @extends('layouts.master-no-nav')
 
-@section('title', 'VASILIJE | formulario de login')
+@section('title', 'VASILIJE | Inicio de Sesion')
 
 @section('content')
 <div class="login-page">
