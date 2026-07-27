@@ -455,6 +455,9 @@ function prepararIngreso(id) {
                 (res.data || []).filter(p => p.estado == 1).map(p =>
                     `<option value="${p.id_personal}" ${p.id_personal == v.id_personal ? 'selected' : ''}>${p.nombres || ''} ${p.apellidos || ''}</option>`).join('');
         }
+    })
+    .catch(() => {
+        document.getElementById('fd_id_personal').innerHTML = '<option value="">ERROR AL CARGAR</option>';
     });
 
     document.getElementById('modalFleteDashboard').style.display = 'flex';
@@ -556,7 +559,8 @@ function abrirReporte(id, placa) {
                                 <th style="padding:10px 12px;border:1px solid #333;">FECHA</th>
                                 <th style="padding:10px 12px;border:1px solid #333;">TIPO</th>
                                 <th style="padding:10px 12px;border:1px solid #333;">RECORRIDO</th>
-                                <th style="padding:10px 12px;border:1px solid #333;text-align:right;">MONTO</th>
+                                 <th style="padding:10px 12px;border:1px solid #333;text-align:right;">MONTO</th>
+                                <th style="padding:10px 12px;border:1px solid #333;text-align:center;width:40px;">ED</th>
                                 <th style="padding:10px 12px;border:1px solid #333;text-align:center;width:40px;"></th>
                             </tr>
                         </thead>
@@ -573,6 +577,9 @@ function abrirReporte(id, placa) {
                                 const detalle = item.tipo_registro === 'INGRESO'
                                     ? '<span class="fw-bold">CLIENTE:</span> ' + (item.cliente_nombre || '—') + ' | <span class="fw-bold">COND:</span> ' + (item.conductor_asignado || '—') + ' | <span class="fw-bold">TN:</span> ' + (item.toneladas || '0') + ' | <span class="fw-bold">PAGO:</span> ' + (item.tipo_pago || '—')
                                     : '<span class="fw-bold">TIPO:</span> ' + (item.tipo_gasto || '—') + ' | <span class="fw-bold">PROV:</span> ' + (item.proveedor || '—') + ' | <span class="fw-bold">KM:</span> ' + (item.kilometraje || '—');
+                                const editUrl = item.tipo_registro === 'INGRESO'
+                                    ? `{{ url('facturacion') }}/${item.id}/editar`
+                                    : `{{ url('gastos') }}/${item.id}/editar`;
                                 return `
                                 <tr class="dash-tr-${i}" style="cursor:pointer;border-left:4px solid ${color};" onclick="toggleDetalleDash(${i})">
                                     <td style="padding:8px 12px;border:1px solid #ddd;white-space:nowrap;font-weight:600;">${item.fecha ? item.fecha.split(' ')[0] : '—'}</td>
@@ -581,10 +588,13 @@ function abrirReporte(id, placa) {
                                     </td>
                                     <td style="padding:8px 12px;border:1px solid #ddd;font-weight:600;">${recorrido || '—'}</td>
                                     <td style="padding:8px 12px;border:1px solid #ddd;text-align:right;font-weight:700;color:${color};">Bs. ${monto}</td>
+                                    <td style="padding:8px 12px;border:1px solid #ddd;text-align:center;">
+                                        <a href="${editUrl}" class="btn btn-sm btn-warning border-black fw-bold" style="padding:2px 8px;font-size:.75rem;" onclick="event.stopPropagation();" title="EDITAR"><i class="fas fa-edit"></i></a>
+                                    </td>
                                     <td style="padding:8px 12px;border:1px solid #ddd;text-align:center;font-weight:700;font-size:0.85rem;">▼</td>
                                 </tr>
                                 <tr id="dash-detalle-${i}" style="display:none;">
-                                    <td colspan="5" style="padding:0;border:3px solid #000;border-top:none;background:#f9f9f9;">
+                                    <td colspan="6" style="padding:0;border:3px solid #000;border-top:none;background:#f9f9f9;">
                                         <div style="padding:12px 16px;">
                                             <div class="mb-1"><span class="fw-bold">N° DOC:</span> ${item.nro_documento || '—'}</div>
                                             <div class="mb-1">${detalle}</div>
@@ -593,7 +603,7 @@ function abrirReporte(id, placa) {
                                     </td>
                                 </tr>`;
                             }).join('')}
-                            ${res.data.length === 0 ? '<tr><td colspan="5" class="text-center py-5 fw-bold opacity-50">NO SE REGISTRARON MOVIMIENTOS</td></tr>' : ''}
+                            ${res.data.length === 0 ? '<tr><td colspan="6" class="text-center py-5 fw-bold opacity-50">NO SE REGISTRARON MOVIMIENTOS</td></tr>' : ''}
                         </tbody>
                     </table>
                 </div>

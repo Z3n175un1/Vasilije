@@ -46,8 +46,8 @@ class GastoController extends Controller
             'kilometraje' => 'nullable|numeric',
             'proveedor' => 'nullable|string',
             'tipo_combustible' => 'nullable|string',
-            'galones' => 'nullable|numeric',
-            'precio_por_galon' => 'nullable|numeric',
+            'litros' => 'nullable|numeric',
+            'precio_por_litro' => 'nullable|numeric',
         ]);
 
         // Resolve id_proveedor from proven name
@@ -60,15 +60,19 @@ class GastoController extends Controller
         $contador = $ultimo ? intval(substr($ultimo->nro_documento, 2)) + 1 : 1;
         $data['nro_documento'] = 'E_' . str_pad($contador, 5, '0', STR_PAD_LEFT);
 
-        $id_gasto = DB::table('global.gastos')->insertGetId($data, 'id_gasto');
+        // Filter out non-gastos table columns before insert
+        $gastosAllowed = ['id_vehiculo', 'tipo_gasto', 'concepto', 'monto', 'fecha_gasto', 'descripcion', 'kilometraje', 'proveedor', 'id_proveedor', 'nro_documento'];
+        $gastosData = array_filter($data, function($k) use ($gastosAllowed) { return in_array($k, $gastosAllowed); }, ARRAY_FILTER_USE_KEY);
+
+        $id_gasto = DB::table('global.gastos')->insertGetId($gastosData, 'id_gasto');
         $gasto = DB::table('global.gastos')->where('id_gasto', $id_gasto)->first();
 
-        if ($data['tipo_gasto'] === 'Combustible' && !empty($data['galones']) && !empty($data['precio_por_galon'])) {
+        if ($data['tipo_gasto'] === 'Combustible' && !empty($data['litros']) && !empty($data['precio_por_litro'])) {
             DB::table('global.combustible_detalle')->insert([
                 'id_gasto' => $id_gasto,
                 'tipo_carburante' => $data['tipo_combustible'] ?? 'Diesel',
-                'galones' => $data['galones'],
-                'precio_por_galon' => $data['precio_por_galon'],
+                'galones' => $data['litros'],
+                'precio_por_galon' => $data['precio_por_litro'],
             ]);
         }
 
@@ -95,8 +99,8 @@ class GastoController extends Controller
             'kilometraje' => 'nullable|numeric',
             'proveedor' => 'nullable|string',
             'tipo_combustible' => 'nullable|string',
-            'galones' => 'nullable|numeric',
-            'precio_por_galon' => 'nullable|numeric',
+            'litros' => 'nullable|numeric',
+            'precio_por_litro' => 'nullable|numeric',
         ]);
 
         if (!empty($data['proveedor'])) {
@@ -104,14 +108,16 @@ class GastoController extends Controller
             if ($prov) $data['id_proveedor'] = $prov->id_proveedor;
         }
 
-        DB::table('global.gastos')->where('id_gasto', $id)->update($data);
+        $gastosAllowed = ['id_vehiculo', 'tipo_gasto', 'concepto', 'monto', 'fecha_gasto', 'descripcion', 'kilometraje', 'proveedor', 'id_proveedor'];
+        $gastosData = array_filter($data, function($k) use ($gastosAllowed) { return in_array($k, $gastosAllowed); }, ARRAY_FILTER_USE_KEY);
+        DB::table('global.gastos')->where('id_gasto', $id)->update($gastosData);
 
         if ($data['tipo_gasto'] === 'Combustible') {
             $existing = DB::table('global.combustible_detalle')->where('id_gasto', $id)->first();
             $combData = [
                 'tipo_carburante' => $data['tipo_combustible'] ?? 'Diesel',
-                'galones' => $data['galones'] ?? 0,
-                'precio_por_galon' => $data['precio_por_galon'] ?? 0,
+                'galones' => $data['litros'] ?? 0,
+                'precio_por_galon' => $data['precio_por_litro'] ?? 0,
             ];
             if ($existing) {
                 DB::table('global.combustible_detalle')->where('id_gasto', $id)->update($combData);

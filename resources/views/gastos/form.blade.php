@@ -87,14 +87,14 @@
                 </div>
                 <div class="col-md-4">
                     <div class="form-group mb-0">
-                        <label>GALONES</label>
-                        <input type="number" step="0.01" name="galones" id="galones" value="{{ old('galones', $gasto->combustible->galones ?? '') }}" min="0" placeholder="0.00">
+                        <label>LITROS</label>
+                        <input type="number" step="0.01" name="litros" id="litros" value="{{ old('litros', $gasto->combustible->galones ?? '') }}" min="0" placeholder="0.00">
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group mb-0">
-                        <label>PRECIO/GALÓN (Bs)</label>
-                        <input type="number" step="0.01" name="precio_por_galon" id="precioGalon" value="{{ old('precio_por_galon', $gasto->combustible->precio_por_galon ?? '') }}" min="0" placeholder="0.00">
+                        <label>PRECIO/LITRO (Bs)</label>
+                        <input type="number" step="0.01" name="precio_por_litro" id="precioLitro" value="{{ old('precio_por_litro', $gasto->combustible->precio_por_galon ?? '') }}" min="0" placeholder="0.00">
                     </div>
                 </div>
             </div>
@@ -159,6 +159,23 @@ function toggleCombustible() {
     filtrarProveedores();
 }
 
+function calcMontoCombustible() {
+    const litros = parseFloat(document.getElementById('litros').value) || 0;
+    const precio = parseFloat(document.getElementById('precioLitro').value) || 0;
+    if (litros > 0 && precio > 0) {
+        const montoInput = document.querySelector('input[name="monto"]');
+        if (montoInput) montoInput.value = (litros * precio).toFixed(2);
+    }
+}
+
+document.addEventListener('input', function(e) {
+    if (e.target.id === 'litros' || e.target.id === 'precioLitro') {
+        if (document.getElementById('tipoGasto').value === 'Combustible') {
+            calcMontoCombustible();
+        }
+    }
+});
+
 function filtrarProveedores() {
     const tipo = document.getElementById('tipoGasto').value;
     const select = document.getElementById('proveedorSelect');
@@ -169,14 +186,19 @@ function filtrarProveedores() {
     const tiposPermitidos = tipoMap[tipo] || ['GENERAL', null];
     const permitidos = Array.isArray(tiposPermitidos) ? tiposPermitidos : [tiposPermitidos];
 
-    proveedores.forEach(p => {
-        if (permitidos.includes(p.tipo_proveedor) || permitidos.includes(null)) {
-            const opt = document.createElement('option');
-            opt.value = p.nombre_proveedor;
-            opt.textContent = p.nombre_proveedor + (p.rubro ? ' (' + p.rubro + ')' : '');
-            opt.dataset.tipo = p.tipo_proveedor || '';
-            select.appendChild(opt);
-        }
+    const filtrados = proveedores.filter(p =>
+        permitidos.includes(p.tipo_proveedor) || permitidos.includes(null)
+    );
+
+    // If no matches, fallback to ALL active proveedores
+    const list = filtrados.length > 0 ? filtrados : proveedores;
+
+    list.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.nombre_proveedor;
+        opt.textContent = p.nombre_proveedor + (p.rubro ? ' (' + p.rubro + ')' : '');
+        opt.dataset.tipo = p.tipo_proveedor || '';
+        select.appendChild(opt);
     });
 
     select.innerHTML += '<option value="OTRO">--- OTRO (ESCRIBIR MANUAL) ---</option>';

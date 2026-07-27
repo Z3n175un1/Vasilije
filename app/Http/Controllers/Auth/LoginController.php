@@ -11,7 +11,7 @@ class LoginController extends Controller
     public function showLoginForm()
     {
         if (Auth::check()) {
-            return redirect()->route('dashboard.index');
+            return redirect('/documentos');
         }
         return view('auth.login');
     }
@@ -28,7 +28,7 @@ class LoginController extends Controller
             'password' => $credentials['password']
         ], $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended(route('dashboard.index'));
+            return redirect()->intended('/documentos');
         }
 
         return back()->withErrors([
