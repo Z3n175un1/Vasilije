@@ -22,7 +22,7 @@ class VehiculoController extends Controller
     {
         $vehiculo = DB::table('global.vehiculos')->where('id_vehiculo', $id)->first();
         if (!$vehiculo) {
-            return redirect()->route('vehiculos.index')->with('error', 'Vehículo no encontrado');
+            return redirect()->route('dashboard.index')->with('error', 'Unidad no encontrada');
         }
         $personal = DB::table('global.personal')->where('estado', 1)->orderBy('nombres')->get();
         return view('vehiculos.form', ['vehiculo' => $vehiculo, 'personal' => $personal]);
@@ -47,7 +47,7 @@ class VehiculoController extends Controller
         ]);
 
         DB::table('global.vehiculos')->insert($data);
-        return redirect()->route('vehiculos.index')->with('success', 'Vehículo registrado exitosamente');
+        return redirect()->route('dashboard.index')->with('success', 'Unidad registrada exitosamente');
     }
 
     public function update(Request $request, $id)
@@ -69,13 +69,13 @@ class VehiculoController extends Controller
         ]);
 
         DB::table('global.vehiculos')->where('id_vehiculo', $id)->update($data);
-        return redirect()->route('vehiculos.index')->with('success', 'Vehículo actualizado exitosamente');
+        return redirect()->route('dashboard.index')->with('success', 'Unidad actualizada exitosamente');
     }
 
     public function destroy($id)
     {
         DB::table('global.vehiculos')->where('id_vehiculo', $id)->update(['estado' => 3]);
-        return redirect()->route('vehiculos.index')->with('success', 'Vehículo dado de baja');
+        return redirect()->route('dashboard.index')->with('success', 'Unidad dada de baja');
     }
 
     public function apiShow($id)

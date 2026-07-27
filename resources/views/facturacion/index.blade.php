@@ -587,7 +587,11 @@ function guardarFlete(event) {
         },
         body: JSON.stringify(data)
     })
-    .then(r => r.json().catch(() => ({ success: false, message: 'Error de conexión' })))
+    .then(async r => {
+        const text = await r.text();
+        try { return JSON.parse(text); }
+        catch (e) { return { success: false, message: 'Error del servidor: HTTP ' + r.status + ' - ' + text.substring(0, 200) }; }
+    })
     .then(res => {
         document.getElementById('btnGuardarFlete').disabled = false;
         document.getElementById('btnGuardarFlete').innerHTML = '<i class="fas fa-save"></i> GUARDAR FLETE';
