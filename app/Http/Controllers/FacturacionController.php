@@ -56,6 +56,9 @@ class FacturacionController extends Controller
             ]);
 
             $validated['estado_factura'] = 'PENDIENTE';
+            if (empty($validated['concepto'])) {
+                $validated['concepto'] = 'FLETE S/C';
+            }
 
             $ultimo = DB::table('global.ingresos')
                 ->where('nro_documento', 'like', 'I_%')
