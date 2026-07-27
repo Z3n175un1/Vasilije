@@ -145,7 +145,12 @@
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">CONDUCTOR</label>
-                        <select class="form-control fw-bold" id="fd_id_personal" style="border-radius:0;border:3px solid #000;padding:10px;">
+                        <input type="hidden" id="fd_id_personal" value="">
+                        <div id="fd_conductor_display" class="form-control fw-bold d-flex justify-content-between align-items-center" style="border-radius:0;border:3px solid #000;padding:10px;background:#f5f5f5;">
+                            <span id="fd_conductor_nombre">SELECCIONE...</span>
+                            <button type="button" id="fd_btn_cambiar_conductor" class="btn btn-sm fw-bold" style="border:2px solid #000;background:#fff;padding:2px 10px;display:none;" onclick="cargarTodosConductores()">CAMBIAR</button>
+                        </div>
+                        <select class="form-control fw-bold" id="fd_id_personal_select" style="border-radius:0;border:3px solid #000;padding:10px;display:none;" onchange="seleccionarConductor(this)">
                             <option value="">SELECCIONE...</option>
                         </select>
                     </div>
@@ -430,6 +435,40 @@ function venderVehiculo(id, placa) {
     });
 }
 
+function seleccionarConductor(select) {
+    const id = select.value;
+    document.getElementById('fd_id_personal').value = id;
+    const nombre = id ? select.options[select.selectedIndex].text : 'SIN CONDUCTOR';
+    document.getElementById('fd_conductor_nombre').textContent = nombre;
+    document.getElementById('fd_conductor_display').style.display = 'flex';
+    document.getElementById('fd_id_personal_select').style.display = 'none';
+    document.getElementById('fd_btn_cambiar_conductor').style.display = id ? 'inline-block' : 'none';
+}
+
+function cargarTodosConductores() {
+    const sel = document.getElementById('fd_id_personal_select');
+    sel.innerHTML = '<option value="">SELECCIONE...</option>';
+    fetch('{{ url("api/personal") }}', {
+        headers: { 'Accept': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            (res.data || []).filter(p => p.estado == 1).forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id_personal;
+                opt.textContent = (p.nombres || '') + ' ' + (p.apellidos || '');
+                if (p.id_personal == document.getElementById('fd_id_personal').value) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+        sel.innerHTML += '<option value="">— QUITAR CONDUCTOR —</option>';
+    });
+    document.getElementById('fd_conductor_display').style.display = 'none';
+    sel.style.display = 'block';
+    sel.focus();
+}
+
 function prepararIngreso(id) {
     const v = vehiculos.find(x => x.id_vehiculo == id);
     if (!v) return;
@@ -444,21 +483,14 @@ function prepararIngreso(id) {
     document.getElementById('fd_concepto').value = '';
     document.getElementById('fd_fecha_ingreso').value = new Date().toISOString().split('T')[0];
 
-    fetch('{{ url("api/personal") }}', {
-        headers: { 'Accept': 'application/json' }
-    })
-    .then(r => r.json())
-    .then(res => {
-        const sel = document.getElementById('fd_id_personal');
-        if (res.success) {
-            sel.innerHTML = '<option value="">SELECCIONE...</option>' +
-                (res.data || []).filter(p => p.estado == 1).map(p =>
-                    `<option value="${p.id_personal}" ${p.id_personal == v.id_personal ? 'selected' : ''}>${p.nombres || ''} ${p.apellidos || ''}</option>`).join('');
-        }
-    })
-    .catch(() => {
-        document.getElementById('fd_id_personal').innerHTML = '<option value="">ERROR AL CARGAR</option>';
-    });
+    // Set conductor from vehicle data directly
+    const conductorId = v.id_personal;
+    const conductorNombre = v.conductor || '';
+    document.getElementById('fd_id_personal').value = conductorId || '';
+    document.getElementById('fd_conductor_nombre').textContent = conductorNombre || 'SIN CONDUCTOR';
+    document.getElementById('fd_conductor_display').style.display = 'flex';
+    document.getElementById('fd_id_personal_select').style.display = 'none';
+    document.getElementById('fd_btn_cambiar_conductor').style.display = conductorId ? 'inline-block' : 'none';
 
     document.getElementById('modalFleteDashboard').style.display = 'flex';
 }

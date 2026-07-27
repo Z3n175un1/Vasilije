@@ -14,7 +14,8 @@ class VehiculoController extends Controller
 
     public function create()
     {
-        return view('vehiculos.form', ['vehiculo' => null]);
+        $personal = DB::table('global.personal')->where('estado', 1)->orderBy('nombres')->get();
+        return view('vehiculos.form', ['vehiculo' => null, 'personal' => $personal]);
     }
 
     public function edit($id)
@@ -23,7 +24,8 @@ class VehiculoController extends Controller
         if (!$vehiculo) {
             return redirect()->route('vehiculos.index')->with('error', 'Vehículo no encontrado');
         }
-        return view('vehiculos.form', ['vehiculo' => $vehiculo]);
+        $personal = DB::table('global.personal')->where('estado', 1)->orderBy('nombres')->get();
+        return view('vehiculos.form', ['vehiculo' => $vehiculo, 'personal' => $personal]);
     }
 
     public function store(Request $request)
@@ -40,6 +42,7 @@ class VehiculoController extends Controller
             'peso_bruto_kg' => 'nullable|numeric',
             'peso_neto_kg' => 'nullable|numeric',
             'kilometraje' => 'nullable|numeric',
+            'id_personal' => 'nullable|integer',
             'estado' => 'required|integer',
         ]);
 
@@ -61,6 +64,7 @@ class VehiculoController extends Controller
             'peso_bruto_kg' => 'nullable|numeric',
             'peso_neto_kg' => 'nullable|numeric',
             'kilometraje' => 'nullable|numeric',
+            'id_personal' => 'nullable|integer',
             'estado' => 'required|integer',
         ]);
 

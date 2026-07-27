@@ -111,6 +111,22 @@
                 </div>
             </div>
 
+            <div class="row g-4 mb-4">
+                <div class="col-md-12">
+                    <div class="form-group mb-0">
+                        <label>CONDUCTOR ASIGNADO</label>
+                        <select name="id_personal">
+                            <option value="">SIN CONDUCTOR</option>
+                            @foreach($personal as $p)
+                                <option value="{{ $p->id_personal }}" {{ old('id_personal', $vehiculo->id_personal ?? '') == $p->id_personal ? 'selected' : '' }}>
+                                    {{ $p->nombres }} {{ $p->apellidos }} ({{ $p->ci ?? 'SIN CI' }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <div class="d-flex justify-content-end gap-3 mt-5">
                 <a href="{{ route('dashboard.index') }}" class="btn-bento btn-bento-outline font-bold" style="border-width:4px!important;text-decoration:none;">CANCELAR</a>
                 <button type="submit" class="btn-bento btn-bento-primary px-5 font-bold" style="border-width:4px!important;">
