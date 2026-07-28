@@ -4,6 +4,21 @@
 
 @push('styles')
 <style>
+.modal-overlay-fact {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+.modal-content-fact {
+    max-width: 560px;
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
 .tab-btn-alm {
     border: none;
     font-weight: 800;
@@ -152,9 +167,10 @@
                 <div class="row g-3 mb-3">
                     <div class="col-12">
                         <label class="fw-bold small text-uppercase">PRODUCTO <span class="text-danger">*</span></label>
-                        <select class="form-control fw-bold" id="movIdProducto" style="border-radius:0;border:3px solid #000;padding:10px;" required>
+                        <select class="form-control fw-bold" id="movIdProducto" style="border-radius:0;border:3px solid #000;padding:10px;" required onchange="mostrarStockProducto()">
                             <option value="">SELECCIONE...</option>
                         </select>
+                        <div id="movStockInfo" class="mt-2 p-2 fw-bold text-center" style="border:3px solid #000;display:none;"></div>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
@@ -336,6 +352,21 @@ function loadSaldos() {
         });
 }
 
+function mostrarStockProducto() {
+    const id = document.getElementById('movIdProducto').value;
+    const info = document.getElementById('movStockInfo');
+    const tipo = document.getElementById('movTipo').value;
+    if (!id) { info.style.display = 'none'; return; }
+    const prod = productosInv.find(p => p.id_inventario == id);
+    if (!prod) { info.style.display = 'none'; return; }
+    const stock = parseFloat(prod.stock_actual || 0);
+    const min = parseFloat(prod.stock_minimo || 0);
+    const color = stock <= min ? '#dc3545' : '#007400';
+    const label = tipo === 'ENTREGA' ? 'STOCK DISPONIBLE' : 'STOCK ACTUAL';
+    info.innerHTML = `<i class="fas fa-box me-2"></i> ${label}: <span style="color:${color}">${stock.toFixed(2)}</span> ${prod.unidad_medida || ''}`;
+    info.style.display = 'block';
+}
+
 function abrirModalMovimiento(tipo) {
     document.getElementById('movTipo').value = tipo;
     document.getElementById('modalMovTitle').innerHTML = `<i class="fas ${tipo === 'COMPRA' ? 'fa-arrow-down' : 'fa-arrow-up'} me-2"></i> NUEVA ${tipo === 'COMPRA' ? 'COMPRA' : 'ENTREGA'}`;
@@ -371,6 +402,15 @@ function guardarMovimiento(event) {
     if (tipo === 'ENTREGA') data.id_vehiculo = document.getElementById('movIdVehiculo').value || null;
 
     if (!data.id_inventario || !data.cantidad) { Swal.fire('Requerido', 'Complete los campos obligatorios', 'warning'); return; }
+
+    if (tipo === 'ENTREGA') {
+        const prod = productosInv.find(p => p.id_inventario == data.id_inventario);
+        if (prod && parseFloat(data.cantidad) > parseFloat(prod.stock_actual || 0)) {
+            Swal.fire('Stock Insuficiente', `Solo hay ${parseFloat(prod.stock_actual || 0).toFixed(2)} ${prod.unidad_medida || ''} disponible`, 'error');
+            document.getElementById('btnGuardarMov').disabled = false;
+            return;
+        }
+    }
 
     document.getElementById('btnGuardarMov').disabled = true;
     document.getElementById('btnGuardarMov').innerHTML = '<i class="fas fa-spinner fa-spin"></i> GUARDANDO...';
