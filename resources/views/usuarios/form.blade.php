@@ -36,7 +36,7 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group mb-3">
-                        <label>CONTRASEÑA {{ $user ? '' : '<span class="text-danger">*</span>' }}</label>
+                        <label>CONTRASEÑA @if(!$user)<span class="text-danger">*</span>@endif</label>
                         <input type="password" name="contrasenha" placeholder="{{ $user ? 'DEJAR VACÍO PARA NO CAMBIAR' : 'CONTRASEÑA' }}" {{ $user ? '' : 'required' }}>
                         @error('contrasenha') <small class="text-danger font-bold">{{ $message }}</small> @enderror
                     </div>
@@ -47,9 +47,9 @@
                         <select name="rol" required>
                             <option value="">SELECCIONAR...</option>
                             <option value="admin" {{ old('rol', $user->rol ?? '') == 'admin' ? 'selected' : '' }}>ADMIN</option>
-                            <option value="supervisor" {{ old('rol', $user->rol ?? '') == 'supervisor' ? 'selected' : '' }}>SUPERVISOR</option>
-                            <option value="operador" {{ old('rol', $user->rol ?? '') == 'operador' ? 'selected' : '' }}>OPERADOR</option>
-                            <option value="lectura" {{ old('rol', $user->rol ?? '') == 'lectura' ? 'selected' : '' }}>LECTURA</option>
+                            <option value="supervisor" {{ old('rol', $user->rol ?? '') == 'supervisor' ? 'selected' : '' }}>SUPERVISOR (gestiona personal, almacén, reportes)</option>
+                            <option value="operador" {{ old('rol', $user->rol ?? '') == 'operador' ? 'selected' : '' }}>OPERADOR (registra gastos, facturación)</option>
+                            <option value="lectura" {{ old('rol', $user->rol ?? '') == 'lectura' ? 'selected' : '' }}>LECTURA (solo visualizar)</option>
                         </select>
                         @error('rol') <small class="text-danger font-bold">{{ $message }}</small> @enderror
                     </div>

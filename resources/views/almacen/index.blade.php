@@ -192,13 +192,15 @@
                 <div class="row g-3 mb-3" id="movVehiculoRow" style="display:none;">
                     <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">VEHÍCULO</label>
-                        <select class="form-control fw-bold" id="movIdVehiculo" style="border-radius:0;border:3px solid #000;padding:10px;">
+                        <select class="form-control fw-bold" id="movIdVehiculo" style="border-radius:0;border:3px solid #000;padding:10px;" onchange="autoAsignarConductor()">
                             <option value="">SELECCIONE...</option>
                         </select>
                     </div>
                     <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">CONDUCTOR</label>
-                        <input type="text" class="form-control fw-bold" id="movConductor" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="Nombre del conductor">
+                        <select class="form-control fw-bold" id="movIdPersonal" style="border-radius:0;border:3px solid #000;padding:10px;">
+                            <option value="">SELECCIONE...</option>
+                        </select>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
@@ -223,6 +225,7 @@
 <script>
 let productosInv = [];
 let vehiculosInv = [];
+let personalInv = [];
 
 document.addEventListener('DOMContentLoaded', function() {
     loadProductos();
@@ -231,6 +234,8 @@ document.addEventListener('DOMContentLoaded', function() {
     loadSaldos();
     fetch('{{ url("api/vehiculos") }}?estado=1', { headers: { 'Accept': 'application/json' } })
         .then(r => r.json()).then(res => { if (res.success) vehiculosInv = res.data || []; });
+    fetch('{{ url("api/personal") }}', { headers: { 'Accept': 'application/json' } })
+        .then(r => r.json()).then(res => { if (res.success) personalInv = res.data || []; });
     fetch('{{ url("api/almacen") }}', { headers: { 'Accept': 'application/json' } })
         .then(r => r.json()).then(res => {
             if (res.success) {
@@ -295,14 +300,14 @@ function loadCompras() {
 }
 
 function loadEntregas() {
-    fetch('{{ url("api/almacen/movimientos") }}?tipo=ENTREGA', { headers: { 'Accept': 'application/json' } })
+    fetch('{{ url("api/almacen/movimientos") }}?tipo=SALIDA', { headers: { 'Accept': 'application/json' } })
         .then(r => r.json()).then(res => {
             const tbody = document.getElementById('entregasList');
             if (!res.success || !res.data || res.data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>'; return;
             }
-            tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'ENTREGA').map(m =>
-                `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">${m.placa_vehiculo || '—'}</td><td class="fw-bold">${m.id_personal || '—'}</td></tr>`
+            tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'SALIDA').map(m =>
+                `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">${m.placa_vehiculo || '—'}</td><td class="fw-bold">${m.conductor || '—'}</td></tr>`
             ).join('') || '<tr><td colspan="5" class="text-center py-5 opacity-50">SIN ENTREGAS REGISTRADAS</td></tr>';
         });
 }
@@ -311,19 +316,26 @@ function cargarKardex() {
     const id = document.getElementById('kardexProducto').value;
     const tbody = document.getElementById('kardexList');
     if (!id) { tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 opacity-50">SELECCIONE UN PRODUCTO</td></tr>'; return; }
+    const prod = productosInv.find(p => p.id_inventario == id);
     fetch('{{ url("api/almacen/movimientos") }}?id_inventario=' + id, { headers: { 'Accept': 'application/json' } })
         .then(r => r.json()).then(res => {
             if (!res.success || !res.data || res.data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>'; return;
+                if (prod && parseFloat(prod.stock_actual) > 0) {
+                    tbody.innerHTML = `<tr><td class="fw-bold">${new Date().toISOString().split('T')[0]}</td><td><span class="badge fw-bold px-2 py-1" style="border:2px solid #000;background:#d4edda;color:#000;">COMPRA</span></td><td class="fw-bold" style="color:#007400;">${parseFloat(prod.stock_actual).toFixed(2)}</td><td class="fw-bold" style="color:#dc3545;">—</td><td class="fw-bold">${parseFloat(prod.stock_actual).toFixed(2)}</td><td class="fw-bold">Stock inicial</td></tr>`;
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>';
+                }
+                return;
             }
-            let saldo = 0;
+            let totalMov = res.data.reduce((s, m) => s + (m.tipo_movimiento === 'COMPRA' ? parseFloat(m.cantidad || 0) : -parseFloat(m.cantidad || 0)), 0);
+            let saldo = prod ? (parseFloat(prod.stock_actual || 0) - totalMov) : 0;
             tbody.innerHTML = res.data.map(m => {
                 saldo += m.tipo_movimiento === 'COMPRA' ? parseFloat(m.cantidad || 0) : -parseFloat(m.cantidad || 0);
                 return `<tr>
                     <td class="fw-bold">${m.fecha_movimiento}</td>
-                    <td><span class="badge fw-bold px-2 py-1" style="border:2px solid #000;background:${m.tipo_movimiento === 'COMPRA' ? '#d4edda' : '#f8d7da'};color:#000;">${m.tipo_movimiento}</span></td>
+                    <td><span class="badge fw-bold px-2 py-1" style="border:2px solid #000;background:${m.tipo_movimiento === 'COMPRA' ? '#d4edda' : '#f8d7da'};color:#000;">${m.tipo_movimiento === 'COMPRA' ? 'COMPRA' : 'ENTREGA'}</span></td>
                     <td class="fw-bold" style="color:#007400;">${m.tipo_movimiento === 'COMPRA' ? parseFloat(m.cantidad || 0).toFixed(2) : '—'}</td>
-                    <td class="fw-bold" style="color:#dc3545;">${m.tipo_movimiento === 'ENTREGA' ? parseFloat(m.cantidad || 0).toFixed(2) : '—'}</td>
+                    <td class="fw-bold" style="color:#dc3545;">${m.tipo_movimiento === 'SALIDA' ? parseFloat(m.cantidad || 0).toFixed(2) : '—'}</td>
                     <td class="fw-bold">${saldo.toFixed(2)}</td>
                     <td class="fw-bold">${m.motivo || m.observaciones || '—'}</td>
                 </tr>`;
@@ -362,25 +374,40 @@ function mostrarStockProducto() {
     const stock = parseFloat(prod.stock_actual || 0);
     const min = parseFloat(prod.stock_minimo || 0);
     const color = stock <= min ? '#dc3545' : '#007400';
-    const label = tipo === 'ENTREGA' ? 'STOCK DISPONIBLE' : 'STOCK ACTUAL';
+    const label = tipo === 'SALIDA' ? 'STOCK DISPONIBLE' : 'STOCK ACTUAL';
     info.innerHTML = `<i class="fas fa-box me-2"></i> ${label}: <span style="color:${color}">${stock.toFixed(2)}</span> ${prod.unidad_medida || ''}`;
     info.style.display = 'block';
 }
 
+function autoAsignarConductor() {
+    const vId = document.getElementById('movIdVehiculo').value;
+    const selP = document.getElementById('movIdPersonal');
+    if (!vId) { selP.value = ''; return; }
+    const v = vehiculosInv.find(v => v.id_vehiculo == vId);
+    if (v && v.id_personal) {
+        selP.value = v.id_personal;
+    } else {
+        selP.value = '';
+    }
+}
+
 function abrirModalMovimiento(tipo) {
-    document.getElementById('movTipo').value = tipo;
+    document.getElementById('movTipo').value = tipo === 'ENTREGA' ? 'SALIDA' : tipo;
     document.getElementById('modalMovTitle').innerHTML = `<i class="fas ${tipo === 'COMPRA' ? 'fa-arrow-down' : 'fa-arrow-up'} me-2"></i> NUEVA ${tipo === 'COMPRA' ? 'COMPRA' : 'ENTREGA'}`;
     document.getElementById('movProveedorRow').style.display = tipo === 'COMPRA' ? 'block' : 'none';
     document.getElementById('movVehiculoRow').style.display = tipo === 'ENTREGA' ? 'flex' : 'none';
     document.getElementById('movFecha').value = new Date().toISOString().split('T')[0];
     document.getElementById('movCantidad').value = '';
     document.getElementById('movProveedor').value = '';
-    document.getElementById('movConductor').value = '';
     document.getElementById('movObs').value = '';
     document.getElementById('movIdVehiculo').value = '';
+    document.getElementById('movIdPersonal').value = '';
     const selV = document.getElementById('movIdVehiculo');
     selV.innerHTML = '<option value="">SELECCIONE...</option>' + vehiculosInv.map(v =>
         `<option value="${v.id_vehiculo}">${v.placa_vehiculo}</option>`).join('');
+    const selP = document.getElementById('movIdPersonal');
+    selP.innerHTML = '<option value="">SELECCIONE...</option>' + personalInv.map(p =>
+        `<option value="${p.id_personal}">${p.nombres} ${p.apellidos}</option>`).join('');
     document.getElementById('modalMovimiento').style.display = 'flex';
 }
 
@@ -399,11 +426,12 @@ function guardarMovimiento(event) {
         observaciones: document.getElementById('movObs').value,
     };
     if (tipo === 'COMPRA') data.proveedor = document.getElementById('movProveedor').value;
-    if (tipo === 'ENTREGA') data.id_vehiculo = document.getElementById('movIdVehiculo').value || null;
+    if (tipo === 'SALIDA') data.id_vehiculo = document.getElementById('movIdVehiculo').value || null;
+    if (tipo === 'SALIDA') data.id_personal = document.getElementById('movIdPersonal').value || null;
 
     if (!data.id_inventario || !data.cantidad) { Swal.fire('Requerido', 'Complete los campos obligatorios', 'warning'); return; }
 
-    if (tipo === 'ENTREGA') {
+    if (tipo === 'SALIDA') {
         const prod = productosInv.find(p => p.id_inventario == data.id_inventario);
         if (prod && parseFloat(data.cantidad) > parseFloat(prod.stock_actual || 0)) {
             Swal.fire('Stock Insuficiente', `Solo hay ${parseFloat(prod.stock_actual || 0).toFixed(2)} ${prod.unidad_medida || ''} disponible`, 'error');

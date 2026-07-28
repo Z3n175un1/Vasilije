@@ -44,20 +44,9 @@ class AlmacenController extends Controller
             'descripcion' => 'nullable|string',
         ]);
         $data['estado'] = 'ACTIVO';
+        $data['stock_actual'] = 0;
 
         $id = DB::table('global.inventario')->insertGetId($data, 'id_inventario');
-
-        if ($data['stock_actual'] > 0) {
-            $lote = 'LTE-' . str_pad($id, 5, '0', STR_PAD_LEFT);
-            DB::table('global.lotes')->insert([
-                'id_inventario' => $id,
-                'codigo_lote' => $lote,
-                'cantidad_inicial' => $data['stock_actual'],
-                'cantidad_actual' => $data['stock_actual'],
-                'precio_compra' => $data['precio_compra'] ?? 0,
-                'estado' => 'ACTIVO',
-            ]);
-        }
 
         return redirect()->route('almacen.index')->with('success', 'Producto registrado exitosamente');
     }
@@ -126,11 +115,20 @@ class AlmacenController extends Controller
         $query = DB::table('global.movimientos_inventario')
             ->leftJoin('global.inventario', 'global.movimientos_inventario.id_inventario', '=', 'global.inventario.id_inventario')
             ->leftJoin('global.vehiculos', 'global.movimientos_inventario.id_vehiculo', '=', 'global.vehiculos.id_vehiculo')
-            ->select('global.movimientos_inventario.*', 'global.inventario.nombre_producto', 'global.vehiculos.placa_vehiculo')
+            ->leftJoin('global.personal', 'global.movimientos_inventario.id_personal', '=', 'global.personal.id_personal')
+            ->select(
+                'global.movimientos_inventario.*',
+                'global.inventario.nombre_producto',
+                'global.vehiculos.placa_vehiculo',
+                DB::raw("COALESCE(NULLIF(global.vehiculos.conductor, ''), CONCAT(global.personal.nombres, ' ', global.personal.apellidos)) as conductor")
+            )
             ->orderBy('global.movimientos_inventario.fecha_movimiento', 'desc');
 
         if ($request->filled('id_inventario')) {
             $query->where('global.movimientos_inventario.id_inventario', $request->id_inventario);
+        }
+        if ($request->filled('tipo')) {
+            $query->where('global.movimientos_inventario.tipo_movimiento', $request->tipo);
         }
 
         $data = $query->limit(50)->get();
@@ -142,11 +140,12 @@ class AlmacenController extends Controller
         try {
             $validated = $request->validate([
                 'id_inventario' => 'required|integer',
-                'tipo_movimiento' => 'required|string|in:COMPRA,ENTREGA',
+                'tipo_movimiento' => 'required|string|in:COMPRA,SALIDA',
                 'cantidad' => 'required|numeric|min:0.01',
                 'fecha_movimiento' => 'nullable|date',
                 'proveedor' => 'nullable|string|max:200',
                 'id_vehiculo' => 'nullable|integer',
+                'id_personal' => 'nullable|integer',
                 'observaciones' => 'nullable|string',
             ]);
 
@@ -157,14 +156,9 @@ class AlmacenController extends Controller
                 'fecha_movimiento' => $validated['fecha_movimiento'] ?? date('Y-m-d'),
                 'proveedor' => $validated['proveedor'] ?? null,
                 'id_vehiculo' => $validated['id_vehiculo'] ?? null,
+                'id_personal' => $validated['id_personal'] ?? null,
                 'observaciones' => $validated['observaciones'] ?? null,
             ]);
-
-            if ($validated['tipo_movimiento'] === 'COMPRA') {
-                DB::table('global.inventario')->where('id_inventario', $validated['id_inventario'])->increment('stock_actual', $validated['cantidad']);
-            } else {
-                DB::table('global.inventario')->where('id_inventario', $validated['id_inventario'])->decrement('stock_actual', $validated['cantidad']);
-            }
 
             return response()->json(['success' => true, 'message' => 'Movimiento registrado']);
         } catch (\Exception $e) {

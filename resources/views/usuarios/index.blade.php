@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', loadUsuarios);
 
 function loadUsuarios() {
     const tbody = document.getElementById('usuariosList');
-    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5"><div class="spinner-border text-dark" role="status"></div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5"><div class="spinner-border text-dark" role="status"></div></td></tr>';
 
     fetch('/api/usuarios', {
         headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
