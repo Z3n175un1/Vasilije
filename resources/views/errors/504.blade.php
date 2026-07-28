@@ -16,7 +16,7 @@
         .icon-wrap { font-size: 80px; margin-bottom: 10px; display: inline-block; }
         .icon-wrap i { animation: tipOver 2.5s ease-in-out infinite; display: inline-block; transform-origin: bottom center; }
         @keyframes tipOver { 0%,100% { transform: rotate(0deg); } 25% { transform: rotate(20deg); } 50% { transform: rotate(-15deg); } 75% { transform: rotate(10deg); } }
-        .error-code { font-size: 100px; font-weight: 800; line-height: 1; color: #000; letter-spacing: -4px; margin-bottom: 0; position: relative; }
+        .error-code { font-size: 100px; font-weight: 800; line-height: 1; color: #000; letter-spacing: -4px; margin-bottom: 0; }
         .error-divider { width: 60px; height: 6px; background: #000; margin: 12px auto; }
         .error-title { font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
         .error-message { font-size: 14px; font-weight: 500; color: #555; margin-bottom: 28px; }
@@ -31,7 +31,7 @@
         <div class="error-code">504</div>
         <div class="error-divider"></div>
         <div class="error-title">Tiempo de Espera del Servidor</div>
-        <div class="error-message">El servidor de arriba se durmió y el de abajo se quedó esperando. Tipos de mierda.<br><span style="font-size:12px;color:#999;">(Dale F5, total no perdés nada)</span></div>
+        <div class="error-message">El servidor no recibió respuesta a tiempo de otro servidor. Esto suele ser temporal, intente nuevamente.</div>
         <a href="{{ url('/documentos') }}" class="btn-error"><i class="fas fa-sync-alt me-2"></i>Reintentar</a>
         <div class="brand">VASILIJE</div>
     </div>

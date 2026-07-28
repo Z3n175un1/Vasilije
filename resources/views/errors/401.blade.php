@@ -16,7 +16,7 @@
         .icon-wrap { font-size: 80px; margin-bottom: 10px; animation: lockBounce 2s ease-in-out infinite; display: inline-block; }
         @keyframes lockBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
         .icon-wrap i { filter: drop-shadow(0 6px 0 rgba(0,0,0,.12)); }
-        .error-code { font-size: 100px; font-weight: 800; line-height: 1; color: #000; letter-spacing: -4px; margin-bottom: 0; position: relative; }
+        .error-code { font-size: 100px; font-weight: 800; line-height: 1; color: #000; letter-spacing: -4px; margin-bottom: 0; }
         .error-divider { width: 60px; height: 6px; background: #000; margin: 12px auto; }
         .error-title { font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
         .error-message { font-size: 14px; font-weight: 500; color: #555; margin-bottom: 28px; }
@@ -31,7 +31,7 @@
         <div class="error-code">401</div>
         <div class="error-divider"></div>
         <div class="error-title">No Autorizado</div>
-        <div class="error-message">Necesitas identificarte primero. No podemos dejarte entrar así nomás.<br><span style="font-size:12px;color:#999;">(No es personal, es seguridad)</span></div>
+        <div class="error-message">Debe iniciar sesión para acceder a este recurso. Si ya tiene una cuenta, ingrese con sus credenciales.</div>
         <a href="{{ route('login') }}" class="btn-error"><i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión</a>
         <div class="brand">VASILIJE</div>
     </div>

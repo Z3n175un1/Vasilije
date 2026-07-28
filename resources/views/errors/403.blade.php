@@ -16,7 +16,7 @@
         .icon-wrap { font-size: 80px; margin-bottom: 10px; display: inline-block; }
         .icon-wrap i { animation: handSlap 1.8s ease-in-out infinite; display: inline-block; }
         @keyframes handSlap { 0%,100% { transform: rotate(0deg); } 20% { transform: rotate(-20deg) scale(1.1); } 40% { transform: rotate(10deg) scale(1.1); } 60% { transform: rotate(-5deg); } }
-        .error-code { font-size: 100px; font-weight: 800; line-height: 1; color: #000; letter-spacing: -4px; margin-bottom: 0; position: relative; }
+        .error-code { font-size: 100px; font-weight: 800; line-height: 1; color: #000; letter-spacing: -4px; margin-bottom: 0; }
         .error-divider { width: 60px; height: 6px; background: #000; margin: 12px auto; }
         .error-title { font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
         .error-message { font-size: 14px; font-weight: 500; color: #555; margin-bottom: 28px; }
@@ -31,7 +31,7 @@
         <div class="error-code">403</div>
         <div class="error-divider"></div>
         <div class="error-title">Acceso Denegado</div>
-        <div class="error-message">No tenés permisos para estar acá. Mejor rajá de acá.<br><span style="font-size:12px;color:#999;">(Y no insistas)</span></div>
+        <div class="error-message">No tiene los permisos necesarios para acceder a este recurso. Contacte al administrador si cree que esto es un error.</div>
         <a href="{{ url('/documentos') }}" class="btn-error"><i class="fas fa-arrow-left me-2"></i>Volver al Inicio</a>
         <div class="brand">VASILIJE</div>
     </div>

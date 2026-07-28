@@ -16,7 +16,7 @@
         .icon-wrap { font-size: 80px; margin-bottom: 10px; display: inline-block; }
         .icon-wrap i { animation: searchFloat 3s ease-in-out infinite; display: inline-block; }
         @keyframes searchFloat { 0%,100% { transform: translate(0,0) rotate(0deg); } 25% { transform: translate(-20px, -10px) rotate(-15deg); } 50% { transform: translate(0, -20px) rotate(0deg); } 75% { transform: translate(20px, -10px) rotate(15deg); } }
-        .error-code { font-size: 100px; font-weight: 800; line-height: 1; color: #000; letter-spacing: -4px; margin-bottom: 0; position: relative; }
+        .error-code { font-size: 100px; font-weight: 800; line-height: 1; color: #000; letter-spacing: -4px; margin-bottom: 0; }
         .error-code span { display: inline-block; } .error-code span:nth-child(1) { animation: numJump .6s ease-in-out infinite alternate; animation-delay: 0s; } .error-code span:nth-child(2) { animation: numJump .6s ease-in-out infinite alternate; animation-delay: .2s; } .error-code span:nth-child(3) { animation: numJump .6s ease-in-out infinite alternate; animation-delay: .4s; }
         @keyframes numJump { 0% { transform: translateY(0); } 100% { transform: translateY(-16px); } }
         .error-divider { width: 60px; height: 6px; background: #000; margin: 12px auto; }
@@ -33,7 +33,7 @@
         <div class="error-code"><span>4</span><span>0</span><span>4</span></div>
         <div class="error-divider"></div>
         <div class="error-title">Página No Encontrada</div>
-        <div class="error-message">Buscamos por todos lados pero no encontramos nada. Más perdido que un turista en el altiplano.<br><span style="font-size:12px;color:#999;">(¿Seguro que esa URL existe?)</span></div>
+        <div class="error-message">La página que busca no existe o fue movida a otra ubicación. Verifique la dirección e intente de nuevo.</div>
         <a href="{{ url('/documentos') }}" class="btn-error"><i class="fas fa-arrow-left me-2"></i>Volver al Inicio</a>
         <div class="brand">VASILIJE</div>
     </div>

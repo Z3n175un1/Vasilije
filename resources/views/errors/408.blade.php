@@ -16,7 +16,7 @@
         .icon-wrap { font-size: 80px; margin-bottom: 10px; display: inline-block; }
         .icon-wrap i { animation: clockSpin 3s linear infinite; display: inline-block; }
         @keyframes clockSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .error-code { font-size: 100px; font-weight: 800; line-height: 1; color: #000; letter-spacing: -4px; margin-bottom: 0; position: relative; }
+        .error-code { font-size: 100px; font-weight: 800; line-height: 1; color: #000; letter-spacing: -4px; margin-bottom: 0; }
         .error-divider { width: 60px; height: 6px; background: #000; margin: 12px auto; }
         .error-title { font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
         .error-message { font-size: 14px; font-weight: 500; color: #555; margin-bottom: 28px; }
@@ -31,7 +31,7 @@
         <div class="error-code">408</div>
         <div class="error-divider"></div>
         <div class="error-title">Tiempo de Espera Agotado</div>
-        <div class="error-message">El servidor se cansó de esperar. Y nosotros también.<br><span style="font-size:12px;color:#999;">(¿Probaste refrescar? A veces funciona)</span></div>
+        <div class="error-message">El servidor tardó demasiado en recibir la solicitud. Esto puede deberse a una conexión lenta. Intente nuevamente.</div>
         <a href="{{ url('/documentos') }}" class="btn-error"><i class="fas fa-sync-alt me-2"></i>Reintentar</a>
         <div class="brand">VASILIJE</div>
     </div>

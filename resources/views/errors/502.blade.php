@@ -16,7 +16,7 @@
         .icon-wrap { font-size: 80px; margin-bottom: 10px; display: inline-block; }
         .icon-wrap i { animation: wobble 2s ease-in-out infinite; display: inline-block; }
         @keyframes wobble { 0%,100% { transform: translateX(0) rotate(0deg); } 20% { transform: translateX(-16px) rotate(-12deg); } 40% { transform: translateX(12px) rotate(8deg); } 60% { transform: translateX(-8px) rotate(-6deg); } 80% { transform: translateX(6px) rotate(4deg); } }
-        .error-code { font-size: 100px; font-weight: 800; line-height: 1; color: #000; letter-spacing: -4px; margin-bottom: 0; position: relative; }
+        .error-code { font-size: 100px; font-weight: 800; line-height: 1; color: #000; letter-spacing: -4px; margin-bottom: 0; }
         .error-divider { width: 60px; height: 6px; background: #000; margin: 12px auto; }
         .error-title { font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
         .error-message { font-size: 14px; font-weight: 500; color: #555; margin-bottom: 28px; }
@@ -31,7 +31,7 @@
         <div class="error-code">502</div>
         <div class="error-divider"></div>
         <div class="error-title">Puerta de Enlace Inválida</div>
-        <div class="error-message">El servidor de arriba le está fallando al de abajo. Una cagada, lo sabemos.<br><span style="font-size:12px;color:#999;">(Desenchufá y volvé a enchufar)</span></div>
+        <div class="error-message">El servidor recibió una respuesta inválida de otro servidor. Esto suele ser temporal, intente más tarde.</div>
         <a href="{{ url('/documentos') }}" class="btn-error"><i class="fas fa-arrow-left me-2"></i>Volver al Inicio</a>
         <div class="brand">VASILIJE</div>
     </div>

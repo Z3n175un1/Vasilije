@@ -15,11 +15,11 @@
         @keyframes bgShift { 0% { transform: translate(0,0); } 100% { transform: translate(40px,40px); } }
         .icon-wrap { font-size: 80px; margin-bottom: 10px; animation: headShake 2.5s ease-in-out infinite; display: inline-block; }
         @keyframes headShake { 0%,100% { transform: translateX(0); } 15% { transform: translateX(-12px) rotate(-8deg); } 30% { transform: translateX(10px) rotate(6deg); } 45% { transform: translateX(-6px) rotate(-4deg); } 60% { transform: translateX(4px) rotate(2deg); } }
-        .error-code { font-size: 100px; font-weight: 800; line-height: 1; color: #000; letter-spacing: -4px; margin-bottom: 0; position: relative; }
+        .error-code { font-size: 100px; font-weight: 800; line-height: 1; color: #000; letter-spacing: -4px; margin-bottom: 0; }
         .error-divider { width: 60px; height: 6px; background: #000; margin: 12px auto; }
         .error-title { font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
         .error-message { font-size: 14px; font-weight: 500; color: #555; margin-bottom: 28px; }
-        .btn-error { display: inline-block; padding: 12px 32px; background: #fff; color: #000; border: 4px solid #000; font-weight: 800; text-decoration: none; text-transform: uppercase; font-size: 13px; letter-spacing: 1px; border-radius: 0; position: relative; overflow: hidden; transition: .2s; }
+        .btn-error { display: inline-block; padding: 12px 32px; background: #fff; color: #000; border: 4px solid #000; font-weight: 800; text-decoration: none; text-transform: uppercase; font-size: 13px; letter-spacing: 1px; border-radius: 0; transition: .2s; }
         .btn-error:hover { background: #000; color: #fff; transform: scale(1.05); }
         .brand { font-size: 11px; font-weight: 800; letter-spacing: 3px; color: #999; margin-top: 20px; text-transform: uppercase; }
     </style>
@@ -30,7 +30,7 @@
         <div class="error-code">400</div>
         <div class="error-divider"></div>
         <div class="error-title">Solicitud Incorrecta</div>
-        <div class="error-message">El servidor no entendió lo que quisiste decir. ¿Seguro que escribiste bien la URL?<br><span style="font-size:12px;color:#999;">(No, no fue el Wi-Fi)</span></div>
+        <div class="error-message">El servidor no pudo procesar la solicitud. Verificá que los datos enviados sean correctos e intentá de nuevo.</div>
         <a href="{{ url('/documentos') }}" class="btn-error"><i class="fas fa-arrow-left me-2"></i>Volver al Inicio</a>
         <div class="brand">VASILIJE</div>
     </div>

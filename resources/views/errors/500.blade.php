@@ -16,7 +16,7 @@
         .icon-wrap { font-size: 80px; margin-bottom: 10px; display: inline-block; }
         .icon-wrap i { animation: explode 1.5s ease-in-out infinite; display: inline-block; }
         @keyframes explode { 0%,100% { transform: scale(1) rotate(0deg); } 25% { transform: scale(1.2) rotate(-10deg); } 50% { transform: scale(1) rotate(0deg); } 75% { transform: scale(1.15) rotate(10deg); } }
-        .error-code { font-size: 100px; font-weight: 800; line-height: 1; color: #000; letter-spacing: -4px; margin-bottom: 0; position: relative; }
+        .error-code { font-size: 100px; font-weight: 800; line-height: 1; color: #000; letter-spacing: -4px; margin-bottom: 0; }
         .error-divider { width: 60px; height: 6px; background: #000; margin: 12px auto; }
         .error-title { font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
         .error-message { font-size: 14px; font-weight: 500; color: #555; margin-bottom: 28px; }
@@ -31,7 +31,7 @@
         <div class="error-code">500</div>
         <div class="error-divider"></div>
         <div class="error-title">Error Interno del Servidor</div>
-        <div class="error-message">Algo explotó por dentro. No fue tu culpa... o sí.<br><span style="font-size:12px;color:#999;">(El desarrollador ya está llorando)</span></div>
+        <div class="error-message">Ocurrió un error inesperado en el servidor. El equipo técnico fue notificado automáticamente.</div>
         <a href="{{ url('/documentos') }}" class="btn-error"><i class="fas fa-arrow-left me-2"></i>Volver al Inicio</a>
         <div class="brand">VASILIJE</div>
     </div>
