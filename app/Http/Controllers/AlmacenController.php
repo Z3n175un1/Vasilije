@@ -136,4 +136,39 @@ class AlmacenController extends Controller
         $data = $query->limit(50)->get();
         return response()->json(['success' => true, 'data' => $data]);
     }
+
+    public function apiGuardarMovimiento(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id_inventario' => 'required|integer',
+                'tipo_movimiento' => 'required|string|in:COMPRA,ENTREGA',
+                'cantidad' => 'required|numeric|min:0.01',
+                'fecha_movimiento' => 'nullable|date',
+                'proveedor' => 'nullable|string|max:200',
+                'id_vehiculo' => 'nullable|integer',
+                'observaciones' => 'nullable|string',
+            ]);
+
+            DB::table('global.movimientos_inventario')->insert([
+                'id_inventario' => $validated['id_inventario'],
+                'tipo_movimiento' => $validated['tipo_movimiento'],
+                'cantidad' => $validated['cantidad'],
+                'fecha_movimiento' => $validated['fecha_movimiento'] ?? date('Y-m-d'),
+                'proveedor' => $validated['proveedor'] ?? null,
+                'id_vehiculo' => $validated['id_vehiculo'] ?? null,
+                'observaciones' => $validated['observaciones'] ?? null,
+            ]);
+
+            if ($validated['tipo_movimiento'] === 'COMPRA') {
+                DB::table('global.inventario')->where('id_inventario', $validated['id_inventario'])->increment('stock_actual', $validated['cantidad']);
+            } else {
+                DB::table('global.inventario')->where('id_inventario', $validated['id_inventario'])->decrement('stock_actual', $validated['cantidad']);
+            }
+
+            return response()->json(['success' => true, 'message' => 'Movimiento registrado']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
 }
