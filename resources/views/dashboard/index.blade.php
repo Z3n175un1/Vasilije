@@ -79,10 +79,18 @@
         </div>
 
         <div class="bento-card" style="padding: 0; overflow: hidden; border: 4px solid #000; box-shadow: 6px 6px 0px #000;">
-            <div class="bg-white text-black font-bold p-3 border-bottom border-black d-flex justify-content-between align-items-center">
+        <div class="bg-white text-black font-bold p-3 border-bottom border-black d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
                 <span class="small uppercase font-bold text-black"><i class="fas fa-truck me-2"></i> Monitoreo de Flota Activa</span>
-                <span class="badge bg-black text-white px-2 py-1 x-small font-bold" id="totalUnidades">TOTAL UNIDADES: 0</span>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-sm font-bold border-black px-2 py-1" style="background:#ffc107;color:#000;font-size:.7rem;" onclick="sortVehiculos('asc')" title="A-Z"><i class="fas fa-sort-alpha-down"></i> ASC</button>
+                    <button class="btn btn-sm font-bold border-black px-2 py-1" style="background:#ffc107;color:#000;font-size:.7rem;" onclick="sortVehiculos('desc')" title="Z-A"><i class="fas fa-sort-alpha-up"></i> DESC</button>
+                    <button class="btn btn-sm font-bold border-black px-2 py-1" style="background:#ffc107;color:#000;font-size:.7rem;" onclick="sortVehiculos('abc')" title="Alfabético"><i class="fas fa-sort-amount-down"></i> ABC</button>
+                    <button class="btn btn-sm font-bold border-black px-2 py-1" style="background:#ffc107;color:#000;font-size:.7rem;" onclick="sortVehiculos('ultimo')" title="Último añadido"><i class="fas fa-clock"></i> ÚLTIMO</button>
+                </div>
             </div>
+            <span class="badge bg-black text-white px-2 py-1 x-small font-bold" id="totalUnidades">TOTAL UNIDADES: 0</span>
+        </div>
 
             <div class="table-responsive-brutalist">
                 <table class="table-excel mb-0" id="vehiculosTable">
@@ -214,6 +222,7 @@
 let vehiculos = [];
 let tramos = [];
 let currentFilter = '1';
+let sortMode = 'ultimo';
 let configDataDash = { tipo_cambio: 6.96, precio_tonelada_usd: 13 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -266,12 +275,31 @@ function loadVehiculos() {
         document.getElementById('dashboardContent').style.display = 'block';
         if (res.success) {
             vehiculos = res.data || [];
-            renderVehiculos(vehiculos);
+            aplicarSort();
         }
     })
     .catch(() => {
         document.getElementById('dashboardLoading').innerHTML = '<h2 class="font-bold fs-mid text-danger">ERROR DE CONEXIÓN</h2>';
     });
+}
+
+function aplicarSort() {
+    let data = [...vehiculos];
+    if (sortMode === 'asc') {
+        data.sort((a, b) => (a.placa_vehiculo || '').localeCompare(b.placa_vehiculo || ''));
+    } else if (sortMode === 'desc') {
+        data.sort((a, b) => (b.placa_vehiculo || '').localeCompare(a.placa_vehiculo || ''));
+    } else if (sortMode === 'abc') {
+        data.sort((a, b) => (a.marca || '').localeCompare(b.marca || '') || (a.placa_vehiculo || '').localeCompare(b.placa_vehiculo || ''));
+    } else {
+        data.sort((a, b) => (b.id_vehiculo || 0) - (a.id_vehiculo || 0));
+    }
+    renderVehiculos(data);
+}
+
+function sortVehiculos(mode) {
+    sortMode = mode;
+    aplicarSort();
 }
 
 function renderVehiculos(data) {
@@ -318,6 +346,10 @@ function renderVehiculos(data) {
                     </button>
                     <button class="btn-action-mini bg-white text-black border-black" onclick="abrirReporte(${v.id_vehiculo},'${v.placa_vehiculo}')" title="REPORTES" style="width:40px;height:40px;border-width:2px;border-radius:0;display:flex;align-items:center;justify-content:center;">
                         <i class="fas fa-file-invoice-dollar text-warning" style="font-size:1rem;"></i>
+                    </button>
+                    <span style="width:2px;height:28px;background:#000;display:inline-block;"></span>
+                    <button class="btn-action-mini border-black" onclick="eliminarUnidad(${v.id_vehiculo},'${v.placa_vehiculo}')" title="ELIMINAR" style="width:40px;height:40px;border-width:2px;border-radius:0;display:flex;align-items:center;justify-content:center;background:#c82333;color:#fff;">
+                        <i class="fas fa-trash" style="font-size:1rem;"></i>
                     </button>
                 </div>
             </td>
@@ -430,6 +462,37 @@ function venderVehiculo(id, placa) {
                 loadVehiculos();
             } else {
                 Swal.fire('Error', res.message || 'Error al marcar como vendido', 'error');
+            }
+        });
+    });
+}
+
+function eliminarUnidad(id, placa) {
+    Swal.fire({
+        title: 'ELIMINAR UNIDAD',
+        html: `<div class="text-start">
+            <p class="fw-bold mb-2">Unidad: <span class="text-danger">${placa}</span></p>
+            <p class="mb-0 small">Se cambiará el estado a <strong>VENDIDO</strong> y se eliminará del listado activo.</p>
+        </div>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'SÍ, ELIMINAR',
+        cancelButtonText: 'CANCELAR',
+        confirmButtonColor: '#dc3545',
+    }).then(result => {
+        if (!result.isConfirmed) return;
+        fetch('{{ url("api/vehiculos/vender") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
+            body: JSON.stringify({ id_vehiculo: id })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                Swal.fire({ icon: 'success', title: 'ELIMINADO', text: `Unidad ${placa} dada de baja`, timer: 1500, showConfirmButton: false });
+                loadVehiculos();
+            } else {
+                Swal.fire('Error', res.message || 'Error al eliminar', 'error');
             }
         });
     });
