@@ -56,7 +56,11 @@
                         ['route' => 'facturacion.index', 'label' => 'FACTURACIÓN', 'icon' => 'fa-file-invoice'],
                         ['route' => 'bancos.index', 'label' => 'BANCOS', 'icon' => 'fa-university'],
                         ['route' => 'reportes.index', 'label' => 'REPORTES', 'icon' => 'fa-chart-bar'],
-                    ]; @endphp
+                    ];
+                    if (auth()->user()?->rol === 'admin') {
+                        $links[] = ['route' => 'usuarios.index', 'label' => 'USUARIOS', 'icon' => 'fa-user-shield'];
+                    }
+                    @endphp
                     @foreach($links as $link)
                     <a href="{{ route($link['route']) }}"
                        class="{{ request()->routeIs(explode('.', $link['route'])[0].'*') ? 'active' : '' }}"

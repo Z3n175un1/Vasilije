@@ -109,6 +109,16 @@ Route::middleware('auth')->group(function () {
     Route::put('/grupos/{id}', [GrupoController::class, 'update'])->name('grupos.update');
     Route::delete('/grupos/{id}', [GrupoController::class, 'destroy'])->name('grupos.destroy');
 
+    // Usuarios (solo admin)
+    Route::middleware('admin')->prefix('usuarios')->group(function () {
+        Route::get('/', [\App\Http\Controllers\UserController::class, 'index'])->name('usuarios.index');
+        Route::get('/nuevo', [\App\Http\Controllers\UserController::class, 'create'])->name('usuarios.create');
+        Route::get('/{id}/editar', [\App\Http\Controllers\UserController::class, 'edit'])->name('usuarios.edit');
+        Route::post('/', [\App\Http\Controllers\UserController::class, 'store'])->name('usuarios.store');
+        Route::put('/{id}', [\App\Http\Controllers\UserController::class, 'update'])->name('usuarios.update');
+        Route::delete('/{id}', [\App\Http\Controllers\UserController::class, 'destroy'])->name('usuarios.destroy');
+    });
+
     // Configuracion
     Route::get('/configuracion', function () {
         $config = DB::table('global.configuracion')->pluck('valor', 'llave');
@@ -150,6 +160,7 @@ Route::prefix('api')->middleware('auth')->group(function () {
     Route::get('/items/{id}', [ItemController::class, 'apiShow']);
     Route::get('/grupos', [GrupoController::class, 'apiList']);
     Route::get('/grupos/{id}', [GrupoController::class, 'apiShow']);
+    Route::get('/usuarios', [\App\Http\Controllers\UserController::class, 'apiList']);
     Route::get('/facturacion/listado', [FacturacionController::class, 'apiList']);
     Route::get('/facturacion/pendientes', [FacturacionController::class, 'apiPendientes']);
     Route::get('/facturacion/fletes/{numeroFactura}', [FacturacionController::class, 'apiFletesByFactura']);
