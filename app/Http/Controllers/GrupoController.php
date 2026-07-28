@@ -28,7 +28,7 @@ class GrupoController extends Controller
     {
         try {
             $data = $request->validate([
-                'nombre' => 'required|string|max:100|unique:global.categorias_almacen,nombre',
+                'nombre' => 'required|string|max:100|unique:categorias_almacen,nombre',
                 'descripcion' => 'nullable|string',
             ]);
 
@@ -46,7 +46,7 @@ class GrupoController extends Controller
     public function update(Request $request, $id)
     {
         $data = $request->validate([
-            'nombre' => 'required|string|max:100|unique:global.categorias_almacen,nombre,' . $id . ',id_categoria',
+            'nombre' => 'required|string|max:100|unique:categorias_almacen,nombre,' . $id . ',id_categoria',
             'descripcion' => 'nullable|string',
         ]);
 

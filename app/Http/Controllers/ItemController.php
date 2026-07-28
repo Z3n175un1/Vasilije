@@ -29,9 +29,9 @@ class ItemController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'codigo' => 'required|string|max:20|unique:global.inventario,codigo',
+            'codigo' => 'required|string|max:20|unique:inventario,codigo',
             'nombre_producto' => 'required|string|max:100',
-            'id_categoria' => 'nullable|integer|exists:global.categorias_almacen,id_categoria',
+            'id_categoria' => 'nullable|integer|exists:categorias_almacen,id_categoria',
             'unidad_medida' => 'required|string|max:20',
             'stock_minimo' => 'nullable|numeric',
             'descripcion' => 'nullable|string',
@@ -53,9 +53,9 @@ class ItemController extends Controller
     public function update(Request $request, $id)
     {
         $data = $request->validate([
-            'codigo' => 'required|string|max:20|unique:global.inventario,codigo,' . $id . ',id_inventario',
+            'codigo' => 'required|string|max:20|unique:inventario,codigo,' . $id . ',id_inventario',
             'nombre_producto' => 'required|string|max:100',
-            'id_categoria' => 'nullable|integer|exists:global.categorias_almacen,id_categoria',
+            'id_categoria' => 'nullable|integer|exists:categorias_almacen,id_categoria',
             'unidad_medida' => 'required|string|max:20',
             'stock_minimo' => 'nullable|numeric',
             'descripcion' => 'nullable|string',

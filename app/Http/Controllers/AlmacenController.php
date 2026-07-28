@@ -31,7 +31,7 @@ class AlmacenController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'codigo' => 'required|string|max:20|unique:global.inventario,codigo',
+            'codigo' => 'required|string|max:20|unique:inventario,codigo',
             'nombre_producto' => 'required|string|max:100',
             'categoria' => 'required|string|max:50',
             'unidad_medida' => 'required|string|max:20',
@@ -65,7 +65,7 @@ class AlmacenController extends Controller
     public function update(Request $request, $id)
     {
         $data = $request->validate([
-            'codigo' => 'required|string|max:20|unique:global.inventario,codigo,' . $id . ',id_inventario',
+            'codigo' => 'required|string|max:20|unique:inventario,codigo,' . $id . ',id_inventario',
             'nombre_producto' => 'required|string|max:100',
             'categoria' => 'required|string|max:50',
             'unidad_medida' => 'required|string|max:20',
