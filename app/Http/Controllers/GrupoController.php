@@ -26,13 +26,21 @@ class GrupoController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'nombre' => 'required|string|max:100|unique:global.categorias_almacen,nombre',
-            'descripcion' => 'nullable|string',
-        ]);
+        try {
+            $data = $request->validate([
+                'nombre' => 'required|string|max:100|unique:global.categorias_almacen,nombre',
+                'descripcion' => 'nullable|string',
+            ]);
 
-        DB::table('global.categorias_almacen')->insert($data);
-        return redirect()->route('grupos.index')->with('success', 'Grupo registrado exitosamente');
+            DB::table('global.categorias_almacen')->insert($data);
+            return redirect()->route('grupos.index')->with('success', 'Grupo registrado exitosamente');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('GrupoController@store: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'input' => $request->all(),
+            ]);
+            return back()->with('error', 'Error al registrar: ' . $e->getMessage())->withInput();
+        }
     }
 
     public function update(Request $request, $id)
