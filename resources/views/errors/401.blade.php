@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>401 - VASILIJE</title>
+    <title>401 - DS TRANSPORTE S.R.L</title>
     <link href="https://fonts.googleapis.com/css2?family=Uncut+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -33,7 +33,7 @@
         <div class="error-title">No Autorizado</div>
         <div class="error-message">Debe iniciar sesión para acceder a este recurso. Si ya tiene una cuenta, ingrese con sus credenciales.</div>
         <a href="{{ route('login') }}" class="btn-error"><i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión</a>
-        <div class="brand">VASILIJE</div>
+        <div class="brand">DS TRANSPORTE S.R.L</div>
     </div>
 </body>
 </html>

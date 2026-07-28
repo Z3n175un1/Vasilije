@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'VASILIJE') - Control de Gastos</title>
+    <title>@yield('title') - DS TRANSPORTE S.R.L</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Uncut+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
@@ -37,7 +37,7 @@
             <div class="drawer-content-wrapper">
                 <div class="drawer-header pb-3 mb-4">
                     <h1 class="text-black font-black mb-0 fs-mid d-flex flex-wrap align-items-center gap-1">
-                        <span>VASILIJE</span>
+                        <span>DS TRANSPORTE S.R.L</span>
                     </h1>
                     <p class="small fw-bold text-black mt-2 mb-0" style="opacity:0.7;">
                         <i class="fas fa-user me-1"></i> {{ auth()->user()->name }}

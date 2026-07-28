@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reporte de Gestión - VASILIJE</title>
+    <title>Reporte de Gestión - DS TRANSPORTE S.R.L</title>
     <style>
         @page {
             margin: 15mm 12mm 20mm 12mm;
@@ -176,13 +176,13 @@
 </head>
 <body>
 
-    <div class="watermark">VASILIJE</div>
+    <div class="watermark">DS TRANSPORTE S.R.L</div>
 
     <!-- TOP BAR: Logo + Company Info -->
     <div class="top-bar">
         <div class="logo-box">V</div>
         <div class="company-info">
-            <div class="company-name">VASILIJE</div>
+            <div class="company-name">DS TRANSPORTE S.R.L</div>
             <div class="company-details">
                 <strong>NIT:</strong> 123456789012 &bull;
                 <strong>Santa Cruz - Bolivia</strong><br>
@@ -282,7 +282,7 @@
 
     <!-- FOOTER NOTE -->
     <div class="footer-note">
-        VASILIJE - Sistema de Control de Gestión de Transporte &bull;
+        DS TRANSPORTE S.R.L - Sistema de Control de Gestión de Transporte &bull;
         Generado {{ date('d/m/Y \a \l\a\s H:i') }} &bull;
         {{ count($todo) }} registro(s) &bull;
         Documento oficial de gestión interna

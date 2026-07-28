@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', $vehiculo ? 'Editar Vehículo' : 'Nuevo Vehículo - VASILIJE')
+@section('title', $vehiculo ? 'Editar Vehículo' : 'Nuevo Vehículo')
 
 @section('content')
 <div class="main-container w-full">

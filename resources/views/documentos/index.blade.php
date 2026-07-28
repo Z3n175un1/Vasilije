@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'Inicio - VASILIJE')
+@section('title', 'Inicio')
 
 @push('styles')
 <style>

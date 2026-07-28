@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'Bancos - VASILIJE')
+@section('title', 'Bancos')
 
 @section('content')
 <div class="main-container w-full">

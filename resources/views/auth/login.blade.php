@@ -1,6 +1,6 @@
 @extends('layouts.master-no-nav')
 
-@section('title', 'VASILIJE | Inicio de Sesion')
+@section('title', 'Inicio de Sesión')
 
 @section('content')
 <div class="login-page">
@@ -20,7 +20,7 @@
         <div class="login-brand">
             <div class="brand-content">
                 <div class="brand-badge">SISTEMA DE GESTIÓN</div>
-                <h1 class="brand-title">VASILIJE</h1>
+                <h1 class="brand-title">DS TRANSPORTE S.R.L</h1>
                 <p class="brand-desc">Control de Flota, Gastos y Facturación para empresas de transporte bolivianas.</p>
                 <div class="brand-features">
                     <div class="feature-item">
@@ -104,7 +104,7 @@
                 </form>
 
                 <div class="login-footer">
-                    <span>© {{ date('Y') }} VASILIJE</span>
+                    <span>© {{ date('Y') }} DS TRANSPORTE S.R.L</span>
                     <span class="footer-dot">•</span>
                     <span>v1.0</span>
                 </div>

@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'Almacén - VASILIJE')
+@section('title', 'Almacén')
 
 @push('styles')
 <style>

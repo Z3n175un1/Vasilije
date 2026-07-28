@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'Registrar Sueldo - VASILIJE')
+@section('title', 'Sueldo')
 
 @section('content')
 <div class="main-container w-full">

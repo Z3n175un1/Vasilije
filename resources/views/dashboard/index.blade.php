@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'Panel de Control - VASILIJE')
+@section('title', 'Dashboard')
 
 @push('styles')
 <style>
