@@ -20,7 +20,7 @@
         <div class="login-brand">
             <div class="brand-content">
                 <div class="brand-badge">SISTEMA DE GESTIÓN</div>
-                <h1 class="brand-title">DS TRANSPORTE S.R.L</h1>
+                <h1 class="brand-title">DS TRANSPORTE <span class="brand-suffix">S.R.L</span></h1>
                 <p class="brand-desc">Control de Flota, Gastos y Facturación para empresas de transporte bolivianas.</p>
                 <div class="brand-features">
                     <div class="feature-item">
@@ -280,6 +280,15 @@ html, body {
     margin-bottom: 1rem;
     animation: slideInLeft 0.5s ease 0.3s both;
     text-shadow: 4px 4px 0 #ffcc00;
+}
+
+.brand-title .brand-suffix {
+    display: block;
+    font-size: 0.45em;
+    letter-spacing: 6px;
+    color: #ffcc00;
+    text-shadow: none;
+    margin-top: -0.1em;
 }
 
 .brand-desc {
