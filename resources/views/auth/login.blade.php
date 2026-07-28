@@ -19,9 +19,12 @@
     <div class="login-grid">
         <div class="login-brand">
             <div class="brand-content">
-                <div class="brand-badge">SISTEMA DE GESTIÓN</div>
-                <h1 class="brand-title">DS TRANSPORTE <span class="brand-suffix">S.R.L</span></h1>
-                <p class="brand-desc">Control de Flota, Gastos y Facturación para empresas de transporte bolivianas.</p>
+                <h1 class="brand-title">
+                    <span class="brand-ds">DS</span>
+                    <span class="brand-transporte">TRANSPORTE</span>
+                    <span class="brand-srl">S.R.L.</span>
+                </h1>
+                <p class="brand-desc">Sistema interno de gestión de flota, gastos y facturación.</p>
                 <div class="brand-features">
                     <div class="feature-item">
                         <i class="fas fa-truck"></i>
@@ -258,46 +261,49 @@ html, body {
     max-width: 380px;
 }
 
-.brand-badge {
-    display: inline-block;
-    background: #ffcc00;
-    color: #000;
-    font-size: 0.65rem;
-    font-weight: 800;
-    letter-spacing: 2px;
-    padding: 0.5rem 1rem;
-    margin-bottom: 1.5rem;
-    animation: slideInLeft 0.5s ease 0.2s both;
-}
-
 .brand-title {
-    font-size: clamp(3rem, 5vw, 4.5rem);
-    font-weight: 900;
-    letter-spacing: -3px;
-    line-height: 1;
-    color: #fff;
-    text-transform: uppercase;
-    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    margin-bottom: 1.5rem;
     animation: slideInLeft 0.5s ease 0.3s both;
-    text-shadow: 4px 4px 0 #ffcc00;
 }
 
-.brand-title .brand-suffix {
-    display: block;
-    font-size: 0.45em;
-    letter-spacing: 6px;
+.brand-ds {
+    font-size: clamp(4.5rem, 8vw, 7rem);
+    font-weight: 900;
+    letter-spacing: -6px;
+    line-height: 0.85;
+    color: #fff;
+    text-shadow: 6px 6px 0 #ffcc00;
+}
+
+.brand-transporte {
+    font-size: clamp(1rem, 2vw, 1.4rem);
+    font-weight: 700;
+    letter-spacing: 8px;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    margin-top: 0.25rem;
+}
+
+.brand-srl {
+    font-size: clamp(0.6rem, 1vw, 0.75rem);
+    font-weight: 600;
+    letter-spacing: 4px;
     color: #ffcc00;
-    text-shadow: none;
-    margin-top: -0.1em;
+    margin-top: 0.15rem;
 }
 
 .brand-desc {
-    color: rgba(255,255,255,0.6);
-    font-size: 0.85rem;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.8rem;
     font-weight: 600;
-    line-height: 1.6;
-    margin-bottom: 2.5rem;
+    line-height: 1.5;
+    margin-bottom: 2rem;
     animation: slideInLeft 0.5s ease 0.4s both;
+    max-width: 280px;
 }
 
 .brand-features {
