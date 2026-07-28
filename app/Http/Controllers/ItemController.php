@@ -46,6 +46,7 @@ class ItemController extends Controller
             $data['categoria'] = '';
         }
 
+        unset($data['id_categoria']);
         DB::table('global.inventario')->insert($data);
         return redirect()->route('items.index')->with('success', 'Ítem registrado exitosamente');
     }
@@ -68,6 +69,7 @@ class ItemController extends Controller
             $data['categoria'] = '';
         }
 
+        unset($data['id_categoria']);
         DB::table('global.inventario')->where('id_inventario', $id)->update($data);
         return redirect()->route('items.index')->with('success', 'Ítem actualizado exitosamente');
     }
