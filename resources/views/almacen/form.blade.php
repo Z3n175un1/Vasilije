@@ -103,15 +103,6 @@
                 </div>
             </div>
 
-            <div class="row g-4 mb-4">
-                <div class="col-md-4">
-                    <div class="form-group mb-0">
-                        <label>UBICACIÓN</label>
-                        <input type="text" name="ubicacion_almacen" value="{{ old('ubicacion_almacen', $producto->ubicacion_almacen ?? '') }}" placeholder="EJ. ESTANTE A-1">
-                    </div>
-                </div>
-            </div>
-
             <div class="form-group mb-4">
                 <label>DESCRIPCIÓN</label>
                 <textarea name="descripcion" rows="3" placeholder="DETALLE DEL PRODUCTO...">{{ old('descripcion', $producto->descripcion ?? '') }}</textarea>

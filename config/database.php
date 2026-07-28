@@ -99,6 +99,20 @@ return [
             'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 
+        'pgsql_supabase' => [
+            'driver' => 'pgsql',
+            'host' => env('DB_HOST_SUPABASE', 'aws-1-us-east-1.pooler.supabase.com'),
+            'port' => env('DB_PORT_SUPABASE', '6543'),
+            'database' => env('DB_DATABASE_SUPABASE', 'postgres'),
+            'username' => env('DB_USERNAME_SUPABASE', 'postgres.swrqjhvrcfmgrcjbrssg'),
+            'password' => env('DB_PASSWORD_SUPABASE', '090660c2a19077b0271d4d2f5c8185c698e9b17a44ea94bc9f4df7cc300099c0'),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'global',
+            'sslmode' => 'require',
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),
