@@ -16,7 +16,15 @@ class AlmacenController extends Controller
     {
         $categorias = DB::table('global.categorias_almacen')->orderBy('nombre')->get();
         $proveedores = DB::table('global.proveedores')->orderBy('nombre_proveedor')->get();
-        return view('almacen.form', ['producto' => null, 'categorias' => $categorias, 'proveedores' => $proveedores]);
+        $ultimoLote = DB::table('global.lotes')->orderBy('id_lote', 'desc')->first();
+        $nuevoNumero = $ultimoLote ? intval(substr($ultimoLote->codigo_lote, 3)) + 1 : 1;
+        $nuevoCodigoLote = 'LO-' . str_pad($nuevoNumero, 6, '0', STR_PAD_LEFT);
+        return view('almacen.form', [
+            'producto' => null,
+            'categorias' => $categorias,
+            'proveedores' => $proveedores,
+            'nuevoCodigoLote' => $nuevoCodigoLote,
+        ]);
     }
 
     public function edit($id)
@@ -25,7 +33,14 @@ class AlmacenController extends Controller
         if (!$producto) return redirect()->route('almacen.index')->with('error', 'Producto no encontrado');
         $categorias = DB::table('global.categorias_almacen')->orderBy('nombre')->get();
         $proveedores = DB::table('global.proveedores')->orderBy('nombre_proveedor')->get();
-        return view('almacen.form', ['producto' => $producto, 'categorias' => $categorias, 'proveedores' => $proveedores]);
+        $lote = DB::table('global.lotes')->where('id_inventario', $id)->orderBy('id_lote', 'desc')->first();
+        $producto->codigo_lote = $lote ? $lote->codigo_lote : '';
+        return view('almacen.form', [
+            'producto' => $producto,
+            'categorias' => $categorias,
+            'proveedores' => $proveedores,
+            'nuevoCodigoLote' => '',
+        ]);
     }
 
     public function store(Request $request)
@@ -33,19 +48,45 @@ class AlmacenController extends Controller
         $data = $request->validate([
             'codigo' => 'required|string|max:20|unique:inventario,codigo',
             'nombre_producto' => 'required|string|max:100',
-            'categoria' => 'required|string|max:50',
+            'id_categoria' => 'nullable|integer|exists:categorias_almacen,id_categoria',
             'unidad_medida' => 'required|string|max:20',
             'stock_actual' => 'required|numeric',
             'stock_minimo' => 'nullable|numeric',
             'precio_compra' => 'nullable|numeric',
+            'precio_venta' => 'nullable|numeric',
             'id_proveedor' => 'nullable|integer',
             'marca' => 'nullable|string|max:50',
             'descripcion' => 'nullable|string',
+            'codigo_barras' => 'nullable|string|max:50',
+            'codigo_lote' => 'nullable|string|max:50',
+            'fecha_ingreso' => 'nullable|date',
+            'fecha_vencimiento' => 'nullable|date',
         ]);
         $data['estado'] = 'ACTIVO';
-        $data['stock_actual'] = 0;
+        $codigoLote = $data['codigo_lote'] ?? null;
+        unset($data['codigo_lote']);
+
+        if (!empty($data['id_categoria'])) {
+            $cat = DB::table('global.categorias_almacen')->where('id_categoria', $data['id_categoria'])->first();
+            $data['categoria'] = $cat ? $cat->nombre : '';
+        } else {
+            $data['categoria'] = '';
+        }
 
         $id = DB::table('global.inventario')->insertGetId($data, 'id_inventario');
+
+        if (floatval($data['stock_actual']) > 0) {
+            $codigoLoteFinal = $codigoLote ?? ('LO-' . str_pad($id, 6, '0', STR_PAD_LEFT));
+            DB::table('global.lotes')->insert([
+                'id_inventario' => $id,
+                'codigo_lote' => $codigoLoteFinal,
+                'fecha_ingreso' => $data['fecha_ingreso'] ?? date('Y-m-d'),
+                'cantidad_inicial' => $data['stock_actual'],
+                'cantidad_actual' => $data['stock_actual'],
+                'precio_compra' => $data['precio_compra'] ?? 0,
+                'estado' => 'ACTIVO',
+            ]);
+        }
 
         return redirect()->route('almacen.index')->with('success', 'Producto registrado exitosamente');
     }
@@ -55,15 +96,26 @@ class AlmacenController extends Controller
         $data = $request->validate([
             'codigo' => 'required|string|max:20|unique:inventario,codigo,' . $id . ',id_inventario',
             'nombre_producto' => 'required|string|max:100',
-            'categoria' => 'required|string|max:50',
+            'id_categoria' => 'nullable|integer|exists:categorias_almacen,id_categoria',
             'unidad_medida' => 'required|string|max:20',
             'stock_actual' => 'required|numeric',
             'stock_minimo' => 'nullable|numeric',
             'precio_compra' => 'nullable|numeric',
+            'precio_venta' => 'nullable|numeric',
             'id_proveedor' => 'nullable|integer',
             'marca' => 'nullable|string|max:50',
             'descripcion' => 'nullable|string',
+            'codigo_barras' => 'nullable|string|max:50',
+            'fecha_ingreso' => 'nullable|date',
+            'fecha_vencimiento' => 'nullable|date',
         ]);
+
+        if (!empty($data['id_categoria'])) {
+            $cat = DB::table('global.categorias_almacen')->where('id_categoria', $data['id_categoria'])->first();
+            $data['categoria'] = $cat ? $cat->nombre : '';
+        } else {
+            $data['categoria'] = '';
+        }
 
         DB::table('global.inventario')->where('id_inventario', $id)->update($data);
         return redirect()->route('almacen.index')->with('success', 'Producto actualizado exitosamente');
@@ -79,7 +131,8 @@ class AlmacenController extends Controller
     {
         $query = DB::table('global.inventario')
             ->leftJoin('global.proveedores', 'global.inventario.id_proveedor', '=', 'global.proveedores.id_proveedor')
-            ->select('global.inventario.*', 'global.proveedores.nombre_proveedor')
+            ->select('global.inventario.*', 'global.proveedores.nombre_proveedor',
+                DB::raw('(SELECT codigo_lote FROM global.lotes WHERE id_inventario = global.inventario.id_inventario ORDER BY id_lote DESC LIMIT 1) as codigo_lote'))
             ->where('global.inventario.estado', 'ACTIVO');
 
         if ($request->filled('categoria')) {

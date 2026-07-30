@@ -28,11 +28,31 @@
             <div class="row g-4 mb-4">
                 <div class="col-md-4">
                     <div class="form-group mb-0">
+                        <label>GRUPO <span class="text-danger">*</span></label>
+                        <select name="id_categoria" required>
+                            <option value="">SELECCIONE...</option>
+                            @foreach($categorias as $c)
+                                <option value="{{ $c->id_categoria }}" {{ old('id_categoria', $item->id_categoria ?? '') == $c->id_categoria ? 'selected' : '' }}>{{ $c->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-0">
                         <label>CÓDIGO <span class="text-danger">*</span></label>
                         <input type="text" name="codigo" value="{{ old('codigo', $item->codigo ?? '') }}" required placeholder="CÓDIGO">
                     </div>
                 </div>
-                <div class="col-md-8">
+                <div class="col-md-4">
+                    <div class="form-group mb-0">
+                        <label>CÓDIGO DE FÁBRICA</label>
+                        <input type="text" name="codigo_barras" value="{{ old('codigo_barras', $item->codigo_barras ?? '') }}" placeholder="CÓDIGO DEL FABRICANTE">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-12">
                     <div class="form-group mb-0">
                         <label>NOMBRE <span class="text-danger">*</span></label>
                         <input type="text" name="nombre_producto" value="{{ old('nombre_producto', $item->nombre_producto ?? '') }}" required placeholder="NOMBRE DEL PRODUCTO">
@@ -41,17 +61,6 @@
             </div>
 
             <div class="row g-4 mb-4">
-                <div class="col-md-4">
-                    <div class="form-group mb-0">
-                        <label>GRUPO</label>
-                        <select name="id_categoria">
-                            <option value="">SELECCIONE...</option>
-                            @foreach($categorias as $c)
-                                <option value="{{ $c->id_categoria }}" {{ old('id_categoria', $item->id_categoria ?? '') == $c->id_categoria ? 'selected' : '' }}>{{ $c->nombre }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
                 <div class="col-md-4">
                     <div class="form-group mb-0">
                         <label>UNIDAD MEDIDA</label>
@@ -66,6 +75,12 @@
                     <div class="form-group mb-0">
                         <label>STOCK MÍNIMO</label>
                         <input type="number" step="0.01" name="stock_minimo" value="{{ old('stock_minimo', $item->stock_minimo ?? '0') }}" min="0">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-0">
+                        <label>STOCK ACTUAL</label>
+                        <input type="number" step="0.01" name="stock_actual" value="{{ old('stock_actual', $item->stock_actual ?? '0') }}" min="0">
                     </div>
                 </div>
             </div>

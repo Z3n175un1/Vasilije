@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', $producto ? 'Editar Producto' : 'Nuevo Producto')
+@section('title', $producto ? 'Editar Mov. Almacén' : 'Nuevo Mov. Almacén')
 
 @section('content')
 <div class="main-container w-full">
@@ -12,7 +12,7 @@
     @endif
     <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 bg-white text-black p-4 rounded-3 shadow-heavy">
         <div class="header-decoration">
-            <h1 class="fs-title mb-0 text-black">{{ $producto ? 'EDITAR' : 'NUEVO' }} PRODUCTO</h1>
+            <h1 class="fs-title mb-0 text-black">{{ $producto ? 'EDITAR' : 'NUEVO' }} MOV. ALMACÉN</h1>
             <p class="font-bold small text-black uppercase">Control de Inventario y Repuestos</p>
         </div>
         <a href="{{ route('almacen.index') }}" class="btn-bento btn-bento-outline py-1 px-2 fs-mid font-bold rounded-3 text-decoration-none">
@@ -28,11 +28,43 @@
             <div class="row g-4 mb-4">
                 <div class="col-md-4">
                     <div class="form-group mb-0">
+                        <label>FECHA INGRESO</label>
+                        <input type="date" name="fecha_ingreso" value="{{ old('fecha_ingreso', $producto->fecha_ingreso ?? date('Y-m-d')) }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-0">
+                        <label>FECHA VENCIMIENTO</label>
+                        <input type="date" name="fecha_vencimiento" value="{{ old('fecha_vencimiento', $producto->fecha_vencimiento ?? '') }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-0">
+                        <label>CÓDIGO DE LOTE</label>
+                        <input type="text" name="codigo_lote" value="{{ old('codigo_lote', $producto->codigo_lote ?? $nuevoCodigoLote) }}" placeholder="LO-000001" readonly style="background:#f0f0f0;font-weight:800;letter-spacing:1px;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="form-group mb-0">
+                        <label>GRUPO <span class="text-danger">*</span></label>
+                        <select name="id_categoria" required>
+                            <option value="">SELECCIONE...</option>
+                            @foreach($categorias as $c)
+                                <option value="{{ $c->id_categoria }}" {{ old('id_categoria', $producto->id_categoria ?? '') == $c->id_categoria ? 'selected' : '' }}>{{ $c->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-0">
                         <label>CÓDIGO <span class="text-danger">*</span></label>
                         <input type="text" name="codigo" value="{{ old('codigo', $producto->codigo ?? '') }}" required placeholder="CÓDIGO DEL PRODUCTO">
                     </div>
                 </div>
-                <div class="col-md-8">
+                <div class="col-md-4">
                     <div class="form-group mb-0">
                         <label>NOMBRE <span class="text-danger">*</span></label>
                         <input type="text" name="nombre_producto" value="{{ old('nombre_producto', $producto->nombre_producto ?? '') }}" required placeholder="NOMBRE DEL PRODUCTO">
@@ -41,19 +73,7 @@
             </div>
 
             <div class="row g-4 mb-4">
-                <div class="col-md-4">
-                    <div class="form-group mb-0">
-                        <label>CATEGORÍA <span class="text-danger">*</span></label>
-                        <select name="categoria" required>
-                            <option value="">SELECCIONE...</option>
-                            @foreach($categorias as $c)
-                                <option value="{{ $c->nombre }}" {{ old('categoria', $producto->categoria ?? '') == $c->nombre ? 'selected' : '' }}>{{ $c->nombre }}</option>
-                            @endforeach
-                            <option value="OTRA" {{ old('categoria', $producto->categoria ?? '') == 'OTRA' ? 'selected' : '' }}>OTRA</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="form-group mb-0">
                         <label>UNIDAD DE MEDIDA <span class="text-danger">*</span></label>
                         <select name="unidad_medida" required>
@@ -63,21 +83,27 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="form-group mb-0">
                         <label>MARCA</label>
                         <input type="text" name="marca" value="{{ old('marca', $producto->marca ?? '') }}" placeholder="MARCA">
                     </div>
                 </div>
+                <div class="col-md-3">
+                    <div class="form-group mb-0">
+                        <label>CANTIDAD INICIAL</label>
+                        <input type="number" step="0.01" name="stock_actual" value="{{ old('stock_actual', $producto->stock_actual ?? '0') }}" min="0">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group mb-0">
+                        <label>PRECIO UNITARIO (Bs)</label>
+                        <input type="number" step="0.01" name="precio_venta" value="{{ old('precio_venta', $producto->precio_venta ?? '0') }}" min="0" placeholder="0.00">
+                    </div>
+                </div>
             </div>
 
             <div class="row g-4 mb-4">
-                <div class="col-md-3">
-                    <div class="form-group mb-0">
-                        <label>STOCK ACTUAL <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="stock_actual" value="{{ old('stock_actual', $producto->stock_actual ?? '0') }}" required min="0">
-                    </div>
-                </div>
                 <div class="col-md-3">
                     <div class="form-group mb-0">
                         <label>STOCK MÍNIMO</label>
@@ -99,6 +125,12 @@
                                 <option value="{{ $p->id_proveedor }}" {{ old('id_proveedor', $producto->id_proveedor ?? '') == $p->id_proveedor ? 'selected' : '' }}>{{ $p->nombre_proveedor }}</option>
                             @endforeach
                         </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group mb-0">
+                        <label>CÓDIGO DE FÁBRICA</label>
+                        <input type="text" name="codigo_barras" value="{{ old('codigo_barras', $producto->codigo_barras ?? '') }}" placeholder="CÓDIGO DEL FABRICANTE">
                     </div>
                 </div>
             </div>

@@ -25,13 +25,14 @@
                         <th>Código</th>
                         <th>Nombre</th>
                         <th>Grupo</th>
+                        <th>Cód. Fábrica</th>
                         <th>Unidad</th>
                         <th>Stock Mín.</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="itemsList">
-                    <tr><td colspan="6" class="text-center py-5 opacity-50">CARGANDO...</td></tr>
+                    <tr><td colspan="7" class="text-center py-5 opacity-50">CARGANDO...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -52,14 +53,15 @@ function loadItems() {
         if (!res.success) return;
         const tbody = document.getElementById('itemsList');
         if (!res.data || res.data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 opacity-50">NO HAY ÍTEMS REGISTRADOS</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5 opacity-50">NO HAY ÍTEMS REGISTRADOS</td></tr>';
             return;
         }
-        tbody.innerHTML = res.data.map(p => `
+            tbody.innerHTML = res.data.map(p => `
             <tr>
                 <td class="font-bold"><span class="badge bg-black text-white px-2">${p.codigo}</span></td>
                 <td class="font-bold">${p.nombre_producto}</td>
                 <td><span class="badge font-bold px-3 py-2" style="background:#ffc107;color:#000;border:2px solid #000;">${p.categoria}</span></td>
+                <td class="font-bold">${p.codigo_barras || '—'}</td>
                 <td class="font-bold">${p.unidad_medida}</td>
                 <td class="font-bold" style="color:#007400;">${parseFloat(p.stock_minimo || 0).toFixed(2)}</td>
                 <td>

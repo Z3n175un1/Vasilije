@@ -34,10 +34,12 @@ class ItemController extends Controller
             'id_categoria' => 'nullable|integer|exists:categorias_almacen,id_categoria',
             'unidad_medida' => 'required|string|max:20',
             'stock_minimo' => 'nullable|numeric',
+            'stock_actual' => 'nullable|numeric',
             'descripcion' => 'nullable|string',
+            'codigo_barras' => 'nullable|string|max:50',
         ]);
         $data['estado'] = 'ACTIVO';
-        $data['stock_actual'] = 0;
+        if (!isset($data['stock_actual'])) $data['stock_actual'] = 0;
 
         if (!empty($data['id_categoria'])) {
             $cat = DB::table('global.categorias_almacen')->where('id_categoria', $data['id_categoria'])->first();
@@ -46,7 +48,6 @@ class ItemController extends Controller
             $data['categoria'] = '';
         }
 
-        unset($data['id_categoria']);
         DB::table('global.inventario')->insert($data);
         return redirect()->route('items.index')->with('success', 'Ítem registrado exitosamente');
     }
@@ -59,7 +60,9 @@ class ItemController extends Controller
             'id_categoria' => 'nullable|integer|exists:categorias_almacen,id_categoria',
             'unidad_medida' => 'required|string|max:20',
             'stock_minimo' => 'nullable|numeric',
+            'stock_actual' => 'nullable|numeric',
             'descripcion' => 'nullable|string',
+            'codigo_barras' => 'nullable|string|max:50',
         ]);
 
         if (!empty($data['id_categoria'])) {
@@ -69,7 +72,6 @@ class ItemController extends Controller
             $data['categoria'] = '';
         }
 
-        unset($data['id_categoria']);
         DB::table('global.inventario')->where('id_inventario', $id)->update($data);
         return redirect()->route('items.index')->with('success', 'Ítem actualizado exitosamente');
     }

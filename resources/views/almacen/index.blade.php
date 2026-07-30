@@ -67,8 +67,8 @@
             </div>
             <div class="table-responsive-brutalist">
                 <table class="table-excel mb-0" style="font-size:.85rem;">
-                    <thead><tr><th>Código</th><th>Producto</th><th>Cat.</th><th>Unidad</th><th>Stock</th><th>Mín.</th><th>Compra</th><th>Acciones</th></tr></thead>
-                    <tbody id="productosList"><tr><td colspan="8" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
+                    <thead><tr><th>Código</th><th>Producto</th><th>Cat.</th><th>Unidad</th><th>Stock</th><th>Mín.</th><th>Compra</th><th>Lote</th><th>Acciones</th></tr></thead>
+                    <tbody id="productosList"><tr><td colspan="9" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -275,6 +275,7 @@ function loadProductos() {
                     <td class="font-bold" style="color:${sb ? '#dc3545' : '#007400'};">${parseFloat(p.stock_actual || 0).toFixed(2)}</td>
                     <td class="font-bold">${parseFloat(p.stock_minimo || 0).toFixed(2)}</td>
                     <td class="font-bold">Bs. ${parseFloat(p.precio_compra || 0).toFixed(2)}</td>
+                    <td class="font-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${p.codigo_lote || '—'}</span></td>
                     <td>
                         <div class="d-flex gap-1 justify-content-center">
                             <button class="btn btn-sm btn-warning border-black font-bold" onclick="window.location.href='{{ url("almacen") }}/${p.id_inventario}/editar'"><i class="fas fa-edit"></i></button>
