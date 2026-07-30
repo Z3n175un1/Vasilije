@@ -47,8 +47,8 @@
             <h1 class="fs-title mb-0 text-black">ALMACÉN</h1>
             <p class="font-bold small text-black uppercase">Control de Inventario y Movimientos</p>
         </div>
-        <a href="{{ route('almacen.create') }}" class="btn-bento btn-bento-primary border-black py-1 px-2 fs-mid font-bold rounded-3 text-decoration-none hover-scale btn-press">
-            <i class="fas fa-plus me-1"></i> NUEVO PRODUCTO
+        <a href="{{ route('items.create') }}" class="btn-bento btn-bento-primary border-black py-1 px-2 fs-mid font-bold rounded-3 text-decoration-none hover-scale btn-press">
+            <i class="fas fa-box me-1"></i> NUEVO ÍTEM
         </a>
     </header>
 
@@ -292,7 +292,6 @@ function loadProductos() {
                     <td class="font-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${p.codigo_lote || '—'}</span></td>
                     <td>
                         <div class="d-flex gap-1 justify-content-center">
-                            <button class="btn btn-sm btn-warning border-black font-bold" onclick="window.location.href='{{ url("almacen") }}/${p.id_inventario}/editar'"><i class="fas fa-edit"></i></button>
                             <button class="btn btn-sm btn-danger border-black font-bold" onclick="eliminarProducto(${p.id_inventario})"><i class="fas fa-ban"></i></button>
                         </div>
                     </td>
