@@ -58,7 +58,7 @@ function loadGrupos() {
         }
         tbody.innerHTML = res.data.map(g => `
             <tr>
-                <td class="font-bold"><span class="badge font-bold px-3 py-2" style="background:#ffc107;color:#000;border:2px solid #000;">${g.nombre}</span></td>
+                <td class="font-bold"><span class="badge font-bold px-3 py-2" style="background:#2f2c79;color:#fff;border:2px solid #000;">${g.nombre}</span></td>
                 <td class="font-bold">${g.descripcion || '—'}</td>
                 <td class="font-bold">${g.total_productos || 0} productos</td>
                 <td>

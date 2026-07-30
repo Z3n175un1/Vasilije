@@ -36,10 +36,10 @@
         <div class="menu-sidebar-drawer" id="menuDrawer">
             <div class="drawer-content-wrapper">
                 <div class="drawer-header pb-3 mb-4">
-                    <h1 class="text-black font-black mb-0 fs-mid d-flex flex-wrap align-items-center gap-1">
+                    <h1 class="text-white font-black mb-0 fs-mid d-flex flex-wrap align-items-center gap-1">
                         <span>DS TRANSPORTE S.R.L</span>
                     </h1>
-                    <p class="small fw-bold text-black mt-2 mb-0" style="opacity:0.7;">
+                    <p class="small fw-bold text-white mt-2 mb-0" style="opacity:0.8;">
                         <i class="fas fa-user me-1"></i> {{ auth()->user()->name }}
                     </p>
                 </div>
@@ -85,6 +85,10 @@
             </div>
         </div>
     </header>
+
+    <div style="position:fixed;top:24px;right:24px;z-index:2000;background:#fff;border:2px solid #000;border-radius:12px;padding:8px;display:flex;align-items:center;justify-content:center;width:72px;height:72px;">
+        <img src="{{ asset('favicon.ico') }}" alt="DS" style="width:100%;height:100%;object-fit:contain;border-radius:8px;">
+    </div>
     @endauth
 
     <main class="animate-fade-in">

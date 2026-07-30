@@ -29,7 +29,7 @@
                 <div class="col-md-4">
                     <div class="form-group mb-0">
                         <label>GRUPO <span class="text-danger">*</span></label>
-                        <select name="id_categoria" required>
+                        <select name="id_categoria" id="id_categoria" required onchange="generarCodigo()">
                             <option value="">SELECCIONE...</option>
                             @foreach($categorias as $c)
                                 <option value="{{ $c->id_categoria }}" {{ old('id_categoria', $item->id_categoria ?? '') == $c->id_categoria ? 'selected' : '' }}>{{ $c->nombre }}</option>
@@ -40,7 +40,7 @@
                 <div class="col-md-4">
                     <div class="form-group mb-0">
                         <label>CÓDIGO <span class="text-danger">*</span></label>
-                        <input type="text" name="codigo" value="{{ old('codigo', $item->codigo ?? '') }}" required placeholder="CÓDIGO">
+                        <input type="text" name="codigo" id="codigo" value="{{ old('codigo', $item->codigo ?? '') }}" required placeholder="SE GENERARÁ AUTOMÁTICAMENTE" {{ $item ? '' : 'readonly' }}>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -100,3 +100,20 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function generarCodigo() {
+    const catId = document.getElementById('id_categoria').value;
+    const codigoInput = document.getElementById('codigo');
+    @if(!$item)
+    if (!catId) { codigoInput.value = ''; return; }
+    fetch('{{ url("api/almacen/next-code") }}?id_categoria=' + catId)
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) codigoInput.value = res.code;
+        });
+    @endif
+}
+</script>
+@endpush

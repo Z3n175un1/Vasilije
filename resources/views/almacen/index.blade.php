@@ -29,7 +29,7 @@
 }
 .tab-btn-alm.active {
     background: #000 !important;
-    color: #ffc107 !important;
+    color: #fff !important;
 }
 .tab-btn-alm:not(.active) {
     background: #fff;
@@ -76,12 +76,12 @@
         <div class="bento-card p-0 border-black" style="border-width:4px;overflow:hidden;">
             <div class="bg-white text-black font-bold p-3 border-bottom border-black d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-arrow-down me-2"></i> Compras (Ingresos a Almacén)</span>
-                <button class="btn btn-sm fw-bold" style="background:#000;color:#ffc107;border:3px solid #000;padding:8px 16px;" onclick="abrirModalMovimiento('COMPRA')"><i class="fas fa-plus me-1"></i> NUEVA COMPRA</button>
+                <button class="btn btn-sm fw-bold" style="background:#000;color:#fff;border:3px solid #000;padding:8px 16px;" onclick="abrirModalMovimiento('COMPRA')"><i class="fas fa-plus me-1"></i> NUEVA COMPRA</button>
             </div>
                 <div class="table-responsive-brutalist">
                     <table class="table-excel mb-0" style="font-size:.85rem;">
-                        <thead><tr><th>Fecha</th><th>Código</th><th>Producto</th><th>Cantidad</th><th>P. Unit.</th><th>Proveedor</th><th>Lote</th></tr></thead>
-                        <tbody id="comprasList"><tr><td colspan="7" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
+                        <thead><tr><th>Fecha</th><th>Código</th><th>Producto</th><th>Cantidad</th><th>P. Unit.</th><th>P. Compra</th><th>Proveedor</th><th>Lote</th></tr></thead>
+                        <tbody id="comprasList"><tr><td colspan="8" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
                     </table>
                 </div>
         </div>
@@ -91,7 +91,7 @@
         <div class="bento-card p-0 border-black" style="border-width:4px;overflow:hidden;">
             <div class="bg-white text-black font-bold p-3 border-bottom border-black d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-arrow-up me-2"></i> Entregas (Salidas de Almacén)</span>
-                <button class="btn btn-sm fw-bold" style="background:#000;color:#ffc107;border:3px solid #000;padding:8px 16px;" onclick="abrirModalMovimiento('ENTREGA')"><i class="fas fa-plus me-1"></i> NUEVA ENTREGA</button>
+                <button class="btn btn-sm fw-bold" style="background:#000;color:#fff;border:3px solid #000;padding:8px 16px;" onclick="abrirModalMovimiento('ENTREGA')"><i class="fas fa-plus me-1"></i> NUEVA ENTREGA</button>
             </div>
                 <div class="table-responsive-brutalist">
                     <table class="table-excel mb-0" style="font-size:.85rem;">
@@ -136,17 +136,40 @@
                 </div>
             </div>
             <div class="col-md-3">
+                <div class="p-3 text-center" style="background:#f8d7da;border:3px solid #000;">
+                    <div class="small fw-bold">Stock Cero</div>
+                    <div class="fs-5 fw-bold" style="color:#dc3545;" id="saldoStockCero">0</div>
+                </div>
+            </div>
+            <div class="col-md-3">
                 <div class="p-3 text-center" style="background:#cce5ff;border:3px solid #000;">
                     <div class="small fw-bold">Valor Inventario</div>
                     <div class="fs-5 fw-bold" id="saldoValor">Bs. 0</div>
                 </div>
             </div>
         </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <div class="p-3 text-center" style="background:#e8d5f5;border:3px solid #000;">
+                    <div class="small fw-bold">Total Inversión</div>
+                    <div class="fs-5 fw-bold" id="saldoTotalInversion">Bs. 0</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 text-center" style="background:#d1ecf1;border:3px solid #000;">
+                    <div class="small fw-bold">Valor Promedio x Producto</div>
+                    <div class="fs-5 fw-bold" id="saldoPromedio">Bs. 0</div>
+                </div>
+            </div>
+        </div>
+        <div class="mb-3">
+            <input type="text" class="form-control fw-bold" id="filtroSaldos" style="border-radius:0;border:3px solid #000;padding:12px;" placeholder="FILTRAR POR PRODUCTO O CÓDIGO..." oninput="filtrarSaldos()">
+        </div>
         <div class="bento-card p-0 border-black" style="border-width:4px;overflow:hidden;">
             <div class="table-responsive-brutalist">
-                <table class="table-excel mb-0" style="font-size:.85rem;">
-                    <thead><tr><th>Producto</th><th>Stock</th><th>Mín.</th><th>Estado</th></tr></thead>
-                    <tbody id="saldosList"><tr><td colspan="4" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
+                <table class="table-excel mb-0" style="font-size:.82rem;">
+                    <thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Unidad</th><th>Stock</th><th>Mín.</th><th>P. Compra</th><th>Valor Total</th><th>Estado</th></tr></thead>
+                    <tbody id="saldosList"><tr><td colspan="9" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -155,7 +178,7 @@
 
 <div class="modal-overlay-fact" id="modalMovimiento" style="display:none;z-index:9999;" onclick="if(event.target===this)cerrarModalMov()">
     <div class="modal-content-fact" onclick="event.stopPropagation()">
-        <div class="p-3" style="background:#000;color:#ffc107;">
+        <div class="p-3" style="background:#000;color:#fff;">
             <h3 class="mb-0 fw-bold fs-5" id="modalMovTitle"><i class="fas fa-exchange-alt me-2"></i> REGISTRAR MOVIMIENTO</h3>
         </div>
         <div class="p-3" style="background:#fff;border:4px solid #000;border-top:none;">
@@ -184,15 +207,15 @@
                 <div class="row g-3 mb-3">
                     <div class="col-md-4">
                         <label class="fw-bold small text-uppercase">CANTIDAD <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="movCantidad" style="border-radius:0;border:3px solid #000;padding:10px;" required min="0.01" placeholder="0.00">
+                        <input type="number" step="0.01" class="form-control fw-bold" id="movCantidad" style="border-radius:0;border:3px solid #000;padding:10px;" required min="0.01" placeholder="0.00" oninput="calcularPrecioCompra()">
                     </div>
                     <div class="col-md-4">
                         <label class="fw-bold small text-uppercase">PRECIO UNITARIO (Bs)</label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="movPrecioUnitario" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" placeholder="0.00">
+                        <input type="number" step="0.01" class="form-control fw-bold" id="movPrecioUnitario" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" placeholder="0.00" oninput="calcularPrecioCompra()">
                     </div>
                     <div class="col-md-4" id="movPrecioCompraRow">
                         <label class="fw-bold small text-uppercase">PRECIO COMPRA (Bs)</label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="movPrecioCompra" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" placeholder="0.00">
+                        <input type="number" step="0.01" class="form-control fw-bold" id="movPrecioCompra" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0;" min="0" placeholder="0.00" readonly>
                     </div>
                 </div>
                 <div class="row g-3 mb-3" id="movProveedorRow">
@@ -222,7 +245,7 @@
                     </div>
                 </div>
                 <div class="d-flex gap-2 mt-4">
-                    <button type="submit" class="btn fw-bold flex-grow-1" style="background:#000;color:#ffc107;border:4px solid #000;padding:12px;" id="btnGuardarMov">
+                    <button type="submit" class="btn fw-bold flex-grow-1" style="background:#000;color:#fff;border:4px solid #000;padding:12px;" id="btnGuardarMov">
                         <i class="fas fa-save"></i> GUARDAR
                     </button>
                     <button type="button" class="btn fw-bold" style="border:4px solid #000;padding:12px;" onclick="cerrarModalMov()">CANCELAR</button>
@@ -278,11 +301,11 @@ function loadProductos() {
                 tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5 opacity-50">NO HAY PRODUCTOS</td></tr>'; return;
             }
             tbody.innerHTML = res.data.map(p => {
-                const sb = p.stock_actual <= p.stock_minimo;
+                const sb = parseFloat(p.stock_actual || 0) <= parseFloat(p.stock_minimo || 0);
                 return `<tr>
                     <td class="font-bold"><span class="badge bg-black text-white px-2">${p.codigo}</span></td>
                     <td class="font-bold">${p.nombre_producto}</td>
-                    <td><span class="badge font-bold px-2 py-1" style="background:#ffc107;color:#000;border:2px solid #000;">${p.categoria}</span></td>
+                    <td><span class="badge font-bold px-2 py-1" style="background:#2f2c79;color:#fff;border:2px solid #000;">${p.categoria}</span></td>
                     <td class="font-bold">${p.unidad_medida}</td>
                     <td class="font-bold" style="color:${sb ? '#dc3545' : '#007400'};">${parseFloat(p.stock_actual || 0).toFixed(2)}</td>
                     <td class="font-bold">${parseFloat(p.stock_minimo || 0).toFixed(2)}</td>
@@ -303,11 +326,12 @@ function loadCompras() {
         .then(r => r.json()).then(res => {
             const tbody = document.getElementById('comprasList');
             if (!res.success || !res.data || res.data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>'; return;
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>'; return;
             }
-            tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'COMPRA').map(m =>
-                `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${m.codigo || '—'}</span></td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">${m.proveedor || '—'}</td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${m.codigo_lote || '—'}</span></td></tr>`
-            ).join('') || '<tr><td colspan="7" class="text-center py-5 opacity-50">SIN COMPRAS REGISTRADAS</td></tr>';
+            tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'COMPRA').map(m => {
+                const total = parseFloat(m.cantidad || 0) * parseFloat(m.costo_unitario || 0);
+                return `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${m.codigo || '—'}</span></td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</td><td class="fw-bold">${m.proveedor || '—'}</td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${m.codigo_lote || '—'}</span></td></tr>`;
+            }).join('') || '<tr><td colspan="8" class="text-center py-5 opacity-50">SIN COMPRAS REGISTRADAS</td></tr>';
         });
 }
 
@@ -361,19 +385,48 @@ function loadSaldos() {
             if (!res.success || !res.data) return;
             const data = res.data;
             document.getElementById('saldoTotalProductos').textContent = data.length;
-            const bajo = data.filter(p => p.stock_actual <= p.stock_minimo).length;
+            const bajo = data.filter(p => parseFloat(p.stock_actual || 0) <= parseFloat(p.stock_minimo || 0)).length;
             document.getElementById('saldoStockBajo').textContent = bajo;
-            const valor = data.reduce((s, p) => s + parseFloat(p.stock_actual || 0) * parseFloat(p.precio_compra || 0), 0);
+            const cero = data.filter(p => parseFloat(p.stock_actual || 0) === 0).length;
+            document.getElementById('saldoStockCero').textContent = cero;
+            const valor = data.reduce((s, p) => s + parseFloat(p.stock_actual || 0) * parseFloat(p.ultimo_precio || p.precio_compra || 0), 0);
             document.getElementById('saldoValor').textContent = 'Bs. ' + valor.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-            const tbody = document.getElementById('saldosList');
-            tbody.innerHTML = data.map(p => {
-                const sb = p.stock_actual <= p.stock_minimo;
-                return `<tr><td class="fw-bold">${p.nombre_producto}</td>
-                    <td class="fw-bold" style="color:${sb ? '#dc3545' : '#007400'};">${parseFloat(p.stock_actual || 0).toFixed(2)}</td>
-                    <td class="fw-bold">${parseFloat(p.stock_minimo || 0).toFixed(2)}</td>
-                    <td><span class="badge fw-bold px-3 py-2" style="border:2px solid #000;background:${sb ? '#f8d7da' : '#d4edda'};color:${sb ? '#dc3545' : '#007400'};">${sb ? 'BAJO' : 'OK'}</span></td></tr>`;
-            }).join('');
+            document.getElementById('saldoTotalInversion').textContent = 'Bs. ' + valor.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            const prom = data.length > 0 ? (valor / data.length) : 0;
+            document.getElementById('saldoPromedio').textContent = 'Bs. ' + prom.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            window.saldosData = data;
+            renderSaldos(data);
         });
+}
+
+function renderSaldos(data) {
+    const tbody = document.getElementById('saldosList');
+    tbody.innerHTML = data.map(p => {
+        const sb = parseFloat(p.stock_actual || 0) <= parseFloat(p.stock_minimo || 0);
+        const precio = parseFloat(p.ultimo_precio || p.precio_compra || 0);
+        const total = parseFloat(p.stock_actual || 0) * precio;
+        return `<tr>
+            <td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${p.codigo || '—'}</span></td>
+            <td class="fw-bold">${p.nombre_producto}</td>
+            <td class="fw-bold">${p.categoria || '—'}</td>
+            <td class="fw-bold">${p.unidad_medida || '—'}</td>
+            <td class="fw-bold" style="color:${sb ? '#dc3545' : '#007400'};">${parseFloat(p.stock_actual || 0).toFixed(2)}</td>
+            <td class="fw-bold">${parseFloat(p.stock_minimo || 0).toFixed(2)}</td>
+            <td class="fw-bold">Bs. ${precio.toFixed(2)}</td>
+            <td class="fw-bold">Bs. ${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</td>
+            <td><span class="badge fw-bold px-3 py-2" style="border:2px solid #000;background:${sb ? '#f8d7da' : '#d4edda'};color:${sb ? '#dc3545' : '#007400'};">${sb ? 'BAJO' : 'OK'}</span></td>
+        </tr>`;
+    }).join('');
+}
+
+function filtrarSaldos() {
+    const filtro = document.getElementById('filtroSaldos').value.toLowerCase();
+    const data = (window.saldosData || []).filter(p =>
+        (p.nombre_producto || '').toLowerCase().includes(filtro) ||
+        (p.codigo || '').toLowerCase().includes(filtro) ||
+        (p.categoria || '').toLowerCase().includes(filtro)
+    );
+    renderSaldos(data);
 }
 
 function mostrarStockProducto() {
@@ -446,6 +499,12 @@ function abrirModalMovimiento(tipo) {
 
 function cerrarModalMov() {
     document.getElementById('modalMovimiento').style.display = 'none';
+}
+
+function calcularPrecioCompra() {
+    const cantidad = parseFloat(document.getElementById('movCantidad').value) || 0;
+    const unitario = parseFloat(document.getElementById('movPrecioUnitario').value) || 0;
+    document.getElementById('movPrecioCompra').value = (cantidad * unitario).toFixed(2);
 }
 
 function guardarMovimiento(event) {

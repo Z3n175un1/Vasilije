@@ -39,7 +39,7 @@ class AlmacenController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'codigo' => 'required|string|max:20|unique:inventario,codigo',
+            'codigo' => 'nullable|string|max:20|unique:inventario,codigo',
             'nombre_producto' => 'required|string|max:100',
             'id_categoria' => 'nullable|integer|exists:categorias_almacen,id_categoria',
             'unidad_medida' => 'required|string|max:20',
@@ -60,6 +60,12 @@ class AlmacenController extends Controller
         } else {
             $data['categoria'] = '';
         }
+
+        if (empty($data['codigo'])) {
+            $data['codigo'] = $this->generateNextCode($data['categoria'] ?? '');
+        }
+
+        unset($data['id_categoria']);
 
         DB::table('global.inventario')->insertGetId($data, 'id_inventario');
 
@@ -88,6 +94,7 @@ class AlmacenController extends Controller
         } else {
             $data['categoria'] = '';
         }
+        unset($data['id_categoria']);
 
         DB::table('global.inventario')->where('id_inventario', $id)->update($data);
         return redirect()->route('almacen.index')->with('success', 'Producto actualizado exitosamente');
@@ -104,7 +111,8 @@ class AlmacenController extends Controller
         $query = DB::table('global.inventario')
             ->leftJoin('global.proveedores', 'global.inventario.id_proveedor', '=', 'global.proveedores.id_proveedor')
             ->select('global.inventario.*', 'global.proveedores.nombre_proveedor',
-                DB::raw('(SELECT codigo_lote FROM global.lotes WHERE id_inventario = global.inventario.id_inventario ORDER BY id_lote DESC LIMIT 1) as codigo_lote'))
+                DB::raw('(SELECT codigo_lote FROM global.lotes WHERE id_inventario = global.inventario.id_inventario ORDER BY id_lote DESC LIMIT 1) as codigo_lote'),
+                DB::raw('(SELECT costo_unitario FROM global.movimientos_inventario WHERE id_inventario = global.inventario.id_inventario AND tipo_movimiento = \'COMPRA\' ORDER BY id_movimiento DESC LIMIT 1) as ultimo_precio'))
             ->where('global.inventario.estado', 'ACTIVO');
 
         if ($request->filled('categoria')) {
@@ -190,6 +198,23 @@ class AlmacenController extends Controller
                 'observaciones' => $validated['observaciones'] ?? null,
             ], 'id_movimiento');
 
+            $updateInventario = [];
+            if ($validated['tipo_movimiento'] === 'COMPRA') {
+                $updateInventario['stock_actual'] = DB::raw('COALESCE(stock_actual, 0) + ' . $validated['cantidad']);
+                if (!empty($validated['precio_unitario'])) {
+                    $updateInventario['precio_compra'] = $validated['precio_unitario'];
+                    $updateInventario['ultimo_costo'] = $validated['precio_unitario'];
+                }
+            } elseif ($validated['tipo_movimiento'] === 'SALIDA') {
+                $updateInventario['stock_actual'] = DB::raw('COALESCE(stock_actual, 0) - ' . $validated['cantidad']);
+            }
+
+            if (!empty($updateInventario)) {
+                DB::table('global.inventario')
+                    ->where('id_inventario', $validated['id_inventario'])
+                    ->update($updateInventario);
+            }
+
             if ($validated['tipo_movimiento'] === 'COMPRA' && !empty($validated['codigo_lote'])) {
                 $loteExistente = DB::table('global.lotes')
                     ->where('codigo_lote', $validated['codigo_lote'])
@@ -228,5 +253,48 @@ class AlmacenController extends Controller
     {
         $lote = DB::table('global.lotes')->orderBy('id_lote', 'desc')->first();
         return response()->json(['success' => true, 'data' => $lote]);
+    }
+
+    public function apiNextCode(Request $request)
+    {
+        $idCategoria = $request->input('id_categoria');
+        if (!$idCategoria) {
+            return response()->json(['success' => false, 'message' => 'Seleccione un grupo']);
+        }
+
+        $cat = DB::table('global.categorias_almacen')->where('id_categoria', $idCategoria)->first();
+        if (!$cat) {
+            return response()->json(['success' => false, 'code' => '']);
+        }
+
+        $code = $this->generateNextCode($cat->nombre);
+        return response()->json(['success' => true, 'code' => $code]);
+    }
+
+    private function generateNextCode($categoryName)
+    {
+        $prefix = $categoryName ? strtoupper(substr($categoryName, 0, 2)) : 'XX';
+
+        $count = DB::table('global.inventario')
+            ->where('categoria', $categoryName)
+            ->count();
+
+        $itemNum = str_pad($count + 1, 3, '0', STR_PAD_LEFT);
+
+        $lastProduct = DB::table('global.inventario')
+            ->where('codigo', 'like', $prefix . '-%')
+            ->orderBy('id_inventario', 'desc')
+            ->first();
+
+        $lastSeq = 0;
+        if ($lastProduct) {
+            $parts = explode('-', $lastProduct->codigo);
+            if (count($parts) === 3) {
+                $lastSeq = (int) $parts[2];
+            }
+        }
+        $seqNum = str_pad($lastSeq + 1, 5, '0', STR_PAD_LEFT);
+
+        return $prefix . '-' . $itemNum . '-' . $seqNum;
     }
 }

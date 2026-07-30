@@ -29,7 +29,7 @@
             </select>
         </div>
         <div class="col-md-4">
-            <button class="btn fw-bold w-100" style="border:3px solid #000;background:#000;color:#ffc107;padding:10px;" onclick="cargarGastos()">
+            <button class="btn fw-bold w-100" style="border:3px solid #000;background:#000;color:#fff;padding:10px;" onclick="cargarGastos()">
                 <i class="fas fa-search"></i> FILTRAR
             </button>
         </div>

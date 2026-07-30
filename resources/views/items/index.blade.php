@@ -60,7 +60,7 @@ function loadItems() {
             <tr>
                 <td class="font-bold"><span class="badge bg-black text-white px-2">${p.codigo}</span></td>
                 <td class="font-bold">${p.nombre_producto}</td>
-                <td><span class="badge font-bold px-3 py-2" style="background:#ffc107;color:#000;border:2px solid #000;">${p.categoria}</span></td>
+                <td><span class="badge font-bold px-3 py-2" style="background:#2f2c79;color:#fff;border:2px solid #000;">${p.categoria}</span></td>
                 <td class="font-bold">${p.codigo_barras || '—'}</td>
                 <td class="font-bold">${p.unidad_medida}</td>
                 <td class="font-bold" style="color:#007400;">${parseFloat(p.stock_minimo || 0).toFixed(2)}</td>

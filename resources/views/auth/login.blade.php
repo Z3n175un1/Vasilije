@@ -276,7 +276,7 @@ html, body {
     letter-spacing: -6px;
     line-height: 0.85;
     color: #fff;
-    text-shadow: 6px 6px 0 #ffcc00;
+    text-shadow: 6px 6px 0 #2f2c79;
 }
 
 .brand-transporte {
@@ -292,7 +292,7 @@ html, body {
     font-size: clamp(0.6rem, 1vw, 0.75rem);
     font-weight: 600;
     letter-spacing: 4px;
-    color: #ffcc00;
+    color: #2f2c79;
     margin-top: 0.15rem;
 }
 
@@ -332,7 +332,7 @@ html, body {
     align-items: center;
     justify-content: center;
     background: rgba(255, 204, 0, 0.15);
-    color: #ffcc00;
+    color: #2f2c79;
     font-size: 0.9rem;
     flex-shrink: 0;
     transition: all 0.3s ease;
@@ -343,7 +343,7 @@ html, body {
 }
 
 .feature-item:hover i {
-    background: #ffcc00;
+    background: #9ce0db;
     color: #000;
 }
 
@@ -378,7 +378,7 @@ html, body {
     align-items: center;
     justify-content: center;
     background: #000;
-    color: #ffcc00;
+    color: #fff;
     font-size: 1.4rem;
     margin: 0 auto 1.2rem;
     border: 3px solid #000;
@@ -386,7 +386,8 @@ html, body {
 }
 
 .login-card:hover .login-card-icon {
-    background: #ffcc00;
+    background: #2f2c79;
+    color: #fff;
     color: #000;
 }
 
@@ -455,7 +456,7 @@ html, body {
 
 .login-field label i {
     font-size: 0.75rem;
-    color: #ffcc00;
+    color: #2f2c79;
     width: 16px;
     text-align: center;
 }
@@ -484,8 +485,8 @@ html, body {
 }
 
 .login-input-wrap input:focus {
-    border-color: #ffcc00;
-    box-shadow: inset 0 0 0 1px #ffcc00;
+    border-color: #2f2c79;
+    box-shadow: inset 0 0 0 1px #2f2c79;
 }
 
 .input-border {
@@ -493,7 +494,7 @@ html, body {
     bottom: 0; left: 50%;
     width: 0;
     height: 3px;
-    background: #ffcc00;
+    background: #2f2c79;
     transition: all 0.3s ease;
     transform: translateX(-50%);
 }
@@ -525,7 +526,7 @@ html, body {
     padding: 1.25rem;
     margin-top: 0.5rem;
     background: #000;
-    color: #ffcc00;
+    color: #fff;
     border: 3px solid #000;
     font-family: inherit;
     font-size: 0.85rem;
@@ -548,7 +549,7 @@ html, body {
     content: '';
     position: absolute;
     inset: 0;
-    background: #ffcc00;
+    background: #2f2c79;
     transform: scaleX(0);
     transform-origin: right;
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -594,7 +595,7 @@ html, body {
 .loader-dot {
     width: 8px;
     height: 8px;
-    background: #ffcc00;
+    background: #2f2c79;
     border-radius: 50%;
     animation: dotBounce 0.6s ease-in-out infinite alternate;
 }

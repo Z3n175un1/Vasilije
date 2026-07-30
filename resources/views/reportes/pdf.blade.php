@@ -28,7 +28,7 @@
             width: 70px;
             height: 70px;
             background: #1a1a1a;
-            color: #ffc107;
+            color: #2f2c79;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -113,7 +113,7 @@
         }
         thead th {
             background: #1a1a1a;
-            color: #ffc107;
+            color: #2f2c79;
             font-weight: 800;
             font-size: 7pt;
             text-transform: uppercase;
@@ -147,7 +147,7 @@
         .badge-egreso { background: #ffdcd6; color: #cc0000; }
         .footer-total {
             background: #1a1a1a;
-            color: #ffc107;
+            color: #2f2c79;
             font-weight: 800;
             font-size: 8.5pt;
             padding: 8px 10px;

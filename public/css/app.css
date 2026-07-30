@@ -6,11 +6,12 @@
   --gray-dark: #333333;
   --gray-mid: #666666;
   --gray-light: #cccccc;
-  --warning: #ffcc00;
+  --warning: #2f2c79;
   --success: #28a745;
   --danger: #dc3545;
   --info: #17a2b8;
-  --primary: #ffcc00;
+  --primary: #2f2c79;
+  --hover: #9ce0db;
   --red: #dc3545;
 }
 
@@ -38,7 +39,7 @@ body {
   }
 }
 
-h1, h2, h3, h4, .font-bold, i.fas, i.far {
+h1, h2, h3, h4, .font-bold {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: -0.01em;
@@ -53,13 +54,13 @@ h1, h2, h3, h4, .font-bold, i.fas, i.far {
 .text-black { color: #000 !important; }
 .text-gray-light { color: var(--gray-light) !important; }
 
-.bg-warning { background: var(--warning) !important; color: #000 !important; }
+.bg-warning { background: var(--warning) !important; color: #fff !important; }
 .bg-success { background: var(--success) !important; color: #fff !important; }
 .bg-danger { background: var(--danger) !important; color: #fff !important; }
 .bg-info { background: var(--info) !important; color: #fff !important; }
 .bg-white { background: #fff !important; color: #000 !important; }
 .bg-black { background: #000 !important; color: #fff !important; }
-.bg-primary { background: var(--primary) !important; }
+.bg-primary { background: var(--primary) !important; color: #fff !important; }
 
 .border-white { border: 4px solid #fff !important; }
 .border-black { border: 4px solid #000 !important; }
@@ -173,7 +174,7 @@ main {
   background: #fff !important;
   color: #000 !important;
   border-color: #000 !important;
-  box-shadow: 0 0 0 4px rgba(255, 204, 0, 0.3) !important;
+  box-shadow: 0 0 0 4px rgba(46, 44, 121, 0.2) !important;
 }
 
 .form-bento select option {
@@ -200,17 +201,17 @@ main {
 
 .btn-bento-primary {
   background: var(--warning);
-  color: #000;
-}
-
-.btn-bento-primary i { color: #000 !important; }
-
-.btn-bento-primary:hover:not(:disabled) {
-  background: #000;
   color: #fff;
 }
 
-.btn-bento-primary:hover:not(:disabled) i { color: #fff !important; }
+.btn-bento-primary i { color: #fff !important; }
+
+.btn-bento-primary:hover:not(:disabled) {
+  background: var(--hover);
+  color: #000;
+}
+
+.btn-bento-primary:hover:not(:disabled) i { color: #000 !important; }
 
 .btn-bento-outline {
   background: #fff;
@@ -343,7 +344,7 @@ main {
   text-align: center;
 }
 
-.table-excel tr:hover td { background: rgba(255, 204, 0, 0.1); }
+.table-excel tr:hover td { background: rgba(46, 44, 121, 0.08); }
 
 .header-decoration {
   border-left: 8px solid #000;
@@ -355,7 +356,7 @@ main {
 }
 
 .shadow-heavy {
-  box-shadow: 10px 10px 0px var(--warning) !important;
+  box-shadow: 10px 10px 0px var(--primary) !important;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -365,8 +366,8 @@ main {
 }
 
 .btn-filtro-activo {
-  background: var(--warning) !important;
-  color: #000 !important;
+  background: var(--primary) !important;
+  color: #fff !important;
   border: 4px solid #000 !important;
   border-radius: 0 !important;
 }
@@ -379,7 +380,7 @@ main {
 }
 
 .btn-filtro-inactivo:hover {
-  background: rgba(255, 204, 0, 0.2) !important;
+  background: rgba(46, 44, 121, 0.15) !important;
 }
 
 .btn-action-mini {
@@ -403,8 +404,8 @@ main {
 }
 
 .navbar-bento-floating .btn-menu-toggle {
-  background: var(--warning) !important;
-  color: #000 !important;
+  background: var(--primary) !important;
+  color: #fff !important;
   border: 2px solid #000 !important;
   border-radius: 12px !important;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
@@ -414,7 +415,7 @@ main {
 }
 
 .navbar-bento-floating .btn-menu-toggle:hover {
-  background: #e6b800 !important;
+  background: var(--hover) !important;
   box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
 }
 
@@ -442,7 +443,7 @@ main {
   left: 0;
   width: 320px;
   height: 100vh;
-  background: var(--warning);
+  background: var(--primary);
   padding: 2.5rem;
   z-index: 1999;
   box-shadow: 10px 0 0 rgba(0,0,0,0.04);
@@ -457,7 +458,7 @@ main {
 .menu-sidebar-drawer.open { transform: translateX(0); }
 
 .menu-sidebar-drawer .drawer-nav-links a {
-  color: #000 !important;
+  color: #fff !important;
   font-weight: 700 !important;
   font-size: 1rem !important;
   text-decoration: none !important;
@@ -468,13 +469,13 @@ main {
 }
 
 .menu-sidebar-drawer .drawer-nav-links a:hover {
-  background: rgba(0,0,0,0.08) !important;
-  color: #000 !important;
+  background: rgba(255,255,255,0.15) !important;
+  color: var(--hover) !important;
 }
 
 .menu-sidebar-drawer .drawer-nav-links a.active {
-  background: #000 !important;
-  color: var(--warning) !important;
+  background: var(--hover) !important;
+  color: #000 !important;
   border-radius: 12px !important;
 }
 

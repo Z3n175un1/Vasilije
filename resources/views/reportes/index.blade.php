@@ -6,7 +6,7 @@
 <style>
 .report-table th {
     background: #000 !important;
-    color: #ffc107 !important;
+    color: #2f2c79 !important;
     font-weight: 800;
     padding: 12px 10px;
     border: 2px solid #000;
@@ -45,7 +45,7 @@
     margin-top: 5px;
 }
 .filter-card {
-    background: #ffc107;
+    background: #2f2c79;
     border: 4px solid #000;
     padding: 20px;
 }
@@ -125,12 +125,12 @@
                 <input type="date" class="form-control" id="filterFechaFin" value="{{ date('Y-m-d') }}">
             </div>
             <div class="col-md-2">
-                <button class="btn fw-bold w-100 d-flex align-items-center justify-content-center gap-2" style="background:#000;color:#ffc107;border:3px solid #000;padding:10px;border-radius:0;" onclick="cargarReporte()">
+                <button class="btn fw-bold w-100 d-flex align-items-center justify-content-center gap-2" style="background:#000;color:#fff;border:3px solid #000;padding:10px;border-radius:0;" onclick="cargarReporte()">
                     <i class="fas fa-search"></i> GENERAR
                 </button>
             </div>
             <div class="col-md-2">
-                <button class="btn fw-bold w-100 d-flex align-items-center justify-content-center gap-2" style="background:#000;color:#ffc107;border:3px solid #000;padding:10px;border-radius:0;" onclick="exportCSV()">
+                <button class="btn fw-bold w-100 d-flex align-items-center justify-content-center gap-2" style="background:#000;color:#fff;border:3px solid #000;padding:10px;border-radius:0;" onclick="exportCSV()">
                     <i class="fas fa-file-csv"></i> CSV
                 </button>
             </div>
@@ -195,7 +195,7 @@
                 <tbody id="reportBody"></tbody>
             </table>
         </div>
-        <div class="fw-bold p-3 text-end" style="background:#000;color:#ffc107;border:4px solid #000;border-top:none;font-size:1.1rem;">
+        <div class="fw-bold p-3 text-end" style="background:#000;color:#fff;border:4px solid #000;border-top:none;font-size:1.1rem;">
             TOTAL INGRESOS: <span id="footerIngresos">Bs. 0.00</span>
             &nbsp;&nbsp;|&nbsp;&nbsp;
             TOTAL EGRESOS: <span id="footerEgresos">Bs. 0.00</span>
@@ -304,7 +304,7 @@ function cargarReporte() {
         document.getElementById('footerEgresos').textContent = formatCurrency(te);
         const fb = document.getElementById('footerBalance');
         fb.textContent = formatCurrency(balance);
-        fb.style.color = balance >= 0 ? '#ffc107' : '#ff6b6b';
+        fb.style.color = balance >= 0 ? '#2f2c79' : '#ff6b6b';
     });
 }
 

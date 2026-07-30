@@ -29,7 +29,7 @@ class ItemController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'codigo' => 'required|string|max:20|unique:inventario,codigo',
+            'codigo' => 'nullable|string|max:20|unique:inventario,codigo',
             'nombre_producto' => 'required|string|max:100',
             'id_categoria' => 'nullable|integer|exists:categorias_almacen,id_categoria',
             'unidad_medida' => 'required|string|max:20',
@@ -47,6 +47,12 @@ class ItemController extends Controller
         } else {
             $data['categoria'] = '';
         }
+
+        if (empty($data['codigo'])) {
+            $data['codigo'] = $this->generateNextCode($data['categoria'] ?? '');
+        }
+
+        unset($data['id_categoria']);
 
         DB::table('global.inventario')->insert($data);
         return redirect()->route('items.index')->with('success', 'Ítem registrado exitosamente');
@@ -71,6 +77,7 @@ class ItemController extends Controller
         } else {
             $data['categoria'] = '';
         }
+        unset($data['id_categoria']);
 
         DB::table('global.inventario')->where('id_inventario', $id)->update($data);
         return redirect()->route('items.index')->with('success', 'Ítem actualizado exitosamente');
@@ -95,5 +102,32 @@ class ItemController extends Controller
     {
         $item = DB::table('global.inventario')->where('id_inventario', $id)->first();
         return response()->json(['success' => true, 'data' => $item]);
+    }
+
+    private function generateNextCode($categoryName)
+    {
+        $prefix = $categoryName ? strtoupper(substr($categoryName, 0, 2)) : 'XX';
+
+        $count = DB::table('global.inventario')
+            ->where('categoria', $categoryName)
+            ->count();
+
+        $itemNum = str_pad($count + 1, 3, '0', STR_PAD_LEFT);
+
+        $lastProduct = DB::table('global.inventario')
+            ->where('codigo', 'like', $prefix . '-%')
+            ->orderBy('id_inventario', 'desc')
+            ->first();
+
+        $lastSeq = 0;
+        if ($lastProduct) {
+            $parts = explode('-', $lastProduct->codigo);
+            if (count($parts) === 3) {
+                $lastSeq = (int) $parts[2];
+            }
+        }
+        $seqNum = str_pad($lastSeq + 1, 5, '0', STR_PAD_LEFT);
+
+        return $prefix . '-' . $itemNum . '-' . $seqNum;
     }
 }

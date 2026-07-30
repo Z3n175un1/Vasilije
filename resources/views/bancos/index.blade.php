@@ -65,7 +65,7 @@ function loadBancos() {
                 <td class="font-bold">${b.nombre_banco}</td>
                 <td class="font-bold">${b.numero_cuenta}</td>
                 <td class="font-bold">${b.titular}</td>
-                <td><span class="badge font-bold px-3 py-2" style="background:#ffc107;color:#000;border:2px solid #000;">${b.tipo_cuenta}</span></td>
+                <td><span class="badge font-bold px-3 py-2" style="background:#2f2c79;color:#fff;border:2px solid #000;">${b.tipo_cuenta}</span></td>
                 <td class="font-bold">${b.moneda}</td>
                 <td class="font-bold" style="color:#007400;">Bs. ${parseFloat(b.saldo_actual || 0).toFixed(2)}</td>
                 <td><span class="badge font-bold px-3 py-2" style="background:${b.estado === 'ACTIVO' ? '#e2ffd6' : '#ffdcd6'};color:${b.estado === 'ACTIVO' ? '#007400' : '#740000'};border:2px solid #000;">${b.estado}</span></td>

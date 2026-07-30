@@ -82,7 +82,7 @@ function loadUsuarios() {
 }
 
 function rolColor(rol) {
-    const colors = { admin: '#dc3545', supervisor: '#ffc107', operador: '#0d6efd', lectura: '#198754' };
+    const colors = { admin: '#dc3545', supervisor: '#2f2c79', operador: '#0d6efd', lectura: '#198754' };
     return colors[rol] || '#6c757d';
 }
 

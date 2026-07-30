@@ -83,10 +83,10 @@
             <div class="d-flex align-items-center gap-2 flex-wrap">
                 <span class="small uppercase font-bold text-black"><i class="fas fa-truck me-2"></i> Monitoreo de Flota Activa</span>
                 <div class="d-flex gap-1">
-                    <button class="btn btn-sm font-bold border-black px-2 py-1" style="background:#ffc107;color:#000;font-size:.7rem;" onclick="sortVehiculos('asc')" title="A-Z"><i class="fas fa-sort-alpha-down"></i> ASC</button>
-                    <button class="btn btn-sm font-bold border-black px-2 py-1" style="background:#ffc107;color:#000;font-size:.7rem;" onclick="sortVehiculos('desc')" title="Z-A"><i class="fas fa-sort-alpha-up"></i> DESC</button>
-                    <button class="btn btn-sm font-bold border-black px-2 py-1" style="background:#ffc107;color:#000;font-size:.7rem;" onclick="sortVehiculos('abc')" title="Alfabético"><i class="fas fa-sort-amount-down"></i> ABC</button>
-                    <button class="btn btn-sm font-bold border-black px-2 py-1" style="background:#ffc107;color:#000;font-size:.7rem;" onclick="sortVehiculos('ultimo')" title="Último añadido"><i class="fas fa-clock"></i> ÚLTIMO</button>
+                    <button class="btn btn-sm font-bold border-black px-2 py-1" style="background:#2f2c79;color:#fff;font-size:.7rem;" onclick="sortVehiculos('asc')" title="A-Z"><i class="fas fa-sort-alpha-down"></i> ASC</button>
+                    <button class="btn btn-sm font-bold border-black px-2 py-1" style="background:#2f2c79;color:#fff;font-size:.7rem;" onclick="sortVehiculos('desc')" title="Z-A"><i class="fas fa-sort-alpha-up"></i> DESC</button>
+                    <button class="btn btn-sm font-bold border-black px-2 py-1" style="background:#2f2c79;color:#fff;font-size:.7rem;" onclick="sortVehiculos('abc')" title="Alfabético"><i class="fas fa-sort-amount-down"></i> ABC</button>
+                    <button class="btn btn-sm font-bold border-black px-2 py-1" style="background:#2f2c79;color:#fff;font-size:.7rem;" onclick="sortVehiculos('ultimo')" title="Último añadido"><i class="fas fa-clock"></i> ÚLTIMO</button>
                 </div>
             </div>
             <span class="badge bg-black text-white px-2 py-1 x-small font-bold" id="totalUnidades">TOTAL UNIDADES: 0</span>
@@ -121,16 +121,16 @@
 
 <div class="modal-overlay" id="reporteModal" style="display:none; z-index: 10000;">
     <div class="bento-detail-modal" style="max-width: 1200px; border: 6px solid #000;">
-        <div class="d-flex justify-content-between align-items-center no-print" style="background:#000;color:#ffc107;padding:18px 24px;">
+        <div class="d-flex justify-content-between align-items-center no-print" style="background:#000;color:#fff;padding:18px 24px;">
             <div>
                 <h3 class="mb-0 fw-bold fs-4"><i class="fas fa-file-invoice-dollar me-2"></i> REPORTE: <span id="reportePlaca"></span></h3>
                 <p class="mb-0 small fw-bold text-white-50">Balance de Ingresos y Gastos</p>
             </div>
             <div class="d-flex gap-2">
-                <button class="btn btn-sm fw-bold" style="background:#ffc107;color:#000;border:2px solid #ffc107;padding:6px 14px;" onclick="window.print()">
+                <button class="btn btn-sm fw-bold" style="background:#2f2c79;color:#fff;border:2px solid #2f2c79;padding:6px 14px;" onclick="window.print()">
                     <i class="fas fa-print"></i> IMPRIMIR
                 </button>
-                <button class="btn btn-sm fw-bold" style="background:transparent;color:#ffc107;border:2px solid #ffc107;padding:6px 14px;" onclick="cerrarReporte()">✕ CERRAR</button>
+                <button class="btn btn-sm fw-bold" style="background:transparent;color:#2f2c79;border:2px solid #2f2c79;padding:6px 14px;" onclick="cerrarReporte()">✕ CERRAR</button>
             </div>
         </div>
         <div class="detail-scroll" id="reporteContent" style="padding:20px 24px;">
@@ -141,14 +141,14 @@
 <!-- MODAL REGISTRAR FLETE DESDE UNIDADES -->
 <div class="modal-overlay-fact" id="modalFleteDashboard" style="display:none;z-index:9999;" onclick="if(event.target===this)cerrarModalFleteDash()">
     <div class="modal-content-fact" onclick="event.stopPropagation()" style="max-width:560px;width:95%;max-height:90vh;overflow-y:auto;">
-        <div class="p-3" style="background:#000;color:#ffc107;display:flex;justify-content:space-between;align-items:center;">
+        <div class="p-3" style="background:#000;color:#fff;display:flex;justify-content:space-between;align-items:center;">
             <h3 class="mb-0 fw-bold fs-5"><i class="fas fa-plus-circle me-2"></i> REGISTRAR FLETE</h3>
             <button class="btn btn-sm text-white fw-bold" onclick="cerrarModalFleteDash()" style="font-size:1.5rem;line-height:1;">×</button>
         </div>
         <div class="p-3" style="background:#fff;border:4px solid #000;border-top:none;">
             <form id="formFleteDash" onsubmit="return guardarFleteDash(event)">
                 @csrf
-                <div class="mb-3 p-2 text-center fw-bold fs-5" style="background:#ffc107;border:3px solid #000;" id="fleteDashUnidad">UNIDAD: —</div>
+                <div class="mb-3 p-2 text-center fw-bold fs-5" style="background:#2f2c79;color:#fff;border:3px solid #000;" id="fleteDashUnidad">UNIDAD: —</div>
                 <input type="hidden" id="fd_id_vehiculo_val">
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
@@ -206,7 +206,7 @@
                     </div>
                 </div>
                 <div class="d-flex gap-2 mt-4">
-                    <button type="submit" class="btn fw-bold flex-grow-1 d-flex align-items-center justify-content-center gap-2" style="background:#000;color:#ffc107;border:4px solid #000;padding:12px;font-size:1rem;" id="btnGuardarFleteDash">
+                    <button type="submit" class="btn fw-bold flex-grow-1 d-flex align-items-center justify-content-center gap-2" style="background:#000;color:#fff;border:4px solid #000;padding:12px;font-size:1rem;" id="btnGuardarFleteDash">
                         <i class="fas fa-save"></i> GUARDAR FLETE
                     </button>
                     <button type="button" class="btn fw-bold" style="border:4px solid #000;padding:12px;font-size:1rem;" onclick="cerrarModalFleteDash()">CANCELAR</button>
@@ -653,7 +653,7 @@ function abrirReporte(id, placa) {
                 </div>
                 <div style="border:3px solid #000;max-height:55vh;overflow-y:auto;">
                     <table class="table mb-0" id="reporteTableDash">
-                        <thead class="sticky-top" style="background:#000;color:#ffc107;">
+                        <thead class="sticky-top" style="background:#000;color:#fff;">
                             <tr>
                                 <th style="padding:10px 12px;border:1px solid #333;">FECHA</th>
                                 <th style="padding:10px 12px;border:1px solid #333;">TIPO</th>

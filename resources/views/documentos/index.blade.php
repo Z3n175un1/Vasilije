@@ -24,8 +24,8 @@
     margin-bottom: 12px;
 }
 .btn-inicio:hover {
-    background: #ffc107 !important;
-    color: #000 !important;
+    background: #2f2c79 !important;
+    color: #fff !important;
     transform: scale(1.02);
 }
 .nomen-overlay {
@@ -46,7 +46,7 @@
 }
 .nomen-popup-header {
     background: #000;
-    color: #ffc107;
+    color: #fff;
     padding: 16px 20px;
     font-weight: 800;
     font-size: 1rem;
@@ -73,8 +73,8 @@
     text-align: left;
 }
 .nomen-opt:hover {
-    background: #ffc107 !important;
-    color: #000 !important;
+    background: #2f2c79 !important;
+    color: #fff !important;
 }
 #nomenTableArea {
     display: none;
@@ -140,7 +140,7 @@
         <div class="bento-card p-0 border-black" style="border-width:4px;overflow:hidden;">
             <div class="bg-white text-black font-bold p-3 border-bottom border-black d-flex justify-content-between align-items-center">
                 <span id="nomenTableTitle"><i class="fas fa-table me-2"></i> NOMENCLATURAS</span>
-                <button class="btn btn-sm fw-bold" style="background:#000;color:#ffc107;border:2px solid #000;padding:4px 12px;" onclick="abrirNomen()">CAMBIAR</button>
+                <button class="btn btn-sm fw-bold" style="background:#2f2c79;color:#fff;border:2px solid #000;padding:4px 12px;" onclick="abrirNomen()">CAMBIAR</button>
             </div>
             <div class="table-responsive-brutalist">
                 <table class="table-excel mb-0" style="font-size:.85rem;">
@@ -155,7 +155,7 @@
     <div class="nomen-popup">
         <div class="nomen-popup-header">
             <span><i class="fas fa-folder-tree me-2"></i> NOMENCLATURAS</span>
-            <button onclick="cerrarNomen()" style="background:none;border:none;color:#ffc107;font-size:1.5rem;font-weight:800;cursor:pointer;">×</button>
+            <button onclick="cerrarNomen()" style="background:none;border:none;color:#fff;font-size:1.5rem;font-weight:800;cursor:pointer;">×</button>
         </div>
         <div class="nomen-popup-body">
             <p class="fw-bold mb-3 text-center" style="font-size:1.1rem;">¿Qué desea ver?</p>

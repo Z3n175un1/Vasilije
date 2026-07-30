@@ -28,7 +28,7 @@
 }
 .tab-btn.active {
     background: #000 !important;
-    color: #ffc107 !important;
+    color: #2f2c79 !important;
 }
 .tab-btn:not(.active) {
     background: #fff;
@@ -90,7 +90,7 @@
         </div>
 
         <!-- Filtros fletes -->
-        <div class="p-3 mb-3" style="background:#ffc107;border:4px solid #000;">
+        <div class="p-3 mb-3" style="background:#2f2c79;color:#fff;border:4px solid #000;">
             <div class="row g-2 align-items-end">
                 <div class="col-md-3">
                     <label class="fw-bold d-block mb-1 small">FECHA INICIO</label>
@@ -111,7 +111,7 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <button class="btn fw-bold w-100" style="border:3px solid #000;background:#000;color:#ffc107;padding:8px;" onclick="cargarFletes()">
+                    <button class="btn fw-bold w-100" style="border:3px solid #000;background:#000;color:#fff;padding:8px;" onclick="cargarFletes()">
                         <i class="fas fa-search"></i> FILTRAR
                     </button>
                 </div>
@@ -165,7 +165,7 @@
     <!-- TAB 3: FACTURACIÓN (batch) -->
     <!-- ================================================================ -->
     <div id="tabContentFacturacion" style="display:none;">
-        <div class="p-3 mb-4" style="background:#ffc107;border:4px solid #000;">
+        <div class="p-3 mb-4" style="background:#2f2c79;color:#fff;border:4px solid #000;">
             <div class="row g-2 align-items-end">
                 <div class="col-md-3">
                     <label class="fw-bold d-block mb-1 small">FECHA INICIO</label>
@@ -180,7 +180,7 @@
                     <input type="text" class="form-control fw-bold" id="filterCliente" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="Buscar cliente...">
                 </div>
                 <div class="col-md-3">
-                    <button class="btn fw-bold w-100" style="border:3px solid #000;background:#000;color:#ffc107;padding:10px;" onclick="cargarPendientes()">
+                    <button class="btn fw-bold w-100" style="border:3px solid #000;background:#000;color:#fff;padding:10px;" onclick="cargarPendientes()">
                         <i class="fas fa-search"></i> FILTRAR
                     </button>
                 </div>
@@ -191,7 +191,7 @@
                 <span class="fw-bold fs-5" id="selectedCount">0 seleccionado(s)</span>
                 <span class="fw-bold fs-5" style="color:#007400;" id="selectedTotal">Total: Bs. 0.00</span>
             </div>
-            <button class="btn fw-bold d-flex align-items-center gap-2" style="background:#000;color:#ffc107;border:4px solid #000;padding:12px 24px;font-size:1rem;" onclick="abrirModalFacturar()">
+            <button class="btn fw-bold d-flex align-items-center gap-2" style="background:#000;color:#fff;border:4px solid #000;padding:12px 24px;font-size:1rem;" onclick="abrirModalFacturar()">
                 <i class="fas fa-file-invoice"></i> FACTURAR SELECCIONADOS
             </button>
         </div>
@@ -207,7 +207,7 @@
 <!-- ================================================================ -->
 <div class="modal-overlay-fact" id="modalNuevoFlete" style="display:none;" onclick="if(event.target===this)cerrarModalNuevoFlete()">
     <div class="modal-content-fact" onclick="event.stopPropagation()">
-        <div class="p-3" style="background:#000;color:#ffc107;display:flex;justify-content:space-between;align-items:center;">
+        <div class="p-3" style="background:#000;color:#fff;display:flex;justify-content:space-between;align-items:center;">
             <h3 class="mb-0 fw-bold fs-5"><i class="fas fa-plus-circle me-2"></i> NUEVO FLETE (INGRESO)</h3>
             <button class="btn btn-sm text-white fw-bold" onclick="cerrarModalNuevoFlete()" style="font-size:1.5rem;line-height:1;">×</button>
         </div>
@@ -288,7 +288,7 @@
                     <textarea class="form-control fw-bold" id="nf_observaciones" rows="2" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="Observaciones..."></textarea>
                 </div>
                 <div class="d-flex gap-2 mt-4">
-                    <button type="submit" class="btn fw-bold flex-grow-1 d-flex align-items-center justify-content-center gap-2" style="background:#000;color:#ffc107;border:4px solid #000;padding:12px;font-size:1rem;" id="btnGuardarFlete">
+                    <button type="submit" class="btn fw-bold flex-grow-1 d-flex align-items-center justify-content-center gap-2" style="background:#000;color:#fff;border:4px solid #000;padding:12px;font-size:1rem;" id="btnGuardarFlete">
                         <i class="fas fa-save"></i> GUARDAR FLETE
                     </button>
                     <button type="button" class="btn fw-bold" style="border:4px solid #000;padding:12px;font-size:1rem;" onclick="cerrarModalNuevoFlete()">CANCELAR</button>
@@ -303,7 +303,7 @@
 <!-- ================================================================ -->
 <div class="modal-overlay-fact" id="modalFacturar" style="display:none;" onclick="if(event.target===this)cerrarModalFacturar()">
     <div class="modal-content-fact" onclick="event.stopPropagation()">
-        <div class="p-4" style="background:#000;color:#ffc107;">
+        <div class="p-4" style="background:#000;color:#fff;">
             <h3 class="mb-0 fw-bold fs-4"><i class="fas fa-file-invoice me-2"></i> FACTURAR <span id="modalCount">0</span> FLETE(S)</h3>
         </div>
         <div class="p-4" style="background:#fff;border:4px solid #000;border-top:none;">
@@ -321,11 +321,11 @@
                     <input type="text" class="form-control fw-bold" id="modalClienteNombre" style="border-radius:0;border:3px solid #000;padding:12px;font-size:1rem;" placeholder="Nombre del cliente">
                 </div>
                 <div class="col-12">
-                    <div class="p-3 fw-bold fs-5 text-center" style="background:#ffc107;border:3px solid #000;" id="modalTotal">TOTAL: Bs. 0.00</div>
+                    <div class="p-3 fw-bold fs-5 text-center" style="background:#2f2c79;color:#fff;border:3px solid #000;" id="modalTotal">TOTAL: Bs. 0.00</div>
                 </div>
             </div>
             <div class="d-flex gap-2 mt-4">
-                <button class="btn fw-bold flex-grow-1 d-flex align-items-center justify-content-center gap-2" style="background:#000;color:#ffc107;border:4px solid #000;padding:14px;font-size:1.1rem;" onclick="confirmarBatchFacturar()" id="btnConfirmarFactura">
+                <button class="btn fw-bold flex-grow-1 d-flex align-items-center justify-content-center gap-2" style="background:#000;color:#fff;border:4px solid #000;padding:14px;font-size:1.1rem;" onclick="confirmarBatchFacturar()" id="btnConfirmarFactura">
                     <i class="fas fa-check"></i> CONFIRMAR FACTURA
                 </button>
                 <button class="btn fw-bold" style="border:4px solid #000;padding:14px;font-size:1.1rem;" onclick="cerrarModalFacturar()">CANCELAR</button>
@@ -654,7 +654,7 @@ function renderFacturaCard(f) {
                 <div><small class="fw-bold">FLETES</small><p class="mb-0 fw-bold">${f.cantidad_fletes} flete(s)</p></div>
             </div>
             <div class="d-flex gap-2 mt-2 mt-md-0">
-                <button class="btn btn-sm fw-bold d-flex align-items-center gap-1" style="border:3px solid #000;background:#000;color:#ffc107;padding:8px 14px;" onclick="event.stopPropagation();toggleDetalle('${f.numero_factura}')"><i class="fas fa-eye"></i> VER FLETES</button>
+                <button class="btn btn-sm fw-bold d-flex align-items-center gap-1" style="border:3px solid #000;background:#000;color:#fff;padding:8px 14px;" onclick="event.stopPropagation();toggleDetalle('${f.numero_factura}')"><i class="fas fa-eye"></i> VER FLETES</button>
                 <button class="btn btn-sm fw-bold d-flex align-items-center gap-1" style="border:3px solid #000;padding:8px 14px;background:${esCobrado ? '#fff3cd' : '#d4edda'};color:#000;" onclick="event.stopPropagation();toggleCobrado('${f.numero_factura}','${f.estado_factura}')">
                     <i class="fas ${esCobrado ? 'fa-undo' : 'fa-check-circle'}"></i> ${esCobrado ? 'MARCAR POR COBRAR' : 'MARCAR COBRADO'}
                 </button>
