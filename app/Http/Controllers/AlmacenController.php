@@ -143,6 +143,7 @@ class AlmacenController extends Controller
             ->select(
                 'global.movimientos_inventario.*',
                 'global.inventario.nombre_producto',
+                'global.inventario.codigo',
                 'global.vehiculos.placa_vehiculo',
                 DB::raw("COALESCE(NULLIF(global.vehiculos.conductor, ''), CONCAT(global.personal.nombres, ' ', global.personal.apellidos)) as conductor"),
                 'global.lotes.codigo_lote'

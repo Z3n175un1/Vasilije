@@ -47,9 +47,7 @@
             <h1 class="fs-title mb-0 text-black">ALMACÉN</h1>
             <p class="font-bold small text-black uppercase">Control de Inventario y Movimientos</p>
         </div>
-        <a href="{{ route('items.create') }}" class="btn-bento btn-bento-primary border-black py-1 px-2 fs-mid font-bold rounded-3 text-decoration-none hover-scale btn-press">
-            <i class="fas fa-box me-1"></i> NUEVO ÍTEM
-        </a>
+        
     </header>
 
     <div class="d-flex mb-4" style="border:3px solid #000;">
@@ -82,8 +80,8 @@
             </div>
                 <div class="table-responsive-brutalist">
                     <table class="table-excel mb-0" style="font-size:.85rem;">
-                        <thead><tr><th>Fecha</th><th>Producto</th><th>Cantidad</th><th>P. Unit.</th><th>Proveedor</th><th>Lote</th></tr></thead>
-                        <tbody id="comprasList"><tr><td colspan="6" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
+                        <thead><tr><th>Fecha</th><th>Código</th><th>Producto</th><th>Cantidad</th><th>P. Unit.</th><th>Proveedor</th><th>Lote</th></tr></thead>
+                        <tbody id="comprasList"><tr><td colspan="7" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
                     </table>
                 </div>
         </div>
@@ -97,8 +95,8 @@
             </div>
                 <div class="table-responsive-brutalist">
                     <table class="table-excel mb-0" style="font-size:.85rem;">
-                        <thead><tr><th>Fecha</th><th>Producto</th><th>Cantidad</th><th>P. Unit.</th><th>Vehículo</th><th>Conductor</th></tr></thead>
-                        <tbody id="entregasList"><tr><td colspan="6" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
+                        <thead><tr><th>Fecha</th><th>Código</th><th>Producto</th><th>Cantidad</th><th>P. Unit.</th><th>Vehículo</th><th>Conductor</th></tr></thead>
+                        <tbody id="entregasList"><tr><td colspan="7" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
                     </table>
                 </div>
         </div>
@@ -308,8 +306,8 @@ function loadCompras() {
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>'; return;
             }
             tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'COMPRA').map(m =>
-                `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">${m.proveedor || '—'}</td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${m.codigo_lote || '—'}</span></td></tr>`
-            ).join('') || '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN COMPRAS REGISTRADAS</td></tr>';
+                `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${m.codigo || '—'}</span></td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">${m.proveedor || '—'}</td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${m.codigo_lote || '—'}</span></td></tr>`
+            ).join('') || '<tr><td colspan="7" class="text-center py-5 opacity-50">SIN COMPRAS REGISTRADAS</td></tr>';
         });
 }
 
@@ -321,8 +319,8 @@ function loadEntregas() {
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>'; return;
             }
             tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'SALIDA').map(m =>
-                `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">${m.placa_vehiculo || '—'}</td><td class="fw-bold">${m.conductor || '—'}</td></tr>`
-            ).join('') || '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN ENTREGAS REGISTRADAS</td></tr>';
+                `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${m.codigo || '—'}</span></td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">${m.placa_vehiculo || '—'}</td><td class="fw-bold">${m.conductor || '—'}</td></tr>`
+            ).join('') || '<tr><td colspan="7" class="text-center py-5 opacity-50">SIN ENTREGAS REGISTRADAS</td></tr>';
         });
 }
 
