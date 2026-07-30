@@ -156,6 +156,7 @@ Route::prefix('api')->middleware('auth')->group(function () {
     Route::get('/almacen/categorias', [AlmacenController::class, 'apiCategorias']);
     Route::get('/almacen/movimientos', [AlmacenController::class, 'apiMovimientos']);
     Route::post('/almacen/movimientos', [AlmacenController::class, 'apiGuardarMovimiento']);
+    Route::get('/lotes/ultimo', [AlmacenController::class, 'apiUltimoLote']);
     Route::get('/almacen/{id}', [AlmacenController::class, 'apiShow']);
     Route::get('/items', [ItemController::class, 'apiList']);
     Route::get('/items/{id}', [ItemController::class, 'apiShow']);

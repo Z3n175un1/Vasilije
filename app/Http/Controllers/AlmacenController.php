@@ -16,14 +16,10 @@ class AlmacenController extends Controller
     {
         $categorias = DB::table('global.categorias_almacen')->orderBy('nombre')->get();
         $proveedores = DB::table('global.proveedores')->orderBy('nombre_proveedor')->get();
-        $ultimoLote = DB::table('global.lotes')->orderBy('id_lote', 'desc')->first();
-        $nuevoNumero = $ultimoLote ? intval(substr($ultimoLote->codigo_lote, 3)) + 1 : 1;
-        $nuevoCodigoLote = 'LO-' . str_pad($nuevoNumero, 6, '0', STR_PAD_LEFT);
         return view('almacen.form', [
             'producto' => null,
             'categorias' => $categorias,
             'proveedores' => $proveedores,
-            'nuevoCodigoLote' => $nuevoCodigoLote,
         ]);
     }
 
@@ -33,13 +29,10 @@ class AlmacenController extends Controller
         if (!$producto) return redirect()->route('almacen.index')->with('error', 'Producto no encontrado');
         $categorias = DB::table('global.categorias_almacen')->orderBy('nombre')->get();
         $proveedores = DB::table('global.proveedores')->orderBy('nombre_proveedor')->get();
-        $lote = DB::table('global.lotes')->where('id_inventario', $id)->orderBy('id_lote', 'desc')->first();
-        $producto->codigo_lote = $lote ? $lote->codigo_lote : '';
         return view('almacen.form', [
             'producto' => $producto,
             'categorias' => $categorias,
             'proveedores' => $proveedores,
-            'nuevoCodigoLote' => '',
         ]);
     }
 
@@ -50,21 +43,16 @@ class AlmacenController extends Controller
             'nombre_producto' => 'required|string|max:100',
             'id_categoria' => 'nullable|integer|exists:categorias_almacen,id_categoria',
             'unidad_medida' => 'required|string|max:20',
-            'stock_actual' => 'required|numeric',
+            'stock_actual' => 'nullable|numeric',
             'stock_minimo' => 'nullable|numeric',
             'precio_compra' => 'nullable|numeric',
-            'precio_venta' => 'nullable|numeric',
             'id_proveedor' => 'nullable|integer',
             'marca' => 'nullable|string|max:50',
             'descripcion' => 'nullable|string',
             'codigo_barras' => 'nullable|string|max:50',
-            'codigo_lote' => 'nullable|string|max:50',
-            'fecha_ingreso' => 'nullable|date',
-            'fecha_vencimiento' => 'nullable|date',
         ]);
         $data['estado'] = 'ACTIVO';
-        $codigoLote = $data['codigo_lote'] ?? null;
-        unset($data['codigo_lote']);
+        if (!isset($data['stock_actual'])) $data['stock_actual'] = 0;
 
         if (!empty($data['id_categoria'])) {
             $cat = DB::table('global.categorias_almacen')->where('id_categoria', $data['id_categoria'])->first();
@@ -73,20 +61,7 @@ class AlmacenController extends Controller
             $data['categoria'] = '';
         }
 
-        $id = DB::table('global.inventario')->insertGetId($data, 'id_inventario');
-
-        if (floatval($data['stock_actual']) > 0) {
-            $codigoLoteFinal = $codigoLote ?? ('LO-' . str_pad($id, 6, '0', STR_PAD_LEFT));
-            DB::table('global.lotes')->insert([
-                'id_inventario' => $id,
-                'codigo_lote' => $codigoLoteFinal,
-                'fecha_ingreso' => $data['fecha_ingreso'] ?? date('Y-m-d'),
-                'cantidad_inicial' => $data['stock_actual'],
-                'cantidad_actual' => $data['stock_actual'],
-                'precio_compra' => $data['precio_compra'] ?? 0,
-                'estado' => 'ACTIVO',
-            ]);
-        }
+        DB::table('global.inventario')->insertGetId($data, 'id_inventario');
 
         return redirect()->route('almacen.index')->with('success', 'Producto registrado exitosamente');
     }
@@ -98,16 +73,13 @@ class AlmacenController extends Controller
             'nombre_producto' => 'required|string|max:100',
             'id_categoria' => 'nullable|integer|exists:categorias_almacen,id_categoria',
             'unidad_medida' => 'required|string|max:20',
-            'stock_actual' => 'required|numeric',
+            'stock_actual' => 'nullable|numeric',
             'stock_minimo' => 'nullable|numeric',
             'precio_compra' => 'nullable|numeric',
-            'precio_venta' => 'nullable|numeric',
             'id_proveedor' => 'nullable|integer',
             'marca' => 'nullable|string|max:50',
             'descripcion' => 'nullable|string',
             'codigo_barras' => 'nullable|string|max:50',
-            'fecha_ingreso' => 'nullable|date',
-            'fecha_vencimiento' => 'nullable|date',
         ]);
 
         if (!empty($data['id_categoria'])) {
@@ -167,11 +139,13 @@ class AlmacenController extends Controller
             ->leftJoin('global.inventario', 'global.movimientos_inventario.id_inventario', '=', 'global.inventario.id_inventario')
             ->leftJoin('global.vehiculos', 'global.movimientos_inventario.id_vehiculo', '=', 'global.vehiculos.id_vehiculo')
             ->leftJoin('global.personal', 'global.movimientos_inventario.id_personal', '=', 'global.personal.id_personal')
+            ->leftJoin('global.lotes', 'global.movimientos_inventario.id_lote', '=', 'global.lotes.id_lote')
             ->select(
                 'global.movimientos_inventario.*',
                 'global.inventario.nombre_producto',
                 'global.vehiculos.placa_vehiculo',
-                DB::raw("COALESCE(NULLIF(global.vehiculos.conductor, ''), CONCAT(global.personal.nombres, ' ', global.personal.apellidos)) as conductor")
+                DB::raw("COALESCE(NULLIF(global.vehiculos.conductor, ''), CONCAT(global.personal.nombres, ' ', global.personal.apellidos)) as conductor"),
+                'global.lotes.codigo_lote'
             )
             ->orderBy('global.movimientos_inventario.fecha_movimiento', 'desc');
 
@@ -195,25 +169,63 @@ class AlmacenController extends Controller
                 'cantidad' => 'required|numeric|min:0.01',
                 'fecha_movimiento' => 'nullable|date',
                 'proveedor' => 'nullable|string|max:200',
+                'precio_unitario' => 'nullable|numeric',
+                'precio_compra' => 'nullable|numeric',
+                'codigo_lote' => 'nullable|string|max:50',
                 'id_vehiculo' => 'nullable|integer',
                 'id_personal' => 'nullable|integer',
                 'observaciones' => 'nullable|string',
             ]);
 
-            DB::table('global.movimientos_inventario')->insert([
+            $movId = DB::table('global.movimientos_inventario')->insertGetId([
                 'id_inventario' => $validated['id_inventario'],
                 'tipo_movimiento' => $validated['tipo_movimiento'],
                 'cantidad' => $validated['cantidad'],
                 'fecha_movimiento' => $validated['fecha_movimiento'] ?? date('Y-m-d'),
+                'costo_unitario' => $validated['precio_unitario'] ?? null,
                 'proveedor' => $validated['proveedor'] ?? null,
                 'id_vehiculo' => $validated['id_vehiculo'] ?? null,
                 'id_personal' => $validated['id_personal'] ?? null,
                 'observaciones' => $validated['observaciones'] ?? null,
-            ]);
+            ], 'id_movimiento');
+
+            if ($validated['tipo_movimiento'] === 'COMPRA' && !empty($validated['codigo_lote'])) {
+                $loteExistente = DB::table('global.lotes')
+                    ->where('codigo_lote', $validated['codigo_lote'])
+                    ->where('id_inventario', $validated['id_inventario'])
+                    ->first();
+                if ($loteExistente) {
+                    DB::table('global.lotes')
+                        ->where('id_lote', $loteExistente->id_lote)
+                        ->update([
+                            'cantidad_actual' => DB::raw('cantidad_actual + ' . $validated['cantidad']),
+                            'precio_compra' => $validated['precio_compra'] ?? $loteExistente->precio_compra,
+                        ]);
+                } else {
+                    $loteId = DB::table('global.lotes')->insertGetId([
+                        'id_inventario' => $validated['id_inventario'],
+                        'codigo_lote' => $validated['codigo_lote'],
+                        'fecha_ingreso' => $validated['fecha_movimiento'] ?? date('Y-m-d'),
+                        'cantidad_inicial' => $validated['cantidad'],
+                        'cantidad_actual' => $validated['cantidad'],
+                        'precio_compra' => $validated['precio_compra'] ?? 0,
+                        'estado' => 'ACTIVO',
+                    ], 'id_lote');
+                    DB::table('global.movimientos_inventario')
+                        ->where('id_movimiento', $movId)
+                        ->update(['id_lote' => $loteId]);
+                }
+            }
 
             return response()->json(['success' => true, 'message' => 'Movimiento registrado']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
+    }
+
+    public function apiUltimoLote()
+    {
+        $lote = DB::table('global.lotes')->orderBy('id_lote', 'desc')->first();
+        return response()->json(['success' => true, 'data' => $lote]);
     }
 }

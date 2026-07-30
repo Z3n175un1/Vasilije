@@ -80,12 +80,12 @@
                 <span><i class="fas fa-arrow-down me-2"></i> Compras (Ingresos a Almacén)</span>
                 <button class="btn btn-sm fw-bold" style="background:#000;color:#ffc107;border:3px solid #000;padding:8px 16px;" onclick="abrirModalMovimiento('COMPRA')"><i class="fas fa-plus me-1"></i> NUEVA COMPRA</button>
             </div>
-            <div class="table-responsive-brutalist">
-                <table class="table-excel mb-0" style="font-size:.85rem;">
-                    <thead><tr><th>Fecha</th><th>Producto</th><th>Cantidad</th><th>Proveedor</th><th>Vehículo</th></tr></thead>
-                    <tbody id="comprasList"><tr><td colspan="5" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
-                </table>
-            </div>
+                <div class="table-responsive-brutalist">
+                    <table class="table-excel mb-0" style="font-size:.85rem;">
+                        <thead><tr><th>Fecha</th><th>Producto</th><th>Cantidad</th><th>P. Unit.</th><th>Proveedor</th><th>Lote</th></tr></thead>
+                        <tbody id="comprasList"><tr><td colspan="6" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
+                    </table>
+                </div>
         </div>
     </div>
 
@@ -95,12 +95,12 @@
                 <span><i class="fas fa-arrow-up me-2"></i> Entregas (Salidas de Almacén)</span>
                 <button class="btn btn-sm fw-bold" style="background:#000;color:#ffc107;border:3px solid #000;padding:8px 16px;" onclick="abrirModalMovimiento('ENTREGA')"><i class="fas fa-plus me-1"></i> NUEVA ENTREGA</button>
             </div>
-            <div class="table-responsive-brutalist">
-                <table class="table-excel mb-0" style="font-size:.85rem;">
-                    <thead><tr><th>Fecha</th><th>Producto</th><th>Cantidad</th><th>Vehículo</th><th>Conductor</th></tr></thead>
-                    <tbody id="entregasList"><tr><td colspan="5" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
-                </table>
-            </div>
+                <div class="table-responsive-brutalist">
+                    <table class="table-excel mb-0" style="font-size:.85rem;">
+                        <thead><tr><th>Fecha</th><th>Producto</th><th>Cantidad</th><th>P. Unit.</th><th>Vehículo</th><th>Conductor</th></tr></thead>
+                        <tbody id="entregasList"><tr><td colspan="6" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
+                    </table>
+                </div>
         </div>
     </div>
 
@@ -165,22 +165,36 @@
                 @csrf
                 <input type="hidden" name="tipo_movimiento" id="movTipo">
                 <div class="row g-3 mb-3">
-                    <div class="col-12">
+                    <div class="col-md-12">
+                        <label class="fw-bold small text-uppercase">FECHA <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control fw-bold" id="movFecha" style="border-radius:0;border:3px solid #000;padding:10px;">
+                    </div>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-8">
                         <label class="fw-bold small text-uppercase">PRODUCTO <span class="text-danger">*</span></label>
                         <select class="form-control fw-bold" id="movIdProducto" style="border-radius:0;border:3px solid #000;padding:10px;" required onchange="mostrarStockProducto()">
                             <option value="">SELECCIONE...</option>
                         </select>
                         <div id="movStockInfo" class="mt-2 p-2 fw-bold text-center" style="border:3px solid #000;display:none;"></div>
                     </div>
+                    <div class="col-md-4">
+                        <label class="fw-bold small text-uppercase">CÓDIGO DE LOTE</label>
+                        <input type="text" class="form-control fw-bold" id="movCodigoLote" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0;font-family:monospace;letter-spacing:1px;" readonly placeholder="LO-000001">
+                    </div>
                 </div>
                 <div class="row g-3 mb-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="fw-bold small text-uppercase">CANTIDAD <span class="text-danger">*</span></label>
                         <input type="number" step="0.01" class="form-control fw-bold" id="movCantidad" style="border-radius:0;border:3px solid #000;padding:10px;" required min="0.01" placeholder="0.00">
                     </div>
-                    <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">FECHA</label>
-                        <input type="date" class="form-control fw-bold" id="movFecha" style="border-radius:0;border:3px solid #000;padding:10px;">
+                    <div class="col-md-4">
+                        <label class="fw-bold small text-uppercase">PRECIO UNITARIO (Bs)</label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="movPrecioUnitario" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" placeholder="0.00">
+                    </div>
+                    <div class="col-md-4" id="movPrecioCompraRow">
+                        <label class="fw-bold small text-uppercase">PRECIO COMPRA (Bs)</label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="movPrecioCompra" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" placeholder="0.00">
                     </div>
                 </div>
                 <div class="row g-3 mb-3" id="movProveedorRow">
@@ -292,11 +306,11 @@ function loadCompras() {
         .then(r => r.json()).then(res => {
             const tbody = document.getElementById('comprasList');
             if (!res.success || !res.data || res.data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>'; return;
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>'; return;
             }
             tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'COMPRA').map(m =>
-                `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">${m.proveedor || '—'}</td><td class="fw-bold">${m.placa_vehiculo || '—'}</td></tr>`
-            ).join('') || '<tr><td colspan="5" class="text-center py-5 opacity-50">SIN COMPRAS REGISTRADAS</td></tr>';
+                `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">${m.proveedor || '—'}</td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${m.codigo_lote || '—'}</span></td></tr>`
+            ).join('') || '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN COMPRAS REGISTRADAS</td></tr>';
         });
 }
 
@@ -305,11 +319,11 @@ function loadEntregas() {
         .then(r => r.json()).then(res => {
             const tbody = document.getElementById('entregasList');
             if (!res.success || !res.data || res.data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>'; return;
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>'; return;
             }
             tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'SALIDA').map(m =>
-                `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">${m.placa_vehiculo || '—'}</td><td class="fw-bold">${m.conductor || '—'}</td></tr>`
-            ).join('') || '<tr><td colspan="5" class="text-center py-5 opacity-50">SIN ENTREGAS REGISTRADAS</td></tr>';
+                `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">${m.placa_vehiculo || '—'}</td><td class="fw-bold">${m.conductor || '—'}</td></tr>`
+            ).join('') || '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN ENTREGAS REGISTRADAS</td></tr>';
         });
 }
 
@@ -396,13 +410,34 @@ function abrirModalMovimiento(tipo) {
     document.getElementById('movTipo').value = tipo === 'ENTREGA' ? 'SALIDA' : tipo;
     document.getElementById('modalMovTitle').innerHTML = `<i class="fas ${tipo === 'COMPRA' ? 'fa-arrow-down' : 'fa-arrow-up'} me-2"></i> NUEVA ${tipo === 'COMPRA' ? 'COMPRA' : 'ENTREGA'}`;
     document.getElementById('movProveedorRow').style.display = tipo === 'COMPRA' ? 'block' : 'none';
+    document.getElementById('movPrecioCompraRow').style.display = tipo === 'COMPRA' ? 'block' : 'none';
     document.getElementById('movVehiculoRow').style.display = tipo === 'ENTREGA' ? 'flex' : 'none';
     document.getElementById('movFecha').value = new Date().toISOString().split('T')[0];
     document.getElementById('movCantidad').value = '';
+    document.getElementById('movPrecioUnitario').value = '';
+    document.getElementById('movPrecioCompra').value = '';
     document.getElementById('movProveedor').value = '';
     document.getElementById('movObs').value = '';
     document.getElementById('movIdVehiculo').value = '';
     document.getElementById('movIdPersonal').value = '';
+
+    // Generate lot code
+    let ultimoNum = 0;
+    fetch('{{ url("api/lotes/ultimo") }}', { headers: { 'Accept': 'application/json' } })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success && res.data) {
+                const num = parseInt(res.data.codigo_lote.replace('LO-', '')) || 0;
+                ultimoNum = num + 1;
+            } else {
+                ultimoNum = 1;
+            }
+            document.getElementById('movCodigoLote').value = 'LO-' + String(ultimoNum).padStart(6, '0');
+        })
+        .catch(() => {
+            document.getElementById('movCodigoLote').value = 'LO-000001';
+        });
+
     const selV = document.getElementById('movIdVehiculo');
     selV.innerHTML = '<option value="">SELECCIONE...</option>' + vehiculosInv.map(v =>
         `<option value="${v.id_vehiculo}">${v.placa_vehiculo}</option>`).join('');
@@ -424,9 +459,14 @@ function guardarMovimiento(event) {
         tipo_movimiento: tipo,
         cantidad: document.getElementById('movCantidad').value,
         fecha_movimiento: document.getElementById('movFecha').value,
+        precio_unitario: document.getElementById('movPrecioUnitario').value || null,
+        codigo_lote: document.getElementById('movCodigoLote').value || null,
         observaciones: document.getElementById('movObs').value,
     };
-    if (tipo === 'COMPRA') data.proveedor = document.getElementById('movProveedor').value;
+    if (tipo === 'COMPRA') {
+        data.proveedor = document.getElementById('movProveedor').value;
+        data.precio_compra = document.getElementById('movPrecioCompra').value || null;
+    }
     if (tipo === 'SALIDA') data.id_vehiculo = document.getElementById('movIdVehiculo').value || null;
     if (tipo === 'SALIDA') data.id_personal = document.getElementById('movIdPersonal').value || null;
 
