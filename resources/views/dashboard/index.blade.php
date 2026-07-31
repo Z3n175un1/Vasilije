@@ -384,8 +384,7 @@ function seleccionarRuta(select) {
         document.getElementById('fd_destino').value = t.destino || '';
         const ton = parseFloat(document.getElementById('fd_toneladas').value) || 0;
         const dolarTon = parseFloat(t.precio_dolar_tonelada || 13);
-        const tc = parseFloat(configDataDash.tipo_cambio || 6.96);
-        const monto = ton > 0 ? ton * dolarTon * tc : t.precio_total || '';
+        const monto = ton > 0 ? ton * dolarTon : t.precio_total || '';
         document.getElementById('fd_monto').value = monto || t.precio_total || '';
     }
 }
@@ -398,8 +397,7 @@ document.addEventListener('input', function(e) {
             if (t && t.precio_dolar_tonelada > 0) {
                 const ton = parseFloat(e.target.value) || 0;
                 const dolarTon = parseFloat(t.precio_dolar_tonelada);
-                const tc = parseFloat(configDataDash.tipo_cambio || 6.96);
-                document.getElementById('fd_monto').value = (ton * dolarTon * tc).toFixed(2);
+                document.getElementById('fd_monto').value = (ton * dolarTon).toFixed(2);
             }
         }
     }

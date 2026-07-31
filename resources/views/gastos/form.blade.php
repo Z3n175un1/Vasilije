@@ -101,23 +101,27 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-4" id="campoMetodoPago">
-                    <div class="form-group mb-0">
-                        <label>MÉTODO DE PAGO</label>
-                        <select name="metodo_pago" id="metodoPago" class="form-control" style="border-radius:0;border:3px solid #000;padding:10px;" onchange="toggleMetodoPago()">
-                            <option value="BANCO" {{ old('metodo_pago', $gasto->metodo_pago ?? 'BANCO') == 'BANCO' ? 'selected' : '' }}>BANCO</option>
-                            <option value="CAJA_CHICA" {{ old('metodo_pago', $gasto->metodo_pago ?? '') == 'CAJA_CHICA' ? 'selected' : '' }}>CAJA CHICA</option>
-                        </select>
-                    </div>
-                </div>
                 <div class="col-md-4" id="campoBanco">
                     <div class="form-group mb-0">
-                        <label>CTA. BANCO</label>
-                        <select name="id_banco" id="idBanco" class="form-control" style="border-radius:0;border:3px solid #000;padding:10px;">
+                        <label>CTA. BANCO <span class="text-danger">*</span></label>
+                        <select name="id_banco" id="idBanco" class="form-control" style="border-radius:0;border:3px solid #000;padding:10px;" required>
                             <option value="">SELECCIONE BANCO...</option>
                             @foreach($bancos as $b)
                                 <option value="{{ $b->id_banco }}" {{ old('id_banco', $gasto->id_banco ?? '') == $b->id_banco ? 'selected' : '' }}>
                                     {{ $b->nombre_banco }} - {{ $b->numero_cuenta }} ({{ $b->moneda ?? 'BOB' }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4" id="campoProveedorContado">
+                    <div class="form-group mb-0">
+                        <label>PROVEEDOR</label>
+                        <select name="id_proveedor" id="proveedorContadoSelect" class="form-control" style="border-radius:0;border:3px solid #000;padding:10px;">
+                            <option value="">SELECCIONE PROVEEDOR...</option>
+                            @foreach($proveedores as $p)
+                                <option value="{{ $p->id_proveedor }}" data-tipo="{{ $p->tipo_proveedor }}" {{ old('id_proveedor', $gasto->id_proveedor ?? '') == $p->id_proveedor ? 'selected' : '' }}>
+                                    {{ $p->nombre_proveedor }}
                                 </option>
                             @endforeach
                         </select>
@@ -130,7 +134,7 @@
                 <div class="col-md-6">
                     <div class="form-group mb-0">
                         <label>PROVEEDOR <span class="text-danger">*</span></label>
-                        <select name="id_proveedor" id="proveedorSelect" class="form-control" style="border-radius:0;border:3px solid #000;padding:10px;">
+                        <select name="id_proveedor" id="proveedorCreditoSelect" class="form-control" style="border-radius:0;border:3px solid #000;padding:10px;">
                             <option value="">SELECCIONE PROVEEDOR...</option>
                             @foreach($proveedores as $p)
                                 <option value="{{ $p->id_proveedor }}" data-tipo="{{ $p->tipo_proveedor }}" {{ old('id_proveedor', $gasto->id_proveedor ?? '') == $p->id_proveedor ? 'selected' : '' }}>
@@ -187,14 +191,11 @@ function toggleCombustible() {
 function toggleCondicionPago() {
     const cond = document.getElementById('condicionPago').value;
     const esCredito = cond === 'CREDITO';
-    document.getElementById('campoMetodoPago').style.display = esCredito ? 'none' : 'block';
+    const banco = document.getElementById('idBanco');
+    document.getElementById('campoBanco').style.display = esCredito ? 'none' : 'block';
+    document.getElementById('campoProveedorContado').style.display = esCredito ? 'none' : 'block';
     document.getElementById('creditoSection').style.display = esCredito ? 'flex' : 'none';
-    toggleMetodoPago();
-}
-
-function toggleMetodoPago() {
-    const metodo = document.getElementById('metodoPago').value;
-    document.getElementById('campoBanco').style.display = metodo === 'BANCO' ? 'block' : 'none';
+    banco.required = !esCredito;
 }
 
 function calcMontoCombustible() {
@@ -216,10 +217,6 @@ document.addEventListener('input', function(e) {
 
 function filtrarProveedores() {
     const tipo = document.getElementById('tipoGasto').value;
-    const select = document.getElementById('proveedorSelect');
-    const currentVal = select.value;
-
-    select.innerHTML = '<option value="">SELECCIONE PROVEEDOR...</option>';
 
     const tiposPermitidos = tipoMap[tipo] || ['GENERAL', null];
     const permitidos = Array.isArray(tiposPermitidos) ? tiposPermitidos : [tiposPermitidos];
@@ -231,23 +228,32 @@ function filtrarProveedores() {
     // If no matches, fallback to ALL proveedores
     const list = filtrados.length > 0 ? filtrados : proveedores;
 
-    list.forEach(p => {
-        const opt = document.createElement('option');
-        opt.value = p.id_proveedor;
-        opt.textContent = p.nombre_proveedor;
-        opt.dataset.tipo = p.tipo_proveedor || '';
-        select.appendChild(opt);
-    });
+    ['proveedorContadoSelect', 'proveedorCreditoSelect'].forEach(selId => {
+        const select = document.getElementById(selId);
+        const currentVal = select.value;
 
-    // Restaurar la selección previa (id_proveedor) si sigue disponible
-    if ([...select.options].some(o => o.value === currentVal)) {
-        select.value = currentVal;
-    }
+        select.innerHTML = '<option value="">SELECCIONE PROVEEDOR...</option>';
+
+        list.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id_proveedor;
+            opt.textContent = p.nombre_proveedor;
+            opt.dataset.tipo = p.tipo_proveedor || '';
+            select.appendChild(opt);
+        });
+
+        // Restaurar la selección previa (id_proveedor) si sigue disponible
+        if ([...select.options].some(o => o.value === currentVal)) {
+            select.value = currentVal;
+        }
+    });
 }
 
-document.getElementById('proveedorSelect').addEventListener('change', function() {
-    // El select siempre envía id_proveedor
-    this.name = 'id_proveedor';
+['proveedorContadoSelect', 'proveedorCreditoSelect'].forEach(selId => {
+    document.getElementById(selId).addEventListener('change', function() {
+        // El select siempre envía id_proveedor
+        this.name = 'id_proveedor';
+    });
 });
 
 document.addEventListener('DOMContentLoaded', function() {

@@ -39,7 +39,6 @@ class GastoController extends Controller
     public function store(Request $request)
     {
         $condicion = $request->condicion_pago ?? 'CONTADO';
-        $metodo = $request->metodo_pago ?? null;
 
         $data = $request->validate([
             'id_vehiculo' => 'required|integer',
@@ -49,9 +48,8 @@ class GastoController extends Controller
             'fecha_gasto' => 'required|date',
             'descripcion' => 'nullable|string',
             'id_proveedor' => $condicion === 'CREDITO' ? 'required|integer' : 'nullable|integer',
-            'id_banco' => ($condicion === 'CONTADO' && $metodo === 'BANCO') ? 'required|integer' : 'nullable|integer',
+            'id_banco' => $condicion === 'CONTADO' ? 'required|integer' : 'nullable|integer',
             'condicion_pago' => 'nullable|string|in:CONTADO,CREDITO',
-            'metodo_pago' => 'nullable|string|in:BANCO,CAJA_CHICA',
             'fecha_limite_pago' => 'nullable|date',
             'tipo_combustible' => 'nullable|string',
             'litros' => 'nullable|numeric',
@@ -62,7 +60,7 @@ class GastoController extends Controller
         $contador = $ultimo ? intval(substr($ultimo->nro_documento, 2)) + 1 : 1;
         $data['nro_documento'] = 'E_' . str_pad($contador, 5, '0', STR_PAD_LEFT);
         $data['condicion_pago'] = $condicion;
-        $data['metodo_pago'] = $metodo === 'BANCO' ? 'BANCO' : ($condicion === 'CONTADO' ? 'CAJA_CHICA' : null);
+        $data['metodo_pago'] = null;
 
         // Filter out non-gastos table columns before insert
         $gastosAllowed = ['id_vehiculo', 'tipo_gasto', 'concepto', 'monto', 'fecha_gasto', 'descripcion', 'id_proveedor', 'id_banco', 'condicion_pago', 'metodo_pago', 'fecha_limite_pago', 'nro_documento'];
@@ -94,7 +92,6 @@ class GastoController extends Controller
     public function update(Request $request, $id)
     {
         $condicion = $request->condicion_pago ?? 'CONTADO';
-        $metodo = $request->metodo_pago ?? null;
 
         $data = $request->validate([
             'id_vehiculo' => 'required|integer',
@@ -104,16 +101,15 @@ class GastoController extends Controller
             'fecha_gasto' => 'required|date',
             'descripcion' => 'nullable|string',
             'id_proveedor' => $condicion === 'CREDITO' ? 'required|integer' : 'nullable|integer',
-            'id_banco' => ($condicion === 'CONTADO' && $metodo === 'BANCO') ? 'required|integer' : 'nullable|integer',
+            'id_banco' => $condicion === 'CONTADO' ? 'required|integer' : 'nullable|integer',
             'condicion_pago' => 'nullable|string|in:CONTADO,CREDITO',
-            'metodo_pago' => 'nullable|string|in:BANCO,CAJA_CHICA',
             'fecha_limite_pago' => 'nullable|date',
             'tipo_combustible' => 'nullable|string',
             'litros' => 'nullable|numeric',
             'precio_por_litro' => 'nullable|numeric',
         ]);
         $data['condicion_pago'] = $condicion;
-        $data['metodo_pago'] = $metodo === 'BANCO' ? 'BANCO' : ($condicion === 'CONTADO' ? 'CAJA_CHICA' : null);
+        $data['metodo_pago'] = null;
 
         $gastosAllowed = ['id_vehiculo', 'tipo_gasto', 'concepto', 'monto', 'fecha_gasto', 'descripcion', 'id_proveedor', 'id_banco', 'condicion_pago', 'metodo_pago', 'fecha_limite_pago'];
         $gastosData = array_filter($data, function($k) use ($gastosAllowed) { return in_array($k, $gastosAllowed); }, ARRAY_FILTER_USE_KEY);

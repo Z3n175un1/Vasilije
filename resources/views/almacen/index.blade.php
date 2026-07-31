@@ -234,13 +234,6 @@
                     </div>
                 </div>
                 <div class="row g-3 mb-3" id="movContadoRow" style="display:none;">
-                    <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">MÉTODO DE PAGO</label>
-                        <select class="form-control fw-bold" id="movMetodo" style="border-radius:0;border:3px solid #000;padding:10px;" onchange="toggleMovMetodo()">
-                            <option value="BANCO">BANCO</option>
-                            <option value="CAJA_CHICA">CAJA CHICA</option>
-                        </select>
-                    </div>
                     <div class="col-md-6" id="movBancoRow">
                         <label class="fw-bold small text-uppercase">CTA. BANCO</label>
                         <select class="form-control fw-bold" id="movIdBanco" style="border-radius:0;border:3px solid #000;padding:10px;">
@@ -516,12 +509,10 @@ function abrirModalMovimiento(tipo) {
     document.getElementById('movContadoRow').style.display = esCompra ? 'flex' : 'none';
     document.getElementById('movProveedorRow').style.display = esCompra ? 'flex' : 'none';
     document.getElementById('movCondicion').value = 'CONTADO';
-    document.getElementById('movMetodo').value = 'BANCO';
     document.getElementById('movIdBanco').value = '';
     document.getElementById('movIdProveedor').value = '';
     document.getElementById('movFechaLimite').value = '';
     toggleMovCondicion();
-    toggleMovMetodo();
 
     // Generate lot code
     let ultimoNum = 0;
@@ -559,12 +550,6 @@ function toggleMovCondicion() {
     document.getElementById('movContadoRow').style.display = esCredito ? 'none' : 'flex';
     document.getElementById('movFechaLimiteRow').style.display = esCredito ? 'block' : 'none';
     document.getElementById('movProveedorRow').style.display = 'flex';
-    toggleMovMetodo();
-}
-
-function toggleMovMetodo() {
-    const metodo = document.getElementById('movMetodo').value;
-    document.getElementById('movBancoRow').style.display = metodo === 'BANCO' ? 'block' : 'none';
 }
 
 function calcularPrecioCompra() {
@@ -588,7 +573,6 @@ function guardarMovimiento(event) {
     if (tipo === 'COMPRA') {
         const selProv = document.getElementById('movIdProveedor');
         data.condicion_pago = document.getElementById('movCondicion').value;
-        data.metodo_pago = document.getElementById('movMetodo').value;
         data.id_banco = document.getElementById('movIdBanco').value || null;
         data.id_proveedor = selProv.value || null;
         data.proveedor = selProv.selectedOptions[0]?.textContent || null;
@@ -604,7 +588,7 @@ function guardarMovimiento(event) {
         if (data.condicion_pago === 'CREDITO' && !data.id_proveedor) {
             Swal.fire('Requerido', 'Para compra a crédito debe seleccionar un proveedor', 'warning'); return;
         }
-        if (data.condicion_pago === 'CONTADO' && data.metodo_pago === 'BANCO' && !data.id_banco) {
+        if (data.condicion_pago === 'CONTADO' && !data.id_banco) {
             Swal.fire('Requerido', 'Seleccione la cuenta de banco', 'warning'); return;
         }
     }
