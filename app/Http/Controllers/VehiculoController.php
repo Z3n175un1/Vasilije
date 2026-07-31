@@ -126,7 +126,7 @@ class VehiculoController extends Controller
             });
         }
 
-        $data = $query->orderBy('global.vehiculos.placa_vehiculo')->get();
+        $data = $query->orderByRaw("LPAD(REGEXP_REPLACE(global.vehiculos.placa_vehiculo, '[^0-9]', '', 'g'), 10, '0')")->get();
 
         return response()->json([
             'success' => true,

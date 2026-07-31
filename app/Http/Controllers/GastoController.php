@@ -15,7 +15,7 @@ class GastoController extends Controller
     public function create(Request $request)
     {
         $id_vehiculo = $request->query('id_vehiculo');
-        $vehiculos = DB::table('global.vehiculos')->where('estado', '<>', 3)->orderBy('placa_vehiculo')->get();
+        $vehiculos = DB::table('global.vehiculos')->where('estado', '<>', 3)->orderByRaw("LPAD(REGEXP_REPLACE(placa_vehiculo, '[^0-9]', '', 'g'), 10, '0')")->get();
         $proveedores = DB::table('global.proveedores')->where('estado', 1)->orderBy('nombre_proveedor')->get();
         $bancos = DB::table('global.bancos')->where('estado', 'ACTIVO')->orderBy('nombre_banco')->get();
         return view('gastos.form', ['gasto' => null, 'vehiculos' => $vehiculos, 'id_vehiculo' => $id_vehiculo, 'proveedores' => $proveedores, 'bancos' => $bancos]);
@@ -30,7 +30,7 @@ class GastoController extends Controller
             $gasto->combustible = DB::table('global.combustible_detalle')->where('id_gasto', $id)->first();
         }
 
-        $vehiculos = DB::table('global.vehiculos')->where('estado', '<>', 3)->orderBy('placa_vehiculo')->get();
+        $vehiculos = DB::table('global.vehiculos')->where('estado', '<>', 3)->orderByRaw("LPAD(REGEXP_REPLACE(placa_vehiculo, '[^0-9]', '', 'g'), 10, '0')")->get();
         $proveedores = DB::table('global.proveedores')->where('estado', 1)->orderBy('nombre_proveedor')->get();
         $bancos = DB::table('global.bancos')->where('estado', 'ACTIVO')->orderBy('nombre_banco')->get();
         return view('gastos.form', ['gasto' => $gasto, 'vehiculos' => $vehiculos, 'id_vehiculo' => null, 'proveedores' => $proveedores, 'bancos' => $bancos]);

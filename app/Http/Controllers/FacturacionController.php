@@ -14,7 +14,7 @@ class FacturacionController extends Controller
 
     public function create()
     {
-        $vehiculos = DB::table('global.vehiculos')->where('estado', 1)->orderBy('placa_vehiculo')->get();
+        $vehiculos = DB::table('global.vehiculos')->where('estado', 1)->orderByRaw("LPAD(REGEXP_REPLACE(placa_vehiculo, '[^0-9]', '', 'g'), 10, '0')")->get();
         $personal = DB::table('global.personal')->where('estado', 1)
             ->select('global.personal.*', DB::raw("CONCAT(global.personal.nombres, ' ', global.personal.apellidos) as nombre_completo"))
             ->orderBy('nombres')->get();
@@ -26,7 +26,7 @@ class FacturacionController extends Controller
     {
         $ingreso = DB::table('global.ingresos')->where('id_ingreso', $id)->first();
         if (!$ingreso) return redirect()->route('facturacion.index')->with('error', 'Registro no encontrado');
-        $vehiculos = DB::table('global.vehiculos')->orderBy('placa_vehiculo')->get();
+        $vehiculos = DB::table('global.vehiculos')->orderByRaw("LPAD(REGEXP_REPLACE(placa_vehiculo, '[^0-9]', '', 'g'), 10, '0')")->get();
         $personal = DB::table('global.personal')
             ->select('global.personal.*', DB::raw("CONCAT(global.personal.nombres, ' ', global.personal.apellidos) as nombre_completo"))
             ->orderBy('nombres')->get();

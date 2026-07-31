@@ -56,6 +56,7 @@
                         ['route' => 'facturacion.index', 'label' => 'FACTURACIÓN', 'icon' => 'fa-file-invoice'],
                         ['route' => 'bancos.index', 'label' => 'BANCOS', 'icon' => 'fa-university'],
                         ['route' => 'proveedores.index', 'label' => 'PROVEEDORES', 'icon' => 'fa-handshake'],
+                        ['route' => 'gastos.index', 'label' => 'GASTOS (PRUEBA)', 'icon' => 'fa-minus-circle'],
                         ['route' => 'reportes.index', 'label' => 'REPORTES', 'icon' => 'fa-chart-bar'],
                     ];
                     if (auth()->user()?->rol === 'admin') {

@@ -10,7 +10,7 @@ class ReporteController extends Controller
 {
     public function index()
     {
-        $vehiculos = DB::table('global.vehiculos')->where('estado', 1)->orderBy('placa_vehiculo')->get();
+        $vehiculos = DB::table('global.vehiculos')->where('estado', 1)->orderByRaw("LPAD(REGEXP_REPLACE(placa_vehiculo, '[^0-9]', '', 'g'), 10, '0')")->get();
         return view('reportes.index', compact('vehiculos'));
     }
 
