@@ -9,7 +9,9 @@ class AlmacenController extends Controller
 {
     public function index()
     {
-        return view('almacen.index');
+        $bancos = DB::table('global.bancos')->where('estado', 'ACTIVO')->orderBy('nombre_banco')->get();
+        $proveedores = DB::table('global.proveedores')->orderBy('nombre_proveedor')->get();
+        return view('almacen.index', compact('bancos', 'proveedores'));
     }
 
     public function create()
@@ -54,18 +56,14 @@ class AlmacenController extends Controller
         $data['estado'] = 'ACTIVO';
         if (!isset($data['stock_actual'])) $data['stock_actual'] = 0;
 
-        if (!empty($data['id_categoria'])) {
-            $cat = DB::table('global.categorias_almacen')->where('id_categoria', $data['id_categoria'])->first();
-            $data['categoria'] = $cat ? $cat->nombre : '';
-        } else {
-            $data['categoria'] = '';
-        }
-
         if (empty($data['codigo'])) {
-            $data['codigo'] = $this->generateNextCode($data['categoria'] ?? '');
+            $catName = '';
+            if (!empty($data['id_categoria'])) {
+                $cat = DB::table('global.categorias_almacen')->where('id_categoria', $data['id_categoria'])->first();
+                $catName = $cat ? $cat->nombre : '';
+            }
+            $data['codigo'] = $this->generateNextCode($catName, $data['id_categoria'] ?? null);
         }
-
-        unset($data['id_categoria']);
 
         DB::table('global.inventario')->insertGetId($data, 'id_inventario');
 
@@ -88,14 +86,6 @@ class AlmacenController extends Controller
             'codigo_barras' => 'nullable|string|max:50',
         ]);
 
-        if (!empty($data['id_categoria'])) {
-            $cat = DB::table('global.categorias_almacen')->where('id_categoria', $data['id_categoria'])->first();
-            $data['categoria'] = $cat ? $cat->nombre : '';
-        } else {
-            $data['categoria'] = '';
-        }
-        unset($data['id_categoria']);
-
         DB::table('global.inventario')->where('id_inventario', $id)->update($data);
         return redirect()->route('almacen.index')->with('success', 'Producto actualizado exitosamente');
     }
@@ -110,13 +100,18 @@ class AlmacenController extends Controller
     {
         $query = DB::table('global.inventario')
             ->leftJoin('global.proveedores', 'global.inventario.id_proveedor', '=', 'global.proveedores.id_proveedor')
+            ->leftJoin('global.categorias_almacen', 'global.inventario.id_categoria', '=', 'global.categorias_almacen.id_categoria')
             ->select('global.inventario.*', 'global.proveedores.nombre_proveedor',
+                'global.categorias_almacen.nombre as categoria',
                 DB::raw('(SELECT codigo_lote FROM global.lotes WHERE id_inventario = global.inventario.id_inventario ORDER BY id_lote DESC LIMIT 1) as codigo_lote'),
                 DB::raw('(SELECT costo_unitario FROM global.movimientos_inventario WHERE id_inventario = global.inventario.id_inventario AND tipo_movimiento = \'COMPRA\' ORDER BY id_movimiento DESC LIMIT 1) as ultimo_precio'))
             ->where('global.inventario.estado', 'ACTIVO');
 
         if ($request->filled('categoria')) {
-            $query->where('global.inventario.categoria', $request->categoria);
+            $cat = DB::table('global.categorias_almacen')->where('nombre', $request->categoria)->first();
+            if ($cat) {
+                $query->where('global.inventario.id_categoria', $cat->id_categoria);
+            }
         }
         if ($request->filled('busqueda')) {
             $query->where(function($q) use ($request) {
@@ -153,7 +148,7 @@ class AlmacenController extends Controller
                 'global.inventario.nombre_producto',
                 'global.inventario.codigo',
                 'global.vehiculos.placa_vehiculo',
-                DB::raw("COALESCE(NULLIF(global.vehiculos.conductor, ''), CONCAT(global.personal.nombres, ' ', global.personal.apellidos)) as conductor"),
+                DB::raw("CONCAT(global.personal.nombres, ' ', global.personal.apellidos) as conductor"),
                 'global.lotes.codigo_lote'
             )
             ->orderBy('global.movimientos_inventario.fecha_movimiento', 'desc');
@@ -183,6 +178,11 @@ class AlmacenController extends Controller
                 'codigo_lote' => 'nullable|string|max:50',
                 'id_vehiculo' => 'nullable|integer',
                 'id_personal' => 'nullable|integer',
+                'id_proveedor' => 'nullable|integer',
+                'id_banco' => 'nullable|integer',
+                'condicion_pago' => 'nullable|string|in:CONTADO,CREDITO',
+                'metodo_pago' => 'nullable|string|in:BANCO,CAJA_CHICA',
+                'fecha_limite_pago' => 'nullable|date',
                 'observaciones' => 'nullable|string',
             ]);
 
@@ -193,6 +193,11 @@ class AlmacenController extends Controller
                 'fecha_movimiento' => $validated['fecha_movimiento'] ?? date('Y-m-d'),
                 'costo_unitario' => $validated['precio_unitario'] ?? null,
                 'proveedor' => $validated['proveedor'] ?? null,
+                'id_proveedor' => $validated['id_proveedor'] ?? null,
+                'id_banco' => $validated['id_banco'] ?? null,
+                'condicion_pago' => $validated['condicion_pago'] ?? 'CONTADO',
+                'metodo_pago' => $validated['metodo_pago'] ?? null,
+                'fecha_limite_pago' => $validated['fecha_limite_pago'] ?? null,
                 'id_vehiculo' => $validated['id_vehiculo'] ?? null,
                 'id_personal' => $validated['id_personal'] ?? null,
                 'observaciones' => $validated['observaciones'] ?? null,
@@ -271,12 +276,12 @@ class AlmacenController extends Controller
         return response()->json(['success' => true, 'code' => $code]);
     }
 
-    private function generateNextCode($categoryName)
+    private function generateNextCode($categoryName, $categoryId = null)
     {
         $prefix = $categoryName ? strtoupper(substr($categoryName, 0, 2)) : 'XX';
 
         $count = DB::table('global.inventario')
-            ->where('categoria', $categoryName)
+            ->where('id_categoria', $categoryId)
             ->count();
 
         $itemNum = str_pad($count + 1, 3, '0', STR_PAD_LEFT);

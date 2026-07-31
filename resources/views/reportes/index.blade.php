@@ -89,7 +89,7 @@
             <button class="btn-bento btn-bento-primary border-black py-1 px-2 fs-mid font-bold rounded-3 text-decoration-none hover-scale" onclick="generarPDF()">
                 <i class="fas fa-file-pdf me-1"></i> PDF
             </button>
-            <button class="btn-bento btn-bento-outline border-black py-1 px-2 fs-mid font-bold rounded-3 text-decoration-none hover-scale" onclick="window.print()">
+            <button class="btn-bento btn-bento-outline border-black py-1 px-2 fs-mid font-bold rounded-3 text-decoration-none hover-scale" onclick="imprimirReporte()">
                 <i class="fas fa-print me-1"></i> IMPRIMIR
             </button>
         </div>
@@ -326,6 +326,18 @@ function generarPDF() {
     if (vid) params.append('id_vehiculo', vid);
 
     const url = '{{ url("reportes/pdf") }}?' + params.toString();
+    window.open(url, '_blank');
+}
+
+function imprimirReporte() {
+    const params = new URLSearchParams();
+    params.append('tipo', document.getElementById('filterTipo').value);
+    params.append('fecha_inicio', document.getElementById('filterFechaInicio').value);
+    params.append('fecha_fin', document.getElementById('filterFechaFin').value);
+    const vid = document.getElementById('filterVehiculo').value;
+    if (vid) params.append('id_vehiculo', vid);
+
+    const url = '{{ url("reportes/imprimir") }}?' + params.toString();
     window.open(url, '_blank');
 }
 

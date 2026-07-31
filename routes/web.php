@@ -14,6 +14,7 @@ use App\Http\Controllers\AlmacenController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\FacturacionController;
+use App\Http\Controllers\ProveedorController;
 
 // Auth routes
 Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -82,13 +83,23 @@ Route::middleware('auth')->group(function () {
     Route::get('/bancos', [BancoController::class, 'index'])->name('bancos.index');
     Route::get('/bancos/nuevo', [BancoController::class, 'create'])->name('bancos.create');
     Route::get('/bancos/{id}/editar', [BancoController::class, 'edit'])->name('bancos.edit');
+    Route::get('/bancos/{id}/estado', [BancoController::class, 'estado'])->name('bancos.estado');
     Route::post('/bancos', [BancoController::class, 'store'])->name('bancos.store');
     Route::put('/bancos/{id}', [BancoController::class, 'update'])->name('bancos.update');
     Route::delete('/bancos/{id}', [BancoController::class, 'destroy'])->name('bancos.destroy');
 
+    // Proveedores
+    Route::get('/proveedores', [ProveedorController::class, 'index'])->name('proveedores.index');
+    Route::get('/proveedores/nuevo', [ProveedorController::class, 'create'])->name('proveedores.create');
+    Route::get('/proveedores/{id}/editar', [ProveedorController::class, 'edit'])->name('proveedores.edit');
+    Route::post('/proveedores', [ProveedorController::class, 'store'])->name('proveedores.store');
+    Route::put('/proveedores/{id}', [ProveedorController::class, 'update'])->name('proveedores.update');
+    Route::delete('/proveedores/{id}', [ProveedorController::class, 'destroy'])->name('proveedores.destroy');
+
     // Reportes
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
     Route::get('/reportes/pdf', [ReporteController::class, 'pdf'])->name('reportes.pdf');
+    Route::get('/reportes/imprimir', [ReporteController::class, 'imprimir'])->name('reportes.imprimir');
 
     // Documentos
     Route::view('/documentos', 'documentos.index')->name('documentos.index');
@@ -150,6 +161,8 @@ Route::prefix('api')->middleware('auth')->group(function () {
     Route::get('/reportes/almacen', [ReporteController::class, 'almacen']);
     Route::get('/bancos', [BancoController::class, 'apiList']);
     Route::get('/bancos/{id}', [BancoController::class, 'apiShow']);
+    Route::get('/proveedores', [ProveedorController::class, 'apiList']);
+    Route::get('/proveedores/{id}', [ProveedorController::class, 'apiShow']);
     Route::get('/tramos', [TramoController::class, 'apiList']);
     Route::get('/tramos/{id}', [TramoController::class, 'apiShow']);
     Route::get('/almacen', [AlmacenController::class, 'apiList']);

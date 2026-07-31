@@ -50,14 +50,6 @@
                     </div>
                 </div>
             </div>
-            <div class="row g-4 mb-4">
-                <div class="col-md-12">
-                    <div class="d-flex align-items-center gap-3 p-3" style="background:#f0f0f0;border:3px solid #000;">
-                        <span class="badge bg-black text-warning px-3 py-2 fw-bold fs-6 font-monospace">{{ $gasto->nro_documento ?? 'NUEVO' }}</span>
-                        <span class="fw-bold small text-uppercase">{{ $gasto ? 'EDITANDO' : 'NUEVO REGISTRO' }}</span>
-                    </div>
-                </div>
-            </div>
 
             <div class="row g-4 mb-4">
                 <div class="col-md-8">
@@ -102,23 +94,56 @@
             <div class="row g-4 mb-4">
                 <div class="col-md-4">
                     <div class="form-group mb-0">
-                        <label>KILOMETRAJE</label>
-                        <input type="number" name="kilometraje" value="{{ old('kilometraje', $gasto->kilometraje ?? '') }}" min="0" placeholder="0">
+                        <label>CONDICIÓN DE PAGO <span class="text-danger">*</span></label>
+                        <select name="condicion_pago" id="condicionPago" class="form-control" style="border-radius:0;border:3px solid #000;padding:10px;" onchange="toggleCondicionPago()">
+                            <option value="CONTADO" {{ old('condicion_pago', $gasto->condicion_pago ?? 'CONTADO') == 'CONTADO' ? 'selected' : '' }}>CONTADO</option>
+                            <option value="CREDITO" {{ old('condicion_pago', $gasto->condicion_pago ?? 'CONTADO') == 'CREDITO' ? 'selected' : '' }}>CRÉDITO</option>
+                        </select>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4" id="campoMetodoPago">
                     <div class="form-group mb-0">
-                        <label>PROVEEDOR</label>
-                        <select name="proveedor" id="proveedorSelect" class="form-control" style="border-radius:0;border:3px solid #000;padding:10px;">
+                        <label>MÉTODO DE PAGO</label>
+                        <select name="metodo_pago" id="metodoPago" class="form-control" style="border-radius:0;border:3px solid #000;padding:10px;" onchange="toggleMetodoPago()">
+                            <option value="BANCO" {{ old('metodo_pago', $gasto->metodo_pago ?? 'BANCO') == 'BANCO' ? 'selected' : '' }}>BANCO</option>
+                            <option value="CAJA_CHICA" {{ old('metodo_pago', $gasto->metodo_pago ?? '') == 'CAJA_CHICA' ? 'selected' : '' }}>CAJA CHICA</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4" id="campoBanco">
+                    <div class="form-group mb-0">
+                        <label>CTA. BANCO</label>
+                        <select name="id_banco" id="idBanco" class="form-control" style="border-radius:0;border:3px solid #000;padding:10px;">
+                            <option value="">SELECCIONE BANCO...</option>
+                            @foreach($bancos as $b)
+                                <option value="{{ $b->id_banco }}" {{ old('id_banco', $gasto->id_banco ?? '') == $b->id_banco ? 'selected' : '' }}>
+                                    {{ $b->nombre_banco }} - {{ $b->numero_cuenta }} ({{ $b->moneda ?? 'BOB' }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CRÉDITO: proveedor obligatorio + fecha posible pago -->
+            <div id="creditoSection" class="row g-4 mb-4" style="display:none;">
+                <div class="col-md-6">
+                    <div class="form-group mb-0">
+                        <label>PROVEEDOR <span class="text-danger">*</span></label>
+                        <select name="id_proveedor" id="proveedorSelect" class="form-control" style="border-radius:0;border:3px solid #000;padding:10px;">
                             <option value="">SELECCIONE PROVEEDOR...</option>
                             @foreach($proveedores as $p)
-                                <option value="{{ $p->nombre_proveedor }}" data-tipo="{{ $p->tipo_proveedor }}" {{ old('proveedor', $gasto->proveedor ?? '') == $p->nombre_proveedor ? 'selected' : '' }}>
+                                <option value="{{ $p->id_proveedor }}" data-tipo="{{ $p->tipo_proveedor }}" {{ old('id_proveedor', $gasto->id_proveedor ?? '') == $p->id_proveedor ? 'selected' : '' }}>
                                     {{ $p->nombre_proveedor }}
                                 </option>
                             @endforeach
-                            <option value="OTRO">--- OTRO (ESCRIBIR MANUAL) ---</option>
                         </select>
-                        <input type="text" id="proveedorOtro" name="proveedor_otro" value="" placeholder="NOMBRE DEL PROVEEDOR" style="display:none;border-radius:0;border:3px solid #000;padding:10px;width:100%;margin-top:6px;">
+                    </div>
+                </div>
+                <div class="col-md-6" id="campoFechaLimite">
+                    <div class="form-group mb-0">
+                        <label>FECHA POSIBLE PAGO</label>
+                        <input type="date" name="fecha_limite_pago" id="fechaLimitePago" value="{{ old('fecha_limite_pago', $gasto->fecha_limite_pago ?? '') }}">
                     </div>
                 </div>
             </div>
@@ -159,6 +184,19 @@ function toggleCombustible() {
     filtrarProveedores();
 }
 
+function toggleCondicionPago() {
+    const cond = document.getElementById('condicionPago').value;
+    const esCredito = cond === 'CREDITO';
+    document.getElementById('campoMetodoPago').style.display = esCredito ? 'none' : 'block';
+    document.getElementById('creditoSection').style.display = esCredito ? 'flex' : 'none';
+    toggleMetodoPago();
+}
+
+function toggleMetodoPago() {
+    const metodo = document.getElementById('metodoPago').value;
+    document.getElementById('campoBanco').style.display = metodo === 'BANCO' ? 'block' : 'none';
+}
+
 function calcMontoCombustible() {
     const litros = parseFloat(document.getElementById('litros').value) || 0;
     const precio = parseFloat(document.getElementById('precioLitro').value) || 0;
@@ -190,54 +228,32 @@ function filtrarProveedores() {
         permitidos.includes(p.tipo_proveedor) || permitidos.includes(null)
     );
 
-    // If no matches, fallback to ALL active proveedores
+    // If no matches, fallback to ALL proveedores
     const list = filtrados.length > 0 ? filtrados : proveedores;
 
     list.forEach(p => {
         const opt = document.createElement('option');
-        opt.value = p.nombre_proveedor;
-        opt.textContent = p.nombre_proveedor + (p.rubro ? ' (' + p.rubro + ')' : '');
+        opt.value = p.id_proveedor;
+        opt.textContent = p.nombre_proveedor;
         opt.dataset.tipo = p.tipo_proveedor || '';
         select.appendChild(opt);
     });
 
-    select.innerHTML += '<option value="OTRO">--- OTRO (ESCRIBIR MANUAL) ---</option>';
-
+    // Restaurar la selección previa (id_proveedor) si sigue disponible
     if ([...select.options].some(o => o.value === currentVal)) {
         select.value = currentVal;
     }
 }
 
 document.getElementById('proveedorSelect').addEventListener('change', function() {
-    const otroInput = document.getElementById('proveedorOtro');
-    if (this.value === 'OTRO') {
-        otroInput.style.display = 'block';
-        otroInput.name = 'proveedor';
-        this.name = '';
-    } else {
-        otroInput.style.display = 'none';
-        otroInput.name = 'proveedor_otro';
-        this.name = 'proveedor';
-    }
+    // El select siempre envía id_proveedor
+    this.name = 'id_proveedor';
 });
 
-// On load, ensure selected proveedor shows correctly if it's from an existing gasto
 document.addEventListener('DOMContentLoaded', function() {
-    const selVal = document.getElementById('proveedorSelect').value;
-    if (selVal && selVal !== 'OTRO') {
-        // Check if it actually exists in the rendered options
-        const exists = [...document.getElementById('proveedorSelect').options].some(o => o.value === selVal);
-        if (!exists) {
-            // Add it as a custom option
-            const opt = document.createElement('option');
-            opt.value = selVal;
-            opt.textContent = selVal + ' (personalizado)';
-            document.getElementById('proveedorSelect').appendChild(opt);
-            document.getElementById('proveedorSelect').value = selVal;
-        }
-    }
     filtrarProveedores();
     toggleCombustible();
+    toggleCondicionPago();
 });
 </script>
 @endpush

@@ -71,6 +71,7 @@ function loadBancos() {
                 <td><span class="badge font-bold px-3 py-2" style="background:${b.estado === 'ACTIVO' ? '#e2ffd6' : '#ffdcd6'};color:${b.estado === 'ACTIVO' ? '#007400' : '#740000'};border:2px solid #000;">${b.estado}</span></td>
                 <td>
                     <div class="d-flex gap-2 justify-content-center">
+                        <button class="btn btn-sm btn-info border-black font-bold" onclick="window.location.href='{{ url("bancos") }}/${b.id_banco}/estado'" title="ESTADO DE CUENTA"><i class="fas fa-book"></i></button>
                         <button class="btn btn-sm btn-warning border-black font-bold" onclick="window.location.href='{{ url("bancos") }}/${b.id_banco}/editar'" title="EDITAR"><i class="fas fa-edit"></i></button>
                         ${b.estado === 'ACTIVO' ? `<button class="btn btn-sm btn-danger border-black font-bold" onclick="eliminarBanco(${b.id_banco})" title="DESACTIVAR"><i class="fas fa-ban"></i></button>` : ''}
                     </div>

@@ -84,9 +84,7 @@
     <div id="tabContentFletes">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div class="fw-bold fs-5">TODOS LOS FLETES</div>
-            <button class="btn-bento btn-bento-primary border-black py-1 px-2 fs-mid font-bold rounded-3 hover-scale" onclick="abrirModalNuevoFlete()">
-                <i class="fas fa-plus me-1"></i> NUEVO FLETE
-            </button>
+            
         </div>
 
         <!-- Filtros fletes -->
@@ -758,7 +756,7 @@ function renderPendientes() {
         <td class="text-center fw-bold" style="padding:10px 8px;">${p.placa_vehiculo || '—'}</td>
         <td class="fw-bold" style="padding:10px 8px;max-width:250px;">${getRuta(p)}</td>
         <td class="text-center fw-bold" style="padding:10px 8px;color:#007400;">${formatCurrency(p.monto)}</td>
-        <td class="text-center" style="padding:10px 8px;">${p.chofer || p.conductor_asignado || '—'}</td>
+        <td class="text-center" style="padding:10px 8px;">${p.chofer || '—'}</td>
     </tr>`).join('');
     html += `</tbody></table></div>`;
     container.innerHTML = html;

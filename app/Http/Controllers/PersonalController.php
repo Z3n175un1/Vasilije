@@ -134,7 +134,6 @@ class PersonalController extends Controller
             'fecha_gasto' => $data['fecha_gasto'],
             'descripcion' => $data['descripcion'] ?? null,
             'nro_documento' => $data['nro_documento'],
-            'proveedor' => null,
         ]);
 
         return redirect()->route('personal.index')->with('success', ucfirst($data['tipo_gasto']) . ' registrado exitosamente');

@@ -17,7 +17,8 @@ class GastoController extends Controller
         $id_vehiculo = $request->query('id_vehiculo');
         $vehiculos = DB::table('global.vehiculos')->where('estado', '<>', 3)->orderBy('placa_vehiculo')->get();
         $proveedores = DB::table('global.proveedores')->where('estado', 1)->orderBy('nombre_proveedor')->get();
-        return view('gastos.form', ['gasto' => null, 'vehiculos' => $vehiculos, 'id_vehiculo' => $id_vehiculo, 'proveedores' => $proveedores]);
+        $bancos = DB::table('global.bancos')->where('estado', 'ACTIVO')->orderBy('nombre_banco')->get();
+        return view('gastos.form', ['gasto' => null, 'vehiculos' => $vehiculos, 'id_vehiculo' => $id_vehiculo, 'proveedores' => $proveedores, 'bancos' => $bancos]);
     }
 
     public function edit($id)
@@ -31,11 +32,15 @@ class GastoController extends Controller
 
         $vehiculos = DB::table('global.vehiculos')->where('estado', '<>', 3)->orderBy('placa_vehiculo')->get();
         $proveedores = DB::table('global.proveedores')->where('estado', 1)->orderBy('nombre_proveedor')->get();
-        return view('gastos.form', ['gasto' => $gasto, 'vehiculos' => $vehiculos, 'id_vehiculo' => null, 'proveedores' => $proveedores]);
+        $bancos = DB::table('global.bancos')->where('estado', 'ACTIVO')->orderBy('nombre_banco')->get();
+        return view('gastos.form', ['gasto' => $gasto, 'vehiculos' => $vehiculos, 'id_vehiculo' => null, 'proveedores' => $proveedores, 'bancos' => $bancos]);
     }
 
     public function store(Request $request)
     {
+        $condicion = $request->condicion_pago ?? 'CONTADO';
+        $metodo = $request->metodo_pago ?? null;
+
         $data = $request->validate([
             'id_vehiculo' => 'required|integer',
             'tipo_gasto' => 'required|string',
@@ -43,25 +48,24 @@ class GastoController extends Controller
             'monto' => 'required|numeric',
             'fecha_gasto' => 'required|date',
             'descripcion' => 'nullable|string',
-            'kilometraje' => 'nullable|numeric',
-            'proveedor' => 'nullable|string',
+            'id_proveedor' => $condicion === 'CREDITO' ? 'required|integer' : 'nullable|integer',
+            'id_banco' => ($condicion === 'CONTADO' && $metodo === 'BANCO') ? 'required|integer' : 'nullable|integer',
+            'condicion_pago' => 'nullable|string|in:CONTADO,CREDITO',
+            'metodo_pago' => 'nullable|string|in:BANCO,CAJA_CHICA',
+            'fecha_limite_pago' => 'nullable|date',
             'tipo_combustible' => 'nullable|string',
             'litros' => 'nullable|numeric',
             'precio_por_litro' => 'nullable|numeric',
         ]);
 
-        // Resolve id_proveedor from proven name
-        if (!empty($data['proveedor'])) {
-            $prov = DB::table('global.proveedores')->where('nombre_proveedor', $data['proveedor'])->first();
-            if ($prov) $data['id_proveedor'] = $prov->id_proveedor;
-        }
-
         $ultimo = DB::table('global.gastos')->where('nro_documento', 'like', 'E_%')->orderBy('id_gasto', 'desc')->first();
         $contador = $ultimo ? intval(substr($ultimo->nro_documento, 2)) + 1 : 1;
         $data['nro_documento'] = 'E_' . str_pad($contador, 5, '0', STR_PAD_LEFT);
+        $data['condicion_pago'] = $condicion;
+        $data['metodo_pago'] = $metodo === 'BANCO' ? 'BANCO' : ($condicion === 'CONTADO' ? 'CAJA_CHICA' : null);
 
         // Filter out non-gastos table columns before insert
-        $gastosAllowed = ['id_vehiculo', 'tipo_gasto', 'concepto', 'monto', 'fecha_gasto', 'descripcion', 'kilometraje', 'proveedor', 'id_proveedor', 'nro_documento'];
+        $gastosAllowed = ['id_vehiculo', 'tipo_gasto', 'concepto', 'monto', 'fecha_gasto', 'descripcion', 'id_proveedor', 'id_banco', 'condicion_pago', 'metodo_pago', 'fecha_limite_pago', 'nro_documento'];
         $gastosData = array_filter($data, function($k) use ($gastosAllowed) { return in_array($k, $gastosAllowed); }, ARRAY_FILTER_USE_KEY);
 
         $id_gasto = DB::table('global.gastos')->insertGetId($gastosData, 'id_gasto');
@@ -89,6 +93,9 @@ class GastoController extends Controller
 
     public function update(Request $request, $id)
     {
+        $condicion = $request->condicion_pago ?? 'CONTADO';
+        $metodo = $request->metodo_pago ?? null;
+
         $data = $request->validate([
             'id_vehiculo' => 'required|integer',
             'tipo_gasto' => 'required|string',
@@ -96,19 +103,19 @@ class GastoController extends Controller
             'monto' => 'required|numeric',
             'fecha_gasto' => 'required|date',
             'descripcion' => 'nullable|string',
-            'kilometraje' => 'nullable|numeric',
-            'proveedor' => 'nullable|string',
+            'id_proveedor' => $condicion === 'CREDITO' ? 'required|integer' : 'nullable|integer',
+            'id_banco' => ($condicion === 'CONTADO' && $metodo === 'BANCO') ? 'required|integer' : 'nullable|integer',
+            'condicion_pago' => 'nullable|string|in:CONTADO,CREDITO',
+            'metodo_pago' => 'nullable|string|in:BANCO,CAJA_CHICA',
+            'fecha_limite_pago' => 'nullable|date',
             'tipo_combustible' => 'nullable|string',
             'litros' => 'nullable|numeric',
             'precio_por_litro' => 'nullable|numeric',
         ]);
+        $data['condicion_pago'] = $condicion;
+        $data['metodo_pago'] = $metodo === 'BANCO' ? 'BANCO' : ($condicion === 'CONTADO' ? 'CAJA_CHICA' : null);
 
-        if (!empty($data['proveedor'])) {
-            $prov = DB::table('global.proveedores')->where('nombre_proveedor', $data['proveedor'])->first();
-            if ($prov) $data['id_proveedor'] = $prov->id_proveedor;
-        }
-
-        $gastosAllowed = ['id_vehiculo', 'tipo_gasto', 'concepto', 'monto', 'fecha_gasto', 'descripcion', 'kilometraje', 'proveedor', 'id_proveedor'];
+        $gastosAllowed = ['id_vehiculo', 'tipo_gasto', 'concepto', 'monto', 'fecha_gasto', 'descripcion', 'id_proveedor', 'id_banco', 'condicion_pago', 'metodo_pago', 'fecha_limite_pago'];
         $gastosData = array_filter($data, function($k) use ($gastosAllowed) { return in_array($k, $gastosAllowed); }, ARRAY_FILTER_USE_KEY);
         DB::table('global.gastos')->where('id_gasto', $id)->update($gastosData);
 

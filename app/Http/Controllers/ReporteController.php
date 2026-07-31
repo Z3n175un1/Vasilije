@@ -73,10 +73,11 @@ class ReporteController extends Controller
     public function almacen()
     {
         $data = DB::table('global.inventario')
-            ->select('categoria',
+            ->leftJoin('global.categorias_almacen', 'global.inventario.id_categoria', '=', 'global.categorias_almacen.id_categoria')
+            ->select('global.categorias_almacen.nombre as categoria',
                 DB::raw('COUNT(*) as total_items'),
                 DB::raw('COALESCE(SUM(stock_actual * precio_compra), 0) as valor_total'))
-            ->groupBy('categoria')
+            ->groupBy('global.categorias_almacen.nombre')
             ->orderByDesc('valor_total')
             ->get();
 
@@ -104,15 +105,60 @@ class ReporteController extends Controller
             $vehiculo = DB::table('global.vehiculos')->where('id_vehiculo', $idVehiculo)->first();
         }
 
+        $logoDataUri = '';
+        if (extension_loaded('gd')) {
+            $logoPath = public_path('logo.png');
+            if (file_exists($logoPath)) {
+                $logoDataUri = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+            }
+        }
+
         $pdf = Pdf::loadView('reportes.pdf', compact(
             'todo', 'totalIngresos', 'totalEgresos',
-            'fechaInicio', 'fechaFin', 'tipo', 'vehiculo'
+            'fechaInicio', 'fechaFin', 'tipo', 'vehiculo', 'logoDataUri'
         ));
 
         $pdf->setPaper('letter', 'landscape');
 
         $filename = 'reporte_' . date('Y-m-d_His') . '.pdf';
         return $pdf->download($filename);
+    }
+
+    public function imprimir(Request $request)
+    {
+        $fechaInicio = $request->fecha_inicio ?? date('Y-m-01');
+        $fechaFin = $request->fecha_fin ?? date('Y-m-d');
+        $tipo = strtoupper($request->tipo ?? 'TODO');
+        $idVehiculo = $request->id_vehiculo;
+
+        $gastos = $this->getGastos($fechaInicio, $fechaFin, $tipo, $idVehiculo);
+        $ingresos = $this->getIngresos($fechaInicio, $fechaFin, $tipo, $idVehiculo);
+        $consumos = $this->getConsumos($fechaInicio, $fechaFin, $tipo, $idVehiculo);
+
+        $todo = collect($gastos)->concat($ingresos)->concat($consumos)->sortByDesc('fecha')->values();
+
+        $totalIngresos = collect($ingresos)->sum('ingreso');
+        $totalEgresos = collect($gastos)->sum('egreso') + collect($consumos)->sum('egreso');
+
+        $vehiculo = null;
+        if ($idVehiculo) {
+            $vehiculo = DB::table('global.vehiculos')->where('id_vehiculo', $idVehiculo)->first();
+        }
+
+        $logoDataUri = '';
+        if (extension_loaded('gd')) {
+            $logoPath = public_path('logo.png');
+            if (file_exists($logoPath)) {
+                $logoDataUri = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+            }
+        }
+
+        $autoPrint = true;
+
+        return view('reportes.pdf', compact(
+            'todo', 'totalIngresos', 'totalEgresos',
+            'fechaInicio', 'fechaFin', 'tipo', 'vehiculo', 'logoDataUri', 'autoPrint'
+        ));
     }
 
     private function getGastos($fechaInicio, $fechaFin, $tipo, $idVehiculo = null)
@@ -134,7 +180,7 @@ class ReporteController extends Controller
                 'g.cantidad',
                 'g.kilometraje',
                 'g.nro_documento',
-                DB::raw("COALESCE((SELECT nombre_proveedor FROM global.proveedores prov WHERE prov.id_proveedor = g.id_proveedor), g.proveedor) as proveedor")
+                DB::raw("(SELECT nombre_proveedor FROM global.proveedores prov WHERE prov.id_proveedor = g.id_proveedor) as proveedor")
             );
 
         if ($idVehiculo) $query->where('g.id_vehiculo', $idVehiculo);
@@ -172,7 +218,7 @@ class ReporteController extends Controller
                 DB::raw("'' as proveedor"),
                 'i.toneladas',
                 'i.kilometraje_conducido',
-                DB::raw("COALESCE((SELECT CONCAT(nombres, ' ', apellidos) FROM global.personal pers WHERE pers.id_personal = i.id_personal), i.conductor_asignado) as conductor_asignado"),
+                DB::raw("(SELECT CONCAT(nombres, ' ', apellidos) FROM global.personal pers WHERE pers.id_personal = i.id_personal) as conductor_asignado"),
                 DB::raw("COALESCE(i.origen, '') as origen"),
                 DB::raw("COALESCE(i.destino, '') as destino"),
                 DB::raw("COALESCE(i.cliente_nombre, '') as cliente_nombre"),

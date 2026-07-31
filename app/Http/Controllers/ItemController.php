@@ -41,18 +41,14 @@ class ItemController extends Controller
         $data['estado'] = 'ACTIVO';
         if (!isset($data['stock_actual'])) $data['stock_actual'] = 0;
 
-        if (!empty($data['id_categoria'])) {
-            $cat = DB::table('global.categorias_almacen')->where('id_categoria', $data['id_categoria'])->first();
-            $data['categoria'] = $cat ? $cat->nombre : '';
-        } else {
-            $data['categoria'] = '';
-        }
-
         if (empty($data['codigo'])) {
-            $data['codigo'] = $this->generateNextCode($data['categoria'] ?? '');
+            $catName = '';
+            if (!empty($data['id_categoria'])) {
+                $cat = DB::table('global.categorias_almacen')->where('id_categoria', $data['id_categoria'])->first();
+                $catName = $cat ? $cat->nombre : '';
+            }
+            $data['codigo'] = $this->generateNextCode($catName, $data['id_categoria'] ?? null);
         }
-
-        unset($data['id_categoria']);
 
         DB::table('global.inventario')->insert($data);
         return redirect()->route('items.index')->with('success', 'Ítem registrado exitosamente');
@@ -71,14 +67,6 @@ class ItemController extends Controller
             'codigo_barras' => 'nullable|string|max:50',
         ]);
 
-        if (!empty($data['id_categoria'])) {
-            $cat = DB::table('global.categorias_almacen')->where('id_categoria', $data['id_categoria'])->first();
-            $data['categoria'] = $cat ? $cat->nombre : '';
-        } else {
-            $data['categoria'] = '';
-        }
-        unset($data['id_categoria']);
-
         DB::table('global.inventario')->where('id_inventario', $id)->update($data);
         return redirect()->route('items.index')->with('success', 'Ítem actualizado exitosamente');
     }
@@ -92,24 +80,30 @@ class ItemController extends Controller
     public function apiList()
     {
         $data = DB::table('global.inventario')
-            ->where('estado', 'ACTIVO')
-            ->orderBy('nombre_producto')
+            ->leftJoin('global.categorias_almacen', 'global.inventario.id_categoria', '=', 'global.categorias_almacen.id_categoria')
+            ->select('global.inventario.*', 'global.categorias_almacen.nombre as categoria')
+            ->where('global.inventario.estado', 'ACTIVO')
+            ->orderBy('global.inventario.nombre_producto')
             ->get();
         return response()->json(['success' => true, 'data' => $data]);
     }
 
     public function apiShow($id)
     {
-        $item = DB::table('global.inventario')->where('id_inventario', $id)->first();
+        $item = DB::table('global.inventario')
+            ->leftJoin('global.categorias_almacen', 'global.inventario.id_categoria', '=', 'global.categorias_almacen.id_categoria')
+            ->select('global.inventario.*', 'global.categorias_almacen.nombre as categoria')
+            ->where('global.inventario.id_inventario', $id)
+            ->first();
         return response()->json(['success' => true, 'data' => $item]);
     }
 
-    private function generateNextCode($categoryName)
+    private function generateNextCode($categoryName, $categoryId = null)
     {
         $prefix = $categoryName ? strtoupper(substr($categoryName, 0, 2)) : 'XX';
 
         $count = DB::table('global.inventario')
-            ->where('categoria', $categoryName)
+            ->where('id_categoria', $categoryId)
             ->count();
 
         $itemNum = str_pad($count + 1, 3, '0', STR_PAD_LEFT);

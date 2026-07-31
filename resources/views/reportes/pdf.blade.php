@@ -17,27 +17,35 @@
             padding: 0;
         }
         .top-bar {
-            display: flex;
-            align-items: center;
-            gap: 16px;
+            width: 100%;
             border-bottom: 3px solid #1a1a1a;
             padding-bottom: 14px;
             margin-bottom: 14px;
         }
+        .top-bar table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .top-bar td {
+            padding: 0;
+            border: none;
+            vertical-align: middle;
+        }
         .logo-box {
-            width: 70px;
-            height: 70px;
-            background: #1a1a1a;
-            color: #2f2c79;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28pt;
-            font-weight: 900;
-            flex-shrink: 0;
+            width: 64px;
+            height: 64px;
+            background: #ffffff;
+            border: 2px solid #1a1a1a;
+            padding: 4px;
+            text-align: right;
+        }
+        .logo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
         .company-info {
-            flex: 1;
+            text-align: left;
         }
         .company-name {
             font-size: 20pt;
@@ -77,13 +85,16 @@
             margin: 0;
         }
         .summary-grid {
-            display: flex;
-            justify-content: space-between;
-            gap: 8px;
+            width: 100%;
             margin-bottom: 16px;
+            border-collapse: collapse;
+        }
+        .summary-grid td {
+            padding: 0;
+            vertical-align: middle;
         }
         .summary-box {
-            flex: 1;
+            margin: 0 4px;
             padding: 10px 8px;
             text-align: center;
             border: 2.5px solid #1a1a1a;
@@ -178,17 +189,29 @@
 
     <div class="watermark">DS TRANSPORTE S.R.L</div>
 
-    <!-- TOP BAR: Logo + Company Info -->
+    <!-- TOP BAR: Company Info (izquierda) + Logo (derecha) -->
     <div class="top-bar">
-        <div class="logo-box">V</div>
-        <div class="company-info">
-            <div class="company-name">DS TRANSPORTE S.R.L</div>
-            <div class="company-details">
-                <strong>NIT:</strong> 123456789012 &bull;
-                <strong>Santa Cruz - Bolivia</strong><br>
-                <strong>Dirección:</strong> Av. Principal N° 1234, Zona Central
-            </div>
-        </div>
+        <table>
+            <tr>
+                <td>
+                    <div class="company-info">
+                        <div class="company-name">DS TRANSPORTE S.R.L</div>
+                        <div class="company-details">
+                            <strong>NIT:</strong> 123456789012 &bull;
+                            <strong>Santa Cruz - Bolivia</strong><br>
+                            <strong>Dirección:</strong> Av. Principal N° 1234, Zona Central
+                        </div>
+                    </div>
+                </td>
+                <td style="width:72px;">
+                    <div class="logo-box">
+                        @if($logoDataUri)
+                            <img src="{{ $logoDataUri }}" alt="DS TRANSPORTE">
+                        @endif
+                    </div>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <!-- REPORT TITLE -->
@@ -201,20 +224,28 @@
     @php
         $balance = $totalIngresos - $totalEgresos;
     @endphp
-    <div class="summary-grid">
-        <div class="summary-box ingresos">
-            <div class="summary-label">Total Ingresos</div>
-            <div class="summary-value">Bs. {{ number_format($totalIngresos, 2, ',', '.') }}</div>
-        </div>
-        <div class="summary-box egresos">
-            <div class="summary-label">Total Egresos</div>
-            <div class="summary-value">Bs. {{ number_format($totalEgresos, 2, ',', '.') }}</div>
-        </div>
-        <div class="summary-box balance">
-            <div class="summary-label">Balance Neto</div>
-            <div class="summary-value">Bs. {{ number_format($balance, 2, ',', '.') }}</div>
-        </div>
-    </div>
+    <table class="summary-grid">
+        <tr>
+            <td style="width:33.33%;">
+                <div class="summary-box ingresos">
+                    <div class="summary-label">Total Ingresos</div>
+                    <div class="summary-value">Bs. {{ number_format($totalIngresos, 2, ',', '.') }}</div>
+                </div>
+            </td>
+            <td style="width:33.33%;">
+                <div class="summary-box egresos">
+                    <div class="summary-label">Total Egresos</div>
+                    <div class="summary-value">Bs. {{ number_format($totalEgresos, 2, ',', '.') }}</div>
+                </div>
+            </td>
+            <td style="width:33.33%;">
+                <div class="summary-box balance">
+                    <div class="summary-label">Balance Neto</div>
+                    <div class="summary-value">Bs. {{ number_format($balance, 2, ',', '.') }}</div>
+                </div>
+            </td>
+        </tr>
+    </table>
 
     <!-- TABLE -->
     <table>
@@ -247,7 +278,7 @@
                     <td style="font-weight:600;">{{ $item->fecha ? date('d/m/Y', strtotime($item->fecha)) : '—' }}</td>
                     <td class="center">
                         <span class="badge-tipo {{ $item->tipo_registro === 'INGRESO' ? 'badge-ingreso' : 'badge-egreso' }}">
-                            {{ $item->tipo_registro === 'INGRESO' ? '↑' : '↓' }}
+                            {{ $item->tipo_registro === 'INGRESO' ? 'INGRESO' : 'EGRESO' }}
                         </span>
                     </td>
                     <td style="font-weight:600;">{{ $recorrido ?: '—' }}</td>
@@ -288,5 +319,12 @@
         Documento oficial de gestión interna
     </div>
 
+@if(!empty($autoPrint))
+<script>
+    window.onload = function () {
+        setTimeout(function () { window.print(); }, 500);
+    };
+</script>
+@endif
 </body>
 </html>

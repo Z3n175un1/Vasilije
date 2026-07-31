@@ -80,8 +80,8 @@
             </div>
                 <div class="table-responsive-brutalist">
                     <table class="table-excel mb-0" style="font-size:.85rem;">
-                        <thead><tr><th>Fecha</th><th>Código</th><th>Producto</th><th>Cantidad</th><th>P. Unit.</th><th>P. Compra</th><th>Proveedor</th><th>Lote</th></tr></thead>
-                        <tbody id="comprasList"><tr><td colspan="8" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
+                        <thead><tr><th>Fecha</th><th>Código</th><th>Producto</th><th>Cantidad</th><th>P. Unit.</th><th>P. Compra</th><th>Proveedor</th><th>Condición</th><th>Lote</th></tr></thead>
+                        <tbody id="comprasList"><tr><td colspan="9" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
                     </table>
                 </div>
         </div>
@@ -192,36 +192,74 @@
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
-                    <div class="col-md-8">
+                    <div class="col-12">
                         <label class="fw-bold small text-uppercase">PRODUCTO <span class="text-danger">*</span></label>
                         <select class="form-control fw-bold" id="movIdProducto" style="border-radius:0;border:3px solid #000;padding:10px;" required onchange="mostrarStockProducto()">
                             <option value="">SELECCIONE...</option>
                         </select>
                         <div id="movStockInfo" class="mt-2 p-2 fw-bold text-center" style="border:3px solid #000;display:none;"></div>
                     </div>
-                    <div class="col-md-4">
+                </div>
+                <div class="row g-3 mb-3" id="movCantidadRow">
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">CANTIDAD <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="movCantidad" style="border-radius:0;border:3px solid #000;padding:10px;" required min="0.01" placeholder="0.00">
+                    </div>
+                    <div class="col-md-6" id="movCodigoLoteRow">
                         <label class="fw-bold small text-uppercase">CÓDIGO DE LOTE</label>
                         <input type="text" class="form-control fw-bold" id="movCodigoLote" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0;font-family:monospace;letter-spacing:1px;" readonly placeholder="LO-000001">
                     </div>
                 </div>
-                <div class="row g-3 mb-3">
-                    <div class="col-md-4">
-                        <label class="fw-bold small text-uppercase">CANTIDAD <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="movCantidad" style="border-radius:0;border:3px solid #000;padding:10px;" required min="0.01" placeholder="0.00" oninput="calcularPrecioCompra()">
-                    </div>
-                    <div class="col-md-4">
+                <div class="row g-3 mb-3" id="movPreciosRow" style="display:none;">
+                    <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">PRECIO UNITARIO (Bs)</label>
                         <input type="number" step="0.01" class="form-control fw-bold" id="movPrecioUnitario" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" placeholder="0.00" oninput="calcularPrecioCompra()">
                     </div>
-                    <div class="col-md-4" id="movPrecioCompraRow">
-                        <label class="fw-bold small text-uppercase">PRECIO COMPRA (Bs)</label>
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">TOTAL COMPRA (Bs)</label>
                         <input type="number" step="0.01" class="form-control fw-bold" id="movPrecioCompra" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0;" min="0" placeholder="0.00" readonly>
                     </div>
                 </div>
-                <div class="row g-3 mb-3" id="movProveedorRow">
-                    <div class="col-12">
-                        <label class="fw-bold small text-uppercase">PROVEEDOR</label>
-                        <input type="text" class="form-control fw-bold" id="movProveedor" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="Nombre del proveedor">
+                <div class="row g-3 mb-3" id="movPagoRow" style="display:none;">
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">CONDICIÓN DE PAGO <span class="text-danger">*</span></label>
+                        <select class="form-control fw-bold" id="movCondicion" style="border-radius:0;border:3px solid #000;padding:10px;" onchange="toggleMovCondicion()">
+                            <option value="CONTADO">CONTADO</option>
+                            <option value="CREDITO">CRÉDITO</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6" id="movFechaLimiteRow" style="display:none;">
+                        <label class="fw-bold small text-uppercase">FECHA POSIBLE PAGO</label>
+                        <input type="date" class="form-control fw-bold" id="movFechaLimite" style="border-radius:0;border:3px solid #000;padding:10px;">
+                    </div>
+                </div>
+                <div class="row g-3 mb-3" id="movContadoRow" style="display:none;">
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">MÉTODO DE PAGO</label>
+                        <select class="form-control fw-bold" id="movMetodo" style="border-radius:0;border:3px solid #000;padding:10px;" onchange="toggleMovMetodo()">
+                            <option value="BANCO">BANCO</option>
+                            <option value="CAJA_CHICA">CAJA CHICA</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6" id="movBancoRow">
+                        <label class="fw-bold small text-uppercase">CTA. BANCO</label>
+                        <select class="form-control fw-bold" id="movIdBanco" style="border-radius:0;border:3px solid #000;padding:10px;">
+                            <option value="">SELECCIONE BANCO...</option>
+                            @foreach($bancos as $b)
+                                <option value="{{ $b->id_banco }}">{{ $b->nombre_banco }} - {{ $b->numero_cuenta }} ({{ $b->moneda ?? 'BOB' }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="row g-3 mb-3" id="movProveedorRow" style="display:none;">
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">PROVEEDOR <span class="text-danger">*</span></label>
+                        <select class="form-control fw-bold" id="movIdProveedor" style="border-radius:0;border:3px solid #000;padding:10px;">
+                            <option value="">SELECCIONE PROVEEDOR...</option>
+                            @foreach($proveedores as $p)
+                                <option value="{{ $p->id_proveedor }}" data-nombre="{{ $p->nombre_proveedor }}">{{ $p->nombre_proveedor }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
                 <div class="row g-3 mb-3" id="movVehiculoRow" style="display:none;">
@@ -330,8 +368,10 @@ function loadCompras() {
             }
             tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'COMPRA').map(m => {
                 const total = parseFloat(m.cantidad || 0) * parseFloat(m.costo_unitario || 0);
-                return `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${m.codigo || '—'}</span></td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</td><td class="fw-bold">${m.proveedor || '—'}</td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${m.codigo_lote || '—'}</span></td></tr>`;
-            }).join('') || '<tr><td colspan="8" class="text-center py-5 opacity-50">SIN COMPRAS REGISTRADAS</td></tr>';
+                const cond = m.condicion_pago || 'CONTADO';
+                const condColor = cond === 'CREDITO' ? '#ffdcd6' : '#d4edda';
+                return `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${m.codigo || '—'}</span></td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</td><td class="fw-bold">${m.proveedor || '—'}</td><td><span class="badge fw-bold px-2 py-1" style="background:${condColor};color:#000;border:2px solid #000;">${cond}</span></td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${m.codigo_lote || '—'}</span></td></tr>`;
+            }).join('') || '<tr><td colspan="9" class="text-center py-5 opacity-50">SIN COMPRAS REGISTRADAS</td></tr>';
         });
 }
 
@@ -459,17 +499,29 @@ function autoAsignarConductor() {
 function abrirModalMovimiento(tipo) {
     document.getElementById('movTipo').value = tipo === 'ENTREGA' ? 'SALIDA' : tipo;
     document.getElementById('modalMovTitle').innerHTML = `<i class="fas ${tipo === 'COMPRA' ? 'fa-arrow-down' : 'fa-arrow-up'} me-2"></i> NUEVA ${tipo === 'COMPRA' ? 'COMPRA' : 'ENTREGA'}`;
-    document.getElementById('movProveedorRow').style.display = tipo === 'COMPRA' ? 'block' : 'none';
-    document.getElementById('movPrecioCompraRow').style.display = tipo === 'COMPRA' ? 'block' : 'none';
+    document.getElementById('movPreciosRow').style.display = tipo === 'COMPRA' ? 'flex' : 'none';
+    document.getElementById('movCodigoLoteRow').style.display = tipo === 'COMPRA' ? 'block' : 'none';
     document.getElementById('movVehiculoRow').style.display = tipo === 'ENTREGA' ? 'flex' : 'none';
     document.getElementById('movFecha').value = new Date().toISOString().split('T')[0];
     document.getElementById('movCantidad').value = '';
     document.getElementById('movPrecioUnitario').value = '';
     document.getElementById('movPrecioCompra').value = '';
-    document.getElementById('movProveedor').value = '';
     document.getElementById('movObs').value = '';
     document.getElementById('movIdVehiculo').value = '';
     document.getElementById('movIdPersonal').value = '';
+
+    // Campos de pago (solo compras)
+    const esCompra = tipo === 'COMPRA';
+    document.getElementById('movPagoRow').style.display = esCompra ? 'flex' : 'none';
+    document.getElementById('movContadoRow').style.display = esCompra ? 'flex' : 'none';
+    document.getElementById('movProveedorRow').style.display = esCompra ? 'flex' : 'none';
+    document.getElementById('movCondicion').value = 'CONTADO';
+    document.getElementById('movMetodo').value = 'BANCO';
+    document.getElementById('movIdBanco').value = '';
+    document.getElementById('movIdProveedor').value = '';
+    document.getElementById('movFechaLimite').value = '';
+    toggleMovCondicion();
+    toggleMovMetodo();
 
     // Generate lot code
     let ultimoNum = 0;
@@ -501,6 +553,20 @@ function cerrarModalMov() {
     document.getElementById('modalMovimiento').style.display = 'none';
 }
 
+function toggleMovCondicion() {
+    const cond = document.getElementById('movCondicion').value;
+    const esCredito = cond === 'CREDITO';
+    document.getElementById('movContadoRow').style.display = esCredito ? 'none' : 'flex';
+    document.getElementById('movFechaLimiteRow').style.display = esCredito ? 'block' : 'none';
+    document.getElementById('movProveedorRow').style.display = 'flex';
+    toggleMovMetodo();
+}
+
+function toggleMovMetodo() {
+    const metodo = document.getElementById('movMetodo').value;
+    document.getElementById('movBancoRow').style.display = metodo === 'BANCO' ? 'block' : 'none';
+}
+
 function calcularPrecioCompra() {
     const cantidad = parseFloat(document.getElementById('movCantidad').value) || 0;
     const unitario = parseFloat(document.getElementById('movPrecioUnitario').value) || 0;
@@ -520,13 +586,28 @@ function guardarMovimiento(event) {
         observaciones: document.getElementById('movObs').value,
     };
     if (tipo === 'COMPRA') {
-        data.proveedor = document.getElementById('movProveedor').value;
+        const selProv = document.getElementById('movIdProveedor');
+        data.condicion_pago = document.getElementById('movCondicion').value;
+        data.metodo_pago = document.getElementById('movMetodo').value;
+        data.id_banco = document.getElementById('movIdBanco').value || null;
+        data.id_proveedor = selProv.value || null;
+        data.proveedor = selProv.selectedOptions[0]?.textContent || null;
         data.precio_compra = document.getElementById('movPrecioCompra').value || null;
+        data.fecha_limite_pago = document.getElementById('movFechaLimite').value || null;
     }
     if (tipo === 'SALIDA') data.id_vehiculo = document.getElementById('movIdVehiculo').value || null;
     if (tipo === 'SALIDA') data.id_personal = document.getElementById('movIdPersonal').value || null;
 
     if (!data.id_inventario || !data.cantidad) { Swal.fire('Requerido', 'Complete los campos obligatorios', 'warning'); return; }
+
+    if (tipo === 'COMPRA') {
+        if (data.condicion_pago === 'CREDITO' && !data.id_proveedor) {
+            Swal.fire('Requerido', 'Para compra a crédito debe seleccionar un proveedor', 'warning'); return;
+        }
+        if (data.condicion_pago === 'CONTADO' && data.metodo_pago === 'BANCO' && !data.id_banco) {
+            Swal.fire('Requerido', 'Seleccione la cuenta de banco', 'warning'); return;
+        }
+    }
 
     if (tipo === 'SALIDA') {
         const prod = productosInv.find(p => p.id_inventario == data.id_inventario);

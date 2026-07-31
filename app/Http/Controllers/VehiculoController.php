@@ -82,10 +82,8 @@ class VehiculoController extends Controller
     {
         $vehiculo = DB::table('global.vehiculos')
             ->leftJoin('global.personal', 'global.vehiculos.id_personal', '=', 'global.personal.id_personal')
-            ->select(
-                'global.vehiculos.*',
-                DB::raw("CONCAT(global.personal.nombres, ' ', global.personal.apellidos) as conductor")
-            )
+            ->select('global.vehiculos.*',
+                DB::raw("CONCAT(global.personal.nombres, ' ', global.personal.apellidos) as conductor"))
             ->where('global.vehiculos.id_vehiculo', $id)
             ->first();
 
@@ -112,7 +110,7 @@ class VehiculoController extends Controller
             ->leftJoin('global.personal', 'global.vehiculos.id_personal', '=', 'global.personal.id_personal')
             ->select(
                 'global.vehiculos.*',
-                DB::raw("COALESCE(NULLIF(global.vehiculos.conductor, ''), CONCAT(global.personal.nombres, ' ', global.personal.apellidos)) as conductor"),
+                DB::raw("CONCAT(global.personal.nombres, ' ', global.personal.apellidos) as conductor"),
                 DB::raw('(SELECT COALESCE(SUM(monto), 0) FROM global.ingresos WHERE id_vehiculo = global.vehiculos.id_vehiculo AND estado_factura != \'ANULADA\') as total_ingresos'),
                 DB::raw('(SELECT COALESCE(SUM(monto), 0) FROM global.gastos WHERE id_vehiculo = global.vehiculos.id_vehiculo) as total_gastos')
             );
@@ -128,7 +126,7 @@ class VehiculoController extends Controller
             });
         }
 
-        $data = $query->orderBy('global.vehiculos.id_vehiculo', 'desc')->get();
+        $data = $query->orderBy('global.vehiculos.placa_vehiculo')->get();
 
         return response()->json([
             'success' => true,

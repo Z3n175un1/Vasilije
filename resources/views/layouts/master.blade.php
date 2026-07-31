@@ -51,10 +51,11 @@
                         ['route' => 'personal.index', 'label' => 'PERSONAL', 'icon' => 'fa-users'],
                         ['route' => 'grupos.index', 'label' => 'GRUPOS', 'icon' => 'fa-layer-group'],
                         ['route' => 'items.index', 'label' => 'ÍTEMS', 'icon' => 'fa-box'],
-                        ['route' => 'almacen.index', 'label' => 'ALMACÉN', 'icon' => 'fa-warehouse'],
+                        ['route' => 'almacen.index', 'label' => 'MOV. ALMACÉN', 'icon' => 'fa-warehouse'],
                         ['route' => 'tramos.index', 'label' => 'RUTAS', 'icon' => 'fa-route'],
                         ['route' => 'facturacion.index', 'label' => 'FACTURACIÓN', 'icon' => 'fa-file-invoice'],
                         ['route' => 'bancos.index', 'label' => 'BANCOS', 'icon' => 'fa-university'],
+                        ['route' => 'proveedores.index', 'label' => 'PROVEEDORES', 'icon' => 'fa-handshake'],
                         ['route' => 'reportes.index', 'label' => 'REPORTES', 'icon' => 'fa-chart-bar'],
                     ];
                     if (auth()->user()?->rol === 'admin') {
