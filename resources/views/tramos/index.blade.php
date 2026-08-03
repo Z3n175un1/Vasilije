@@ -26,7 +26,7 @@
                         <th>Destino</th>
                         <th>Km</th>
                         <th>Precio Total</th>
-                        <th>$/Ton</th>
+                        <th>Bs/Ton</th>
                         <th>Gasolina</th>
                         <th>Diesel</th>
                         <th>Gas</th>
