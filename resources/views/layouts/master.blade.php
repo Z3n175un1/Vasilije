@@ -48,6 +48,7 @@
                     @php $links = [
                         ['route' => 'documentos.index', 'label' => 'INICIO', 'icon' => 'fa-home'],
                         ['route' => 'dashboard.index', 'label' => 'UNIDADES', 'icon' => 'fa-truck'],
+                        ['route' => 'mantenimiento.index', 'label' => 'MANTENIMIENTO', 'icon' => 'fa-tools'],
                         ['route' => 'personal.index', 'label' => 'PERSONAL', 'icon' => 'fa-users'],
                         ['route' => 'grupos.index', 'label' => 'GRUPOS', 'icon' => 'fa-layer-group'],
                         ['route' => 'items.index', 'label' => 'ÍTEMS', 'icon' => 'fa-box'],

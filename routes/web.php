@@ -15,7 +15,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\FacturacionController;
 use App\Http\Controllers\ProveedorController;
-
+use App\Http\Controllers\MantenimientoController;
 // Auth routes
 Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
@@ -26,6 +26,9 @@ Route::middleware('auth')->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+
+    // Mantenimiento
+    Route::get('/mantenimiento', [MantenimientoController::class, 'index'])->name('mantenimiento.index');
 
     // Vehiculos
     Route::get('/vehiculos', [VehiculoController::class, 'index'])->name('vehiculos.index');
