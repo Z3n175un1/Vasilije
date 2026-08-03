@@ -106,13 +106,14 @@ class VehiculoController extends Controller
 
     public function apiList(Request $request)
     {
+        $mesActual = date('Y-m');
         $query = DB::table('global.vehiculos')
             ->leftJoin('global.personal', 'global.vehiculos.id_personal', '=', 'global.personal.id_personal')
             ->select(
                 'global.vehiculos.*',
                 DB::raw("CONCAT(global.personal.nombres, ' ', global.personal.apellidos) as conductor"),
-                DB::raw('(SELECT COALESCE(SUM(monto), 0) FROM global.ingresos WHERE id_vehiculo = global.vehiculos.id_vehiculo AND estado_factura != \'ANULADA\') as total_ingresos'),
-                DB::raw('(SELECT COALESCE(SUM(monto), 0) FROM global.gastos WHERE id_vehiculo = global.vehiculos.id_vehiculo) as total_gastos')
+                DB::raw("(SELECT COALESCE(SUM(monto), 0) FROM global.ingresos WHERE id_vehiculo = global.vehiculos.id_vehiculo AND estado_factura != 'ANULADA' AND to_char(fecha_ingreso, 'YYYY-MM') = '{$mesActual}') as total_ingresos"),
+                DB::raw("(SELECT COALESCE(SUM(monto), 0) FROM global.gastos WHERE id_vehiculo = global.vehiculos.id_vehiculo AND to_char(fecha_gasto, 'YYYY-MM') = '{$mesActual}') as total_gastos")
             );
 
         if ($request->filled('estado')) {

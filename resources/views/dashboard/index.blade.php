@@ -103,8 +103,8 @@
                             <th class="text-center">Conductor</th>
                             <th class="text-center">Acciones</th>
                             <th class="text-center">TN</th>
-                            <th class="text-center">Ingresos</th>
-                            <th class="text-center">Egresos</th>
+                            <th class="text-center">Ingresos (Mes)</th>
+                            <th class="text-center">Egresos (Mes)</th>
                             <th class="text-center">Diferencia</th>
                         </tr>
                     </thead>
@@ -222,7 +222,7 @@
 let vehiculos = [];
 let tramos = [];
 let currentFilter = '1';
-let sortMode = 'ultimo';
+let sortMode = 'asc';
 let configDataDash = { tipo_cambio: 6.96, precio_tonelada_usd: 13 };
 
 document.addEventListener('DOMContentLoaded', function() {
