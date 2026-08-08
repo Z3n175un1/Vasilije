@@ -3,7 +3,14 @@
 @section('title', 'Mantenimiento')
 
 @section('content')
-<div class="min-h-screen bg-slate-900 flex items-center justify-center px-4 py-10" style="padding-top:0;">
+<div class="min-h-screen bg-slate-900 flex flex-col items-center justify-center px-4 py-10" style="padding-top:0;">
+
+    <div class="w-full max-w-5xl mb-4 flex justify-end">
+        <a href="{{ route('dashboard.index') }}"
+           class="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/60 px-5 py-2.5 text-sm font-semibold text-white transition duration-300 hover:bg-slate-700">
+            <i class="fas fa-arrow-left"></i> VOLVER AL INICIO
+        </a>
+    </div>
 
     <div class="w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl shadow-black/50">
 
