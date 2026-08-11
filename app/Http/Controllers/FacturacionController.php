@@ -19,7 +19,8 @@ class FacturacionController extends Controller
             ->select('global.personal.*', DB::raw("CONCAT(global.personal.nombres, ' ', global.personal.apellidos) as nombre_completo"))
             ->orderBy('nombres')->get();
         $tramos = DB::table('global.tramos')->orderBy('origen')->get();
-        return view('facturacion.form', ['ingreso' => null, 'vehiculos' => $vehiculos, 'personal' => $personal, 'tramos' => $tramos]);
+        $config = DB::table('global.configuracion')->pluck('valor', 'llave');
+        return view('facturacion.form', ['ingreso' => null, 'vehiculos' => $vehiculos, 'personal' => $personal, 'tramos' => $tramos, 'config' => $config]);
     }
 
     public function edit($id)
@@ -31,7 +32,8 @@ class FacturacionController extends Controller
             ->select('global.personal.*', DB::raw("CONCAT(global.personal.nombres, ' ', global.personal.apellidos) as nombre_completo"))
             ->orderBy('nombres')->get();
         $tramos = DB::table('global.tramos')->orderBy('origen')->get();
-        return view('facturacion.form', compact('ingreso', 'vehiculos', 'personal', 'tramos'));
+        $config = DB::table('global.configuracion')->pluck('valor', 'llave');
+        return view('facturacion.form', compact('ingreso', 'vehiculos', 'personal', 'tramos', 'config'));
     }
 
     public function store(Request $request)
@@ -57,7 +59,7 @@ class FacturacionController extends Controller
 
             $validated['estado_factura'] = 'PENDIENTE';
             if (empty($validated['concepto'])) {
-                $validated['concepto'] = 'FLETE S/C';
+                $validated['concepto'] = 'TRANSPORTE DE SOYA';
             }
 
             $ultimo = DB::table('global.ingresos')

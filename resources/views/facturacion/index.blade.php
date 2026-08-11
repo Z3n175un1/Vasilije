@@ -213,27 +213,21 @@
             <form id="formNuevoFlete" onsubmit="return guardarFlete(event)">
                 @csrf
                 <div class="row g-3 mb-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <label class="fw-bold small text-uppercase">FECHA <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control fw-bold" id="nf_fecha_ingreso" style="border-radius:0;border:3px solid #000;padding:10px;" required>
+                    </div>
+                    <div class="col-md-4">
                         <label class="fw-bold small text-uppercase">UNIDAD <span class="text-danger">*</span></label>
                         <select class="form-control fw-bold" id="nf_id_vehiculo" style="border-radius:0;border:3px solid #000;padding:10px;" required>
                             <option value="">SELECCIONE...</option>
                         </select>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="fw-bold small text-uppercase">CONDUCTOR</label>
                         <select class="form-control fw-bold" id="nf_id_personal" style="border-radius:0;border:3px solid #000;padding:10px;">
                             <option value="">SELECCIONE...</option>
                         </select>
-                    </div>
-                </div>
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">CLIENTE / RAZÓN SOCIAL</label>
-                        <input type="text" class="form-control fw-bold" id="nf_cliente_nombre" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="Nombre del cliente">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">MONTO (Bs) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_monto" style="border-radius:0;border:3px solid #000;padding:10px;" required min="0" placeholder="0.00">
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
@@ -245,33 +239,49 @@
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">ORIGEN</label>
-                        <input type="text" class="form-control fw-bold" id="nf_origen" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="Ciudad origen">
+                        <input type="text" class="form-control fw-bold" id="nf_origen" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0!important;cursor:not-allowed;" placeholder="Ciudad origen" readonly>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">DESTINO</label>
-                        <input type="text" class="form-control fw-bold" id="nf_destino" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="Ciudad destino">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="fw-bold small text-uppercase">TON.</label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_toneladas" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" value="0">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="fw-bold small text-uppercase">KM</label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_kilometraje" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" value="0">
+                        <input type="text" class="form-control fw-bold" id="nf_destino" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0!important;cursor:not-allowed;" placeholder="Ciudad destino" readonly>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">KM</label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_kilometraje" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" value="0">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">BS X TON</label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_precio_ton" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" placeholder="Bs por tonelada">
+                    </div>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">TONELADAS</label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_toneladas" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" value="0">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">MONTO (Bs) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_monto" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0!important;cursor:not-allowed;" required min="0" placeholder="0.00" readonly>
+                    </div>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-12">
+                        <label class="fw-bold small text-uppercase">CLIENTE / PROVEEDOR</label>
+                        <input type="text" class="form-control fw-bold" id="nf_cliente_nombre" style="border-radius:0;border:3px solid #000;padding:10px;" value="INDUSTRIAS OLEAGINOSAS S.A." placeholder="INDUSTRIAS OLEAGINOSAS S.A.">
+                    </div>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-12">
                         <label class="fw-bold small text-uppercase">CONCEPTO <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control fw-bold" id="nf_concepto" style="border-radius:0;border:3px solid #000;padding:10px;" required placeholder="Descripción del flete">
+                        <input type="text" class="form-control fw-bold" id="nf_concepto" style="border-radius:0;border:3px solid #000;padding:10px;" required value="TRANSPORTE DE SOYA" placeholder="TRANSPORTE DE SOYA">
                     </div>
-                    <div class="col-md-3">
-                        <label class="fw-bold small text-uppercase">FECHA</label>
-                        <input type="date" class="form-control fw-bold" id="nf_fecha_ingreso" style="border-radius:0;border:3px solid #000;padding:10px;">
-                    </div>
-                    <div class="col-md-3">
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">TIPO PAGO</label>
                         <select class="form-control fw-bold" id="nf_tipo_pago" style="border-radius:0;border:3px solid #000;padding:10px;">
                             <option value="EFECTIVO">EFECTIVO</option>
@@ -279,6 +289,10 @@
                             <option value="CHEQUE">CHEQUE</option>
                             <option value="OTRO">OTRO</option>
                         </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">FECHA VENCIMIENTO</label>
+                        <input type="date" class="form-control fw-bold" id="nf_fecha_vencimiento" style="border-radius:0;border:3px solid #000;padding:10px;">
                     </div>
                 </div>
                 <div class="form-group mb-3">
@@ -391,7 +405,7 @@ function cargarCombos() {
         const selT = document.getElementById('nf_id_tramo');
         if (selT) {
             selT.innerHTML = '<option value="">SELECCIONE RUTA...</option>' +
-                tramosList.map(t => `<option value="${t.id_tramo}">${t.origen} → ${t.destino} (Bs. ${t.precio_total})</option>`).join('');
+                tramosList.map(t => `<option value="${t.id_tramo}" data-precio-ton="${t.precio_dolar_tonelada || 0}" data-km="${t.kilometros || 0}">${t.origen} → ${t.destino} (Bs. ${t.precio_total})</option>`).join('');
         }
     });
 }
@@ -513,24 +527,24 @@ function seleccionarRutaNF(select) {
     if (t) {
         document.getElementById('nf_origen').value = t.origen || '';
         document.getElementById('nf_destino').value = t.destino || '';
-        const ton = parseFloat(document.getElementById('nf_toneladas').value) || 0;
-        const dolarTon = parseFloat(t.precio_dolar_tonelada || 13);
-        const monto = ton > 0 ? ton * dolarTon : t.precio_total || '';
-        document.getElementById('nf_monto').value = monto || t.precio_total || '';
+        document.getElementById('nf_kilometraje').value = t.kilometros || '0';
+        const precioTon = parseFloat(t.precio_dolar_tonelada || 0);
+        document.getElementById('nf_precio_ton').value = precioTon ? precioTon.toFixed(2) : '';
+        recalcularMontoNF();
+    }
+}
+
+function recalcularMontoNF() {
+    const ton = parseFloat(document.getElementById('nf_toneladas').value) || 0;
+    const precioTon = parseFloat(document.getElementById('nf_precio_ton').value) || 0;
+    if (ton > 0 && precioTon > 0) {
+        document.getElementById('nf_monto').value = (ton * precioTon).toFixed(2);
     }
 }
 
 document.addEventListener('input', function(e) {
-    if (e.target.id === 'nf_toneladas') {
-        const sel = document.getElementById('nf_id_tramo');
-        if (sel && sel.value) {
-            const t = tramosList.find(x => x.id_tramo === parseInt(sel.value));
-            if (t && t.precio_dolar_tonelada > 0) {
-                const ton = parseFloat(e.target.value) || 0;
-                const dolarTon = parseFloat(t.precio_dolar_tonelada);
-                document.getElementById('nf_monto').value = (ton * dolarTon).toFixed(2);
-            }
-        }
+    if (e.target.id === 'nf_toneladas' || e.target.id === 'nf_precio_ton') {
+        recalcularMontoNF();
     }
 });
 
@@ -538,9 +552,12 @@ document.addEventListener('input', function(e) {
 function abrirModalNuevoFlete() {
     document.getElementById('formNuevoFlete').reset();
     document.getElementById('nf_fecha_ingreso').value = new Date().toISOString().split('T')[0];
+    document.getElementById('nf_cliente_nombre').value = 'INDUSTRIAS OLEAGINOSAS S.A.';
+    document.getElementById('nf_concepto').value = 'TRANSPORTE DE SOYA';
     document.getElementById('nf_monto').value = '';
     document.getElementById('nf_toneladas').value = '0';
     document.getElementById('nf_kilometraje').value = '0';
+    document.getElementById('nf_precio_ton').value = '';
     const selR = document.getElementById('nf_id_tramo');
     if (selR) selR.value = '';
     document.getElementById('modalNuevoFlete').style.display = 'flex';
@@ -563,6 +580,7 @@ function guardarFlete(event) {
         kilometraje_conducido: document.getElementById('nf_kilometraje').value || 0,
         concepto: document.getElementById('nf_concepto').value,
         fecha_ingreso: document.getElementById('nf_fecha_ingreso').value,
+        fecha_vencimiento: document.getElementById('nf_fecha_vencimiento').value || null,
         tipo_pago: document.getElementById('nf_tipo_pago').value,
         observaciones: document.getElementById('nf_observaciones').value,
     };

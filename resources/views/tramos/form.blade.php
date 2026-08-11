@@ -49,7 +49,7 @@
                 </div>
                 <div class="col-md-4">
                     <div class="form-group mb-0">
-                        <label>PRECIO $/TONELADA <small class="text-muted">(Default: ${{ $precioTonUsd ?? 13 }})</small></label>
+                        <label>PRECIO Bs/TONELADA <small class="text-muted">(Default: Bs {{ $precioTonUsd ?? 13 }})</small></label>
                         <input type="number" step="0.01" name="precio_dolar_tonelada" value="{{ old('precio_dolar_tonelada', $tramo->precio_dolar_tonelada ?? $precioTonUsd ?? 13) }}" min="0" placeholder="0.00">
                     </div>
                 </div>

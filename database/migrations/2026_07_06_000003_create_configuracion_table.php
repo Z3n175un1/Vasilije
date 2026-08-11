@@ -19,8 +19,8 @@ return new class extends Migration
         });
 
         DB::connection('pgsql')->table('global.configuracion')->insert([
-            ['llave' => 'tipo_cambio', 'valor' => '6.96', 'descripcion' => 'Tipo de cambio Bs/$us'],
-            ['llave' => 'precio_tonelada_usd', 'valor' => '13', 'descripcion' => 'Precio por tonelada en dólares'],
+            ['llave' => 'tipo_cambio', 'valor' => '6.96', 'descripcion' => 'Tipo de cambio (Bs)'],
+            ['llave' => 'precio_tonelada_usd', 'valor' => '13', 'descripcion' => 'Precio por tonelada (Bs)'],
         ]);
     }
 

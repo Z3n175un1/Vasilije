@@ -21,13 +21,13 @@
             <div class="row g-4 mb-4">
                 <div class="col-md-6">
                     <div class="form-group mb-0">
-                        <label>TIPO DE CAMBIO (Bs/$us)</label>
+                        <label>TIPO DE CAMBIO (Bs)</label>
                         <input type="number" step="0.01" name="tipo_cambio" value="{{ old('tipo_cambio', $config['tipo_cambio'] ?? 6.96) }}" min="0" placeholder="6.96">
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group mb-0">
-                        <label>PRECIO POR TONELADA ($us)</label>
+                        <label>PRECIO POR TONELADA (Bs)</label>
                         <input type="number" step="0.01" name="precio_tonelada_usd" value="{{ old('precio_tonelada_usd', $config['precio_tonelada_usd'] ?? 13) }}" min="0" placeholder="13">
                     </div>
                 </div>

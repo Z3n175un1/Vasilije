@@ -152,6 +152,10 @@
                 <input type="hidden" id="fd_id_vehiculo_val">
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">FECHA <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control fw-bold" id="fd_fecha_ingreso" style="border-radius:0;border:3px solid #000;padding:10px;" required>
+                    </div>
+                    <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">CONDUCTOR</label>
                         <input type="hidden" id="fd_id_personal" value="">
                         <div id="fd_conductor_display" class="form-control fw-bold d-flex justify-content-between align-items-center" style="border-radius:0;border:3px solid #000;padding:10px;background:#f5f5f5;">
@@ -161,10 +165,6 @@
                         <select class="form-control fw-bold" id="fd_id_personal_select" style="border-radius:0;border:3px solid #000;padding:10px;display:none;" onchange="seleccionarConductor(this)">
                             <option value="">SELECCIONE...</option>
                         </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">MONTO (Bs) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_monto" style="border-radius:0;border:3px solid #000;padding:10px;" required min="0" placeholder="0.00">
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
@@ -176,33 +176,45 @@
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
-                    <div class="col-12">
-                        <label class="fw-bold small text-uppercase">CLIENTE</label>
-                        <input type="text" class="form-control fw-bold" id="fd_cliente_nombre" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="Nombre del cliente">
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">ORIGEN</label>
+                        <input type="text" class="form-control fw-bold" id="fd_origen" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0!important;cursor:not-allowed;" placeholder="Ciudad origen" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">DESTINO</label>
+                        <input type="text" class="form-control fw-bold" id="fd_destino" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0!important;cursor:not-allowed;" placeholder="Ciudad destino" readonly>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
-                    <div class="col-md-5">
-                        <label class="fw-bold small text-uppercase">ORIGEN</label>
-                        <input type="text" class="form-control fw-bold" id="fd_origen" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="Ciudad origen">
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">KM</label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_kilometraje" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" value="0">
                     </div>
-                    <div class="col-md-5">
-                        <label class="fw-bold small text-uppercase">DESTINO</label>
-                        <input type="text" class="form-control fw-bold" id="fd_destino" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="Ciudad destino">
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">BS X TON</label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_precio_ton" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" placeholder="Bs por tonelada">
                     </div>
-                    <div class="col-md-2">
-                        <label class="fw-bold small text-uppercase">TON.</label>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">TONELADAS</label>
                         <input type="number" step="0.01" class="form-control fw-bold" id="fd_toneladas" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" value="0">
                     </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">MONTO (Bs) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_monto" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0!important;cursor:not-allowed;" required min="0" placeholder="0.00" readonly>
+                    </div>
                 </div>
                 <div class="row g-3 mb-3">
-                    <div class="col-md-8">
-                        <label class="fw-bold small text-uppercase">CONCEPTO</label>
-                        <input type="text" class="form-control fw-bold" id="fd_concepto" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="Descripción del flete">
+                    <div class="col-12">
+                        <label class="fw-bold small text-uppercase">CLIENTE / PROVEEDOR</label>
+                        <input type="text" class="form-control fw-bold" id="fd_cliente_nombre" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="INDUSTRIAS OLEAGINOSAS S.A.">
                     </div>
-                    <div class="col-md-4">
-                        <label class="fw-bold small text-uppercase">FECHA</label>
-                        <input type="date" class="form-control fw-bold" id="fd_fecha_ingreso" style="border-radius:0;border:3px solid #000;padding:10px;">
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-12">
+                        <label class="fw-bold small text-uppercase">CONCEPTO <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control fw-bold" id="fd_concepto" style="border-radius:0;border:3px solid #000;padding:10px;" required placeholder="TRANSPORTE DE SOYA">
                     </div>
                 </div>
                 <div class="d-flex gap-2 mt-4">
@@ -337,7 +349,7 @@ function renderVehiculos(data) {
                     <button class="btn-action-mini bg-success text-white border-black" onclick="mostrarOpcionesIngreso(${v.id_vehiculo})" title="INGRESO / VENTA" ${v.estado != 1 && v.estado != 2 ? 'disabled style="opacity:0.35"' : ''} style="width:40px;height:40px;border-width:2px;border-radius:0;display:flex;align-items:center;justify-content:center;">
                         <i class="fas fa-dollar-sign" style="font-size:1rem;"></i>
                     </button>
-                    <button class="btn-action-mini bg-danger text-white border-black" onclick="prepararGasto(${v.id_vehiculo})" title="REGISTRAR GASTO (-$)" ${v.estado != 1 && v.estado != 2 ? 'disabled style="opacity:0.35"' : ''} style="width:40px;height:40px;border-width:2px;border-radius:0;display:flex;align-items:center;justify-content:center;">
+                    <button class="btn-action-mini bg-danger text-white border-black" onclick="prepararGasto(${v.id_vehiculo})" title="REGISTRAR GASTO (-Bs)" ${v.estado != 1 && v.estado != 2 ? 'disabled style="opacity:0.35"' : ''} style="width:40px;height:40px;border-width:2px;border-radius:0;display:flex;align-items:center;justify-content:center;">
                         <i class="fas fa-minus-circle" style="font-size:1rem;"></i>
                     </button>
                     <span style="width:2px;height:28px;background:#000;display:inline-block;"></span>
@@ -371,7 +383,7 @@ function loadTramos() {
         const sel = document.getElementById('fd_id_tramo');
         if (sel) {
             sel.innerHTML = '<option value="">SELECCIONE RUTA...</option>' +
-                tramos.map(t => `<option value="${t.id_tramo}">${t.origen} → ${t.destino} (Bs. ${t.precio_total})</option>`).join('');
+                tramos.map(t => `<option value="${t.id_tramo}" data-precio-ton="${t.precio_dolar_tonelada || 0}" data-km="${t.kilometros || 0}">${t.origen} → ${t.destino} (Bs. ${t.precio_total})</option>`).join('');
         }
     });
 }
@@ -382,24 +394,24 @@ function seleccionarRuta(select) {
     if (t) {
         document.getElementById('fd_origen').value = t.origen || '';
         document.getElementById('fd_destino').value = t.destino || '';
-        const ton = parseFloat(document.getElementById('fd_toneladas').value) || 0;
-        const dolarTon = parseFloat(t.precio_dolar_tonelada || 13);
-        const monto = ton > 0 ? ton * dolarTon : t.precio_total || '';
-        document.getElementById('fd_monto').value = monto || t.precio_total || '';
+        document.getElementById('fd_kilometraje').value = t.kilometros || '0';
+        const precioTon = parseFloat(t.precio_dolar_tonelada || 0);
+        document.getElementById('fd_precio_ton').value = precioTon ? precioTon.toFixed(2) : '';
+        recalcularMontoDash();
+    }
+}
+
+function recalcularMontoDash() {
+    const ton = parseFloat(document.getElementById('fd_toneladas').value) || 0;
+    const precioTon = parseFloat(document.getElementById('fd_precio_ton').value) || 0;
+    if (ton > 0 && precioTon > 0) {
+        document.getElementById('fd_monto').value = (ton * precioTon).toFixed(2);
     }
 }
 
 document.addEventListener('input', function(e) {
-    if (e.target.id === 'fd_toneladas') {
-        const sel = document.getElementById('fd_id_tramo');
-        if (sel && sel.value) {
-            const t = tramos.find(x => x.id_tramo === parseInt(sel.value));
-            if (t && t.precio_dolar_tonelada > 0) {
-                const ton = parseFloat(e.target.value) || 0;
-                const dolarTon = parseFloat(t.precio_dolar_tonelada);
-                document.getElementById('fd_monto').value = (ton * dolarTon).toFixed(2);
-            }
-        }
+    if (e.target.id === 'fd_toneladas' || e.target.id === 'fd_precio_ton') {
+        recalcularMontoDash();
     }
 });
 
@@ -537,11 +549,13 @@ function prepararIngreso(id) {
     document.getElementById('fd_id_vehiculo_val').value = id;
     document.getElementById('fd_id_tramo').value = '';
     document.getElementById('fd_monto').value = '';
-    document.getElementById('fd_cliente_nombre').value = '';
+    document.getElementById('fd_cliente_nombre').value = 'INDUSTRIAS OLEAGINOSAS S.A.';
     document.getElementById('fd_origen').value = '';
     document.getElementById('fd_destino').value = '';
     document.getElementById('fd_toneladas').value = '0';
-    document.getElementById('fd_concepto').value = '';
+    document.getElementById('fd_kilometraje').value = '0';
+    document.getElementById('fd_precio_ton').value = '';
+    document.getElementById('fd_concepto').value = 'TRANSPORTE DE SOYA';
     document.getElementById('fd_fecha_ingreso').value = new Date().toISOString().split('T')[0];
 
     // Set conductor from vehicle data directly
@@ -570,6 +584,7 @@ function guardarFleteDash(event) {
         origen: document.getElementById('fd_origen').value,
         destino: document.getElementById('fd_destino').value,
         toneladas: document.getElementById('fd_toneladas').value || 0,
+        kilometraje_conducido: document.getElementById('fd_kilometraje').value || 0,
         concepto: document.getElementById('fd_concepto').value,
         fecha_ingreso: document.getElementById('fd_fecha_ingreso').value,
     };

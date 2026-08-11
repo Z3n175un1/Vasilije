@@ -211,9 +211,9 @@ function cargarNomen(tabla) {
             body.innerHTML = data.map(r => `<tr><td class="fw-bold">${r.codigo || '—'}</td><td class="fw-bold">${r.nombre_producto || '—'}</td><td class="fw-bold">${r.categoria || '—'}</td><td class="fw-bold">${r.unidad_medida || '—'}</td><td class="fw-bold">${parseFloat(r.stock_minimo || 0).toFixed(2)}</td></tr>`).join('');
         },
         tramos: (data) => {
-            head.innerHTML = '<tr><th>ORIGEN</th><th>DESTINO</th><th>DISTANCIA</th><th>PRECIO</th><th>$/TON</th></tr>';
+            head.innerHTML = '<tr><th>ORIGEN</th><th>DESTINO</th><th>DISTANCIA</th><th>PRECIO</th><th>Bs/TON</th></tr>';
             if (!data || data.length === 0) { body.innerHTML = '<tr><td colspan="5" class="text-center py-4 opacity-50">SIN REGISTROS</td></tr>'; return; }
-            body.innerHTML = data.map(r => `<tr><td class="fw-bold">${r.origen || '—'}</td><td class="fw-bold">${r.destino || '—'}</td><td class="fw-bold">${r.distancia_km || '—'}</td><td class="fw-bold">Bs. ${parseFloat(r.precio_total || 0).toFixed(2)}</td><td class="fw-bold">$${parseFloat(r.precio_dolar_tonelada || 0).toFixed(2)}</td></tr>`).join('');
+            body.innerHTML = data.map(r => `<tr><td class="fw-bold">${r.origen || '—'}</td><td class="fw-bold">${r.destino || '—'}</td><td class="fw-bold">${r.distancia_km || '—'}</td><td class="fw-bold">Bs. ${parseFloat(r.precio_total || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(r.precio_dolar_tonelada || 0).toFixed(2)}</td></tr>`).join('');
         },
         bancos: (data) => {
             head.innerHTML = '<tr><th>BANCO</th><th>TIPO</th><th>N° CUENTA</th><th>TITULAR</th><th>SALDO</th></tr>';
@@ -223,7 +223,7 @@ function cargarNomen(tabla) {
         config: (data) => {
             head.innerHTML = '<tr><th>CONFIGURACIÓN</th><th>VALOR</th></tr>';
             if (!data || !data.data) { body.innerHTML = '<tr><td colspan="2" class="text-center py-4 opacity-50">SIN DATOS</td></tr>'; return; }
-            const labels = { tipo_cambio: 'Tipo de Cambio (Bs/$)', precio_tonelada_usd: 'Precio Tonelada (USD)' };
+            const labels = { tipo_cambio: 'Tipo de Cambio (Bs)', precio_tonelada_usd: 'Precio Tonelada (Bs)' };
             body.innerHTML = Object.entries(data.data).map(([k, v]) =>
                 `<tr><td class="fw-bold">${labels[k] || k}</td><td class="fw-bold">${v}</td></tr>`
             ).join('');
