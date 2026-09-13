@@ -16,6 +16,7 @@ use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\FacturacionController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\MantenimientoController;
+use App\Http\Controllers\GastoGeneralController;
 // Auth routes
 Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
@@ -99,6 +100,14 @@ Route::middleware('auth')->group(function () {
     Route::put('/proveedores/{id}', [ProveedorController::class, 'update'])->name('proveedores.update');
     Route::delete('/proveedores/{id}', [ProveedorController::class, 'destroy'])->name('proveedores.destroy');
 
+    // Gastos Generales
+    Route::get('/gastos-generales', [GastoGeneralController::class, 'index'])->name('gastos-generales.index');
+    Route::get('/gastos-generales/nuevo', [GastoGeneralController::class, 'create'])->name('gastos-generales.create');
+    Route::get('/gastos-generales/{id}/editar', [GastoGeneralController::class, 'edit'])->name('gastos-generales.edit');
+    Route::post('/gastos-generales', [GastoGeneralController::class, 'store'])->name('gastos-generales.store');
+    Route::put('/gastos-generales/{id}', [GastoGeneralController::class, 'update'])->name('gastos-generales.update');
+    Route::delete('/gastos-generales/{id}', [GastoGeneralController::class, 'destroy'])->name('gastos-generales.destroy');
+
     // Reportes
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
     Route::get('/reportes/pdf', [ReporteController::class, 'pdf'])->name('reportes.pdf');
@@ -162,6 +171,10 @@ Route::prefix('api')->middleware('auth')->group(function () {
     Route::get('/reportes/filtro', [ReporteController::class, 'filtro']);
     Route::get('/reportes/financiero', [ReporteController::class, 'financiero']);
     Route::get('/reportes/almacen', [ReporteController::class, 'almacen']);
+    Route::get('/reportes/estadisticas', [ReporteController::class, 'estadisticas']);
+    Route::get('/gastos-generales', [GastoGeneralController::class, 'apiList']);
+    Route::get('/gastos-generales/{id}', [GastoGeneralController::class, 'apiShow']);
+    Route::delete('/gastos-generales/{id}', [GastoGeneralController::class, 'destroy']);
     Route::get('/bancos', [BancoController::class, 'apiList']);
     Route::get('/bancos/{id}', [BancoController::class, 'apiShow']);
     Route::get('/proveedores', [ProveedorController::class, 'apiList']);

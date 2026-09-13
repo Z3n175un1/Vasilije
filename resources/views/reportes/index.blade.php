@@ -67,6 +67,37 @@
 .tr-expandido {
     background: #fffde7 !important;
 }
+.chart-section {
+    border: 4px solid #000;
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.chart-section .chart-title {
+    font-weight: 800;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #000;
+}
+.chart-container {
+    position: relative;
+    height: 300px;
+}
+.toggle-charts {
+    background: #000;
+    color: #fff;
+    border: 3px solid #000;
+    padding: 10px 20px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.toggle-charts:hover {
+    background: #2f2c79;
+}
 @media print {
     body { background: #fff !important; }
     #app-header, .no-print { display: none !important; }
@@ -138,6 +169,45 @@
         </div>
     </div>
 
+    <!-- BOTON TOGGLE GRAFICAS -->
+    <div class="mb-3 no-print">
+        <button class="toggle-charts" onclick="toggleCharts()">
+            <i class="fas fa-chart-pie me-2"></i> <span id="toggleChartsText">OCULTAR GRÁFICAS</span>
+        </button>
+    </div>
+
+    <!-- GRAFICAS -->
+    <div id="chartsContainer" class="no-print">
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="chart-section">
+                    <div class="chart-title"><i class="fas fa-chart-pie me-2"></i> GASTOS POR CATEGORÍA</div>
+                    <div class="chart-container">
+                        <canvas id="chartGastosCategoria"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-section">
+                    <div class="chart-title"><i class="fas fa-chart-bar me-2"></i> INGRESOS POR UNIDAD</div>
+                    <div class="chart-container">
+                        <canvas id="chartIngresosUnidad"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row g-3 mb-4">
+            <div class="col-12">
+                <div class="chart-section">
+                    <div class="chart-title"><i class="fas fa-chart-line me-2"></i> EVOLUCIÓN MENSUAL</div>
+                    <div class="chart-container">
+                        <canvas id="chartEvolucionMensual"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- RESUMEN -->
     <div id="summaryContainer" class="row g-3 mb-4">
         <div class="col-md-4">
@@ -186,7 +256,7 @@
                         <th>RECORRIDO</th>
                         <th>UNIDAD</th>
                         <th>CATEGORÍA</th>
-                        <th>PROVEEDOR</th>
+                        <th>TONELADAS</th>
                         <th>INGRESO</th>
                         <th>EGRESO</th>
                         <th style="width:40px;"></th>
@@ -209,7 +279,185 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', cargarReporte);
+let charts = {};
+let chartsVisible = true;
+
+document.addEventListener('DOMContentLoaded', () => {
+    cargarReporte();
+    cargarEstadisticas();
+});
+
+function toggleCharts() {
+    chartsVisible = !chartsVisible;
+    document.getElementById('chartsContainer').style.display = chartsVisible ? 'block' : 'none';
+    document.getElementById('toggleChartsText').textContent = chartsVisible ? 'OCULTAR GRÁFICAS' : 'MOSTRAR GRÁFICAS';
+}
+
+function cargarEstadisticas() {
+    const params = new URLSearchParams();
+    params.append('fecha_inicio', document.getElementById('filterFechaInicio').value);
+    params.append('fecha_fin', document.getElementById('filterFechaFin').value);
+    const vid = document.getElementById('filterVehiculo').value;
+    if (vid) params.append('id_vehiculo', vid);
+
+    fetch('{{ url("api/reportes/estadisticas") }}?' + params.toString(), {
+        headers: { 'Accept': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (!res.success) return;
+        renderGastosCategoria(res.data.gastos_por_categoria);
+        renderIngresosUnidad(res.data.ingresos_por_vehiculo);
+        renderEvolucionMensual(res.data.por_mes);
+    });
+}
+
+function renderGastosCategoria(data) {
+    const ctx = document.getElementById('chartGastosCategoria').getContext('2d');
+    if (charts.gastosCategoria) charts.gastosCategoria.destroy();
+
+    const labels = Object.keys(data);
+    const values = labels.map(k => data[k].total);
+    const colors = ['#2f2c79', '#dc3545', '#ffc107', '#198754', '#0dcaf0', '#6f42c1', '#fd7e14', '#20c997'];
+
+    charts.gastosCategoria = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: colors.slice(0, labels.length),
+                borderColor: '#000',
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { weight: 'bold', size: 12 },
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.label + ': Bs. ' + context.parsed.toFixed(2);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderIngresosUnidad(data) {
+    const ctx = document.getElementById('chartIngresosUnidad').getContext('2d');
+    if (charts.ingresosUnidad) charts.ingresosUnidad.destroy();
+
+    const labels = Object.keys(data);
+    const values = labels.map(k => data[k].total);
+
+    charts.ingresosUnidad = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Ingresos (Bs.)',
+                data: values,
+                backgroundColor: '#2f2c79',
+                borderColor: '#000',
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Bs. ' + context.parsed.y.toFixed(2);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'Bs. ' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderEvolucionMensual(data) {
+    const ctx = document.getElementById('chartEvolucionMensual').getContext('2d');
+    if (charts.evolucionMensual) charts.evolucionMensual.destroy();
+
+    const labels = data.map(d => d.mes);
+    const ingresos = data.map(d => d.ingresos);
+    const gastos = data.map(d => d.gastos);
+
+    charts.evolucionMensual = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Ingresos',
+                    data: ingresos,
+                    backgroundColor: '#198754',
+                    borderColor: '#000',
+                    borderWidth: 3
+                },
+                {
+                    label: 'Gastos',
+                    data: gastos,
+                    backgroundColor: '#dc3545',
+                    borderColor: '#000',
+                    borderWidth: 3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { font: { weight: 'bold' } }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': Bs. ' + context.parsed.y.toFixed(2);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'Bs. ' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
 
 function cargarReporte() {
     const params = new URLSearchParams();
@@ -222,6 +470,8 @@ function cargarReporte() {
     document.getElementById('reportLoading').style.display = 'block';
     document.getElementById('reportContainer').style.display = 'none';
     document.getElementById('reportEmpty').style.display = 'none';
+
+    cargarEstadisticas();
 
     fetch('{{ url("api/reportes/filtro") }}?' + params.toString(), {
         headers: { 'Accept': 'application/json' }
@@ -269,7 +519,7 @@ function cargarReporte() {
                 <td class="fw-bold">${recorrido || '—'}</td>
                 <td>${r.placa_vehiculo || '—'}</td>
                 <td>${cat}</td>
-                <td>${r.proveedor || '—'}</td>
+                <td>${r.tipo_registro === 'INGRESO' ? (r.toneladas || '—') : '—'}</td>
                 <td class="fw-bold">${ingresoHtml}</td>
                 <td class="fw-bold">${egresoHtml}</td>
                 <td class="text-center fw-bold" style="font-size:0.8rem;">▼</td>

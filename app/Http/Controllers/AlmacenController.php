@@ -116,7 +116,8 @@ class AlmacenController extends Controller
         if ($request->filled('busqueda')) {
             $query->where(function($q) use ($request) {
                 $q->where('global.inventario.nombre_producto', 'like', '%' . $request->busqueda . '%')
-                  ->orWhere('global.inventario.codigo', 'like', '%' . $request->busqueda . '%');
+                  ->orWhere('global.inventario.codigo', 'like', '%' . $request->busqueda . '%')
+                  ->orWhere('global.inventario.codigo_barras', 'like', '%' . $request->busqueda . '%');
             });
         }
 

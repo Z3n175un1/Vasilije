@@ -106,7 +106,8 @@ class PersonalController extends Controller
     {
         $personal = DB::table('global.personal')->where('id_personal', $id)->first();
         if (!$personal) return redirect()->route('personal.index')->with('error', 'Personal no encontrado');
-        return view('personal.viatico', compact('personal'));
+        $vehiculos = DB::table('global.vehiculos')->where('estado', 1)->orderByRaw("LPAD(REGEXP_REPLACE(placa_vehiculo, '[^0-9]', '', 'g'), 10, '0')")->get();
+        return view('personal.viatico', compact('personal', 'vehiculos'));
     }
 
     public function storeGasto(Request $request)
@@ -114,10 +115,13 @@ class PersonalController extends Controller
         $data = $request->validate([
             'id_personal' => 'required|integer',
             'tipo_gasto' => 'required|string|in:Sueldo,Viático',
+            'tipo_viatico' => 'nullable|string|in:LOCAL,VIAJE',
             'concepto' => 'required|string',
             'monto' => 'required|numeric',
             'fecha_gasto' => 'required|date',
             'descripcion' => 'nullable|string',
+            'id_vehiculo' => 'nullable|integer',
+            'destino_viatico' => 'nullable|string',
         ]);
 
         $ultimo = DB::table('global.gastos')->where('nro_documento', 'like', 'E_%')->orderBy('id_gasto', 'desc')->first();
@@ -126,16 +130,22 @@ class PersonalController extends Controller
         $data['fecha_gasto'] = $data['fecha_gasto'] ?? date('Y-m-d');
 
         DB::table('global.gastos')->insert([
-            'id_vehiculo' => null,
+            'id_vehiculo' => $data['id_vehiculo'] ?? null,
             'id_personal' => $data['id_personal'],
             'tipo_gasto' => $data['tipo_gasto'],
+            'tipo_viatico' => $data['tipo_viatico'] ?? null,
             'concepto' => $data['concepto'],
             'monto' => $data['monto'],
             'fecha_gasto' => $data['fecha_gasto'],
             'descripcion' => $data['descripcion'] ?? null,
             'nro_documento' => $data['nro_documento'],
+            'destino_viatico' => $data['destino_viatico'] ?? null,
         ]);
 
-        return redirect()->route('personal.index')->with('success', ucfirst($data['tipo_gasto']) . ' registrado exitosamente');
+        $mensaje = $data['monto'] < 0 
+            ? 'Devolución registrada exitosamente' 
+            : ucfirst($data['tipo_gasto']) . ' registrado exitosamente';
+
+        return redirect()->route('personal.index')->with('success', $mensaje);
     }
 }

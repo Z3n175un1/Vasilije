@@ -65,7 +65,7 @@
             </div>
             <div class="table-responsive-brutalist">
                 <table class="table-excel mb-0" style="font-size:.85rem;">
-                    <thead><tr><th>Código</th><th>Producto</th><th>Cat.</th><th>Unidad</th><th>Stock</th><th>Mín.</th><th>Compra</th><th>Lote</th><th>Acciones</th></tr></thead>
+                    <thead><tr><th>Cód. Fábrica</th><th>Producto</th><th>Cat.</th><th>Unidad</th><th>Stock</th><th>Mín.</th><th>Compra</th><th>Lote</th><th>Acciones</th></tr></thead>
                     <tbody id="productosList"><tr><td colspan="9" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
                 </table>
             </div>
@@ -308,10 +308,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 productosInv = res.data || [];
                 const selP = document.getElementById('movIdProducto');
                 selP.innerHTML = '<option value="">SELECCIONE...</option>' + (res.data || []).map(p =>
-                    `<option value="${p.id_inventario}">${p.codigo} - ${p.nombre_producto}</option>`).join('');
+                    `<option value="${p.id_inventario}">${p.codigo_barras || p.codigo} - ${p.nombre_producto}</option>`).join('');
                 const selK = document.getElementById('kardexProducto');
                 selK.innerHTML = '<option value="">SELECCIONE PRODUCTO...</option>' + (res.data || []).map(p =>
-                    `<option value="${p.id_inventario}">${p.codigo} - ${p.nombre_producto}</option>`).join('');
+                    `<option value="${p.id_inventario}">${p.codigo_barras || p.codigo} - ${p.nombre_producto}</option>`).join('');
             }
         });
 });
@@ -334,7 +334,7 @@ function loadProductos() {
             tbody.innerHTML = res.data.map(p => {
                 const sb = parseFloat(p.stock_actual || 0) <= parseFloat(p.stock_minimo || 0);
                 return `<tr>
-                    <td class="font-bold"><span class="badge bg-black text-white px-2">${p.codigo}</span></td>
+                    <td class="font-bold"><span class="badge bg-black text-white px-2">${p.codigo_barras || p.codigo || '—'}</span></td>
                     <td class="font-bold">${p.nombre_producto}</td>
                     <td><span class="badge font-bold px-2 py-1" style="background:#2f2c79;color:#fff;border:2px solid #000;">${p.categoria}</span></td>
                     <td class="font-bold">${p.unidad_medida}</td>
@@ -363,7 +363,7 @@ function loadCompras() {
                 const total = parseFloat(m.cantidad || 0) * parseFloat(m.costo_unitario || 0);
                 const cond = m.condicion_pago || 'CONTADO';
                 const condColor = cond === 'CREDITO' ? '#ffdcd6' : '#d4edda';
-                return `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${m.codigo || '—'}</span></td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</td><td class="fw-bold">${m.proveedor || '—'}</td><td><span class="badge fw-bold px-2 py-1" style="background:${condColor};color:#000;border:2px solid #000;">${cond}</span></td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${m.codigo_lote || '—'}</span></td></tr>`;
+                return `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${m.codigo_barras || m.codigo || '—'}</span></td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</td><td class="fw-bold">${m.proveedor || '—'}</td><td><span class="badge fw-bold px-2 py-1" style="background:${condColor};color:#000;border:2px solid #000;">${cond}</span></td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${m.codigo_lote || '—'}</span></td></tr>`;
             }).join('') || '<tr><td colspan="9" class="text-center py-5 opacity-50">SIN COMPRAS REGISTRADAS</td></tr>';
         });
 }
@@ -376,7 +376,7 @@ function loadEntregas() {
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>'; return;
             }
             tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'SALIDA').map(m =>
-                `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${m.codigo || '—'}</span></td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">${m.placa_vehiculo || '—'}</td><td class="fw-bold">${m.conductor || '—'}</td></tr>`
+                `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${m.codigo_barras || m.codigo || '—'}</span></td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">${m.placa_vehiculo || '—'}</td><td class="fw-bold">${m.conductor || '—'}</td></tr>`
             ).join('') || '<tr><td colspan="7" class="text-center py-5 opacity-50">SIN ENTREGAS REGISTRADAS</td></tr>';
         });
 }
@@ -439,7 +439,7 @@ function renderSaldos(data) {
         const precio = parseFloat(p.ultimo_precio || p.precio_compra || 0);
         const total = parseFloat(p.stock_actual || 0) * precio;
         return `<tr>
-            <td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${p.codigo || '—'}</span></td>
+            <td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${p.codigo_barras || p.codigo || '—'}</span></td>
             <td class="fw-bold">${p.nombre_producto}</td>
             <td class="fw-bold">${p.categoria || '—'}</td>
             <td class="fw-bold">${p.unidad_medida || '—'}</td>

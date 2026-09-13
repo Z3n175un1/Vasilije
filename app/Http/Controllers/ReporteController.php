@@ -70,6 +70,88 @@ class ReporteController extends Controller
         ]);
     }
 
+    public function estadisticas(Request $request)
+    {
+        $fechaInicio = $request->fecha_inicio ?? date('Y-m-01');
+        $fechaFin = $request->fecha_fin ?? date('Y-m-d');
+        $idVehiculo = $request->id_vehiculo;
+
+        $gastos = $this->getGastos($fechaInicio, $fechaFin, 'TODO', $idVehiculo);
+        $ingresos = $this->getIngresos($fechaInicio, $fechaFin, 'TODO', $idVehiculo);
+
+        $gastosPorCategoria = collect($gastos)->groupBy('tipo_gasto')->map(function ($items) {
+            return [
+                'total' => $items->sum('egreso'),
+                'cantidad' => $items->count()
+            ];
+        })->toArray();
+
+        $ingresosPorVehiculo = collect($ingresos)->groupBy('placa_vehiculo')->map(function ($items) {
+            return [
+                'total' => $items->sum('ingreso'),
+                'cantidad' => $items->count()
+            ];
+        })->toArray();
+
+        $porMes = $this->getPorMes($fechaInicio, $fechaFin, $idVehiculo);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'gastos_por_categoria' => $gastosPorCategoria,
+                'ingresos_por_vehiculo' => $ingresosPorVehiculo,
+                'por_mes' => $porMes,
+                'total_ingresos' => collect($ingresos)->sum('ingreso'),
+                'total_gastos' => collect($gastos)->sum('egreso'),
+            ]
+        ]);
+    }
+
+    private function getPorMes($fechaInicio, $fechaFin, $idVehiculo = null)
+    {
+        $gastosMes = DB::table('global.gastos as g')
+            ->leftJoin('global.vehiculos as v', 'g.id_vehiculo', '=', 'v.id_vehiculo')
+            ->whereBetween('g.fecha_gasto', [$fechaInicio, $fechaFin])
+            ->select(
+                DB::raw("TO_CHAR(g.fecha_gasto, 'YYYY-MM') as mes"),
+                DB::raw('SUM(g.monto) as total_gastos')
+            )
+            ->groupBy('mes')
+            ->orderBy('mes');
+
+        $ingresosMes = DB::table('global.ingresos as i')
+            ->leftJoin('global.vehiculos as v', 'i.id_vehiculo', '=', 'v.id_vehiculo')
+            ->whereBetween('i.fecha_ingreso', [$fechaInicio, $fechaFin])
+            ->select(
+                DB::raw("TO_CHAR(i.fecha_ingreso, 'YYYY-MM') as mes"),
+                DB::raw('SUM(i.monto) as total_ingresos')
+            )
+            ->groupBy('mes')
+            ->orderBy('mes');
+
+        if ($idVehiculo) {
+            $gastosMes->where('g.id_vehiculo', $idVehiculo);
+            $ingresosMes->where('i.id_vehiculo', $idVehiculo);
+        }
+
+        $gastos = $gastosMes->get()->pluck('total_gastos', 'mes')->toArray();
+        $ingresos = $ingresosMes->get()->pluck('total_ingresos', 'mes')->toArray();
+
+        $todosLosMeses = array_unique(array_merge(array_keys($gastos), array_keys($ingresos)));
+        sort($todosLosMeses);
+
+        $resultado = [];
+        foreach ($todosLosMeses as $mes) {
+            $resultado[] = [
+                'mes' => $mes,
+                'ingresos' => (float) ($ingresos[$mes] ?? 0),
+                'gastos' => (float) ($gastos[$mes] ?? 0),
+            ];
+        }
+
+        return $resultado;
+    }
+
     public function almacen()
     {
         $data = DB::table('global.inventario')

@@ -28,8 +28,11 @@
             <div class="row g-4 mb-4">
                 <div class="col-md-4">
                     <div class="form-group mb-0">
-                        <label>CÓDIGO <span class="text-danger">*</span></label>
-                        <input type="text" name="codigo" id="codigo" value="{{ old('codigo', $producto->codigo ?? '') }}" required placeholder="SE GENERARÁ AUTOMÁTICAMENTE" {{ $producto ? '' : 'readonly' }}>
+                        <label style="font-size:1rem;font-weight:900;color:#000;">CÓDIGO DE FÁBRICA <span class="text-danger">*</span></label>
+                        <input type="text" name="codigo_barras" value="{{ old('codigo_barras', $producto->codigo_barras ?? '') }}" 
+                               placeholder="CÓDIGO DEL FABRICANTE" 
+                               style="font-size:1.1rem;padding:12px;border:4px solid #000;font-weight:700;">
+                        <small class="text-muted fw-bold">Campo principal de identificación del producto</small>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -52,7 +55,13 @@
             </div>
 
             <div class="row g-4 mb-4">
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <div class="form-group mb-0">
+                        <label>CÓDIGO INTERNO</label>
+                        <input type="text" name="codigo" id="codigo" value="{{ old('codigo', $producto->codigo ?? '') }}" placeholder="SE GENERARÁ AUTOMÁTICAMENTE" {{ $producto ? '' : 'readonly' }}>
+                    </div>
+                </div>
+                <div class="col-md-3">
                     <div class="form-group mb-0">
                         <label>UNIDAD DE MEDIDA <span class="text-danger">*</span></label>
                         <select name="unidad_medida" required>
@@ -62,16 +71,16 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="form-group mb-0">
                         <label>MARCA</label>
                         <input type="text" name="marca" value="{{ old('marca', $producto->marca ?? '') }}" placeholder="MARCA">
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="form-group mb-0">
-                        <label>CÓDIGO DE FÁBRICA</label>
-                        <input type="text" name="codigo_barras" value="{{ old('codigo_barras', $producto->codigo_barras ?? '') }}" placeholder="CÓDIGO DEL FABRICANTE">
+                        <label>MODELO</label>
+                        <input type="text" name="modelo" value="{{ old('modelo', $producto->modelo ?? '') }}" placeholder="MODELO">
                     </div>
                 </div>
             </div>

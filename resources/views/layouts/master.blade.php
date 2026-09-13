@@ -56,7 +56,7 @@
                         ['route' => 'facturacion.index', 'label' => 'FACTURACIÓN', 'icon' => 'fa-file-invoice'],
                         ['route' => 'bancos.index', 'label' => 'BANCOS', 'icon' => 'fa-university'],
                         ['route' => 'proveedores.index', 'label' => 'PROVEEDORES', 'icon' => 'fa-handshake'],
-                        ['route' => 'gastos.index', 'label' => 'GASTOS (PRUEBA)', 'icon' => 'fa-minus-circle'],
+                        ['route' => 'gastos-generales.index', 'label' => 'GASTOS GENERALES', 'icon' => 'fa-file-invoice-dollar'],
                         ['route' => 'reportes.index', 'label' => 'REPORTES', 'icon' => 'fa-chart-bar'],
                     ];
                     if (auth()->user()?->rol === 'admin') {
@@ -99,6 +99,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="{{ asset('js/app.js') }}"></script>
     @stack('scripts')
 </body>

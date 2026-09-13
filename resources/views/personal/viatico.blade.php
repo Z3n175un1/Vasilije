@@ -26,28 +26,49 @@
             </div>
 
             <div class="row g-4 mb-4">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="form-group mb-0">
-                        <label>MONTO (Bs) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="monto" value="{{ old('monto') }}" required min="0" placeholder="0.00">
+                        <label>TIPO VIÁTICO <span class="text-danger">*</span></label>
+                        <select name="tipo_viatico" id="tipoViatico" class="form-select" required onchange="toggleDevolucion()">
+                            <option value="VIAJE">VIAJE</option>
+                            <option value="LOCAL">LOCAL</option>
+                        </select>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <div class="form-group mb-0">
+                        <label>MONTO (Bs) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" name="monto" id="montoViatico" value="{{ old('monto') }}" required placeholder="0.00">
+                        <small class="text-muted">Use monto negativo para devoluciones</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
                     <div class="form-group mb-0">
                         <label>FECHA <span class="text-danger">*</span></label>
                         <input type="date" name="fecha_gasto" value="{{ old('fecha_gasto', date('Y-m-d')) }}" required>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="form-group mb-0">
-                        <label>DESTINO</label>
-                        <input type="text" name="destino_viatico" value="{{ old('destino_viatico') }}" placeholder="CIUDAD/LUGAR">
+                        <label>UNIDAD</label>
+                        <select name="id_vehiculo" id="selectUnidad" class="form-select">
+                            <option value="">NINGUNA</option>
+                            @foreach($vehiculos as $v)
+                                <option value="{{ $v->id_vehiculo }}">{{ $v->placa_vehiculo }} - {{ $v->marca }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
             </div>
 
             <div class="row g-4 mb-4">
-                <div class="col-md-12">
+                <div class="col-md-6">
+                    <div class="form-group mb-0">
+                        <label>DESTINO</label>
+                        <input type="text" name="destino_viatico" value="{{ old('destino_viatico') }}" placeholder="CIUDAD/LUGAR">
+                    </div>
+                </div>
+                <div class="col-md-6">
                     <div class="form-group mb-0">
                         <label>CONCEPTO <span class="text-danger">*</span></label>
                         <input type="text" name="concepto" value="{{ old('concepto', 'Viático ' . $personal->nombres . ' ' . $personal->apellidos) }}" required placeholder="DESCRIPCIÓN">
@@ -69,4 +90,17 @@
         </form>
     </div>
 </div>
+
+<script>
+function toggleDevolucion() {
+    const tipo = document.getElementById('tipoViatico').value;
+    const montoInput = document.getElementById('montoViatico');
+    
+    if (tipo === 'LOCAL') {
+        montoInput.placeholder = '0.00 (negativo para devolución)';
+    } else {
+        montoInput.placeholder = '0.00';
+    }
+}
+</script>
 @endsection

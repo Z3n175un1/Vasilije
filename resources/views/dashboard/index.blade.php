@@ -186,35 +186,31 @@
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">KM</label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_kilometraje" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" value="0">
-                    </div>
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <label class="fw-bold small text-uppercase">BS X TON</label>
                         <input type="number" step="0.01" class="form-control fw-bold" id="fd_precio_ton" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" placeholder="Bs por tonelada">
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">TONELADAS</label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_toneladas" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" value="0">
+                        <label class="fw-bold small text-uppercase" style="font-size:0.9rem;">TONELADAS</label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_toneladas" style="border-radius:0;border:3px solid #000;padding:12px;font-size:1.1rem;" min="0" value="0">
                     </div>
                     <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">MONTO (Bs) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_monto" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0!important;cursor:not-allowed;" required min="0" placeholder="0.00" readonly>
+                        <label class="fw-bold small text-uppercase" style="font-size:0.9rem;">MONTO (Bs) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_monto" style="border-radius:0;border:3px solid #000;padding:12px;background:#f0f0f0!important;cursor:not-allowed;font-size:1.1rem;" required min="0" placeholder="0.00" readonly>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
                     <div class="col-12">
-                        <label class="fw-bold small text-uppercase">CLIENTE / PROVEEDOR</label>
-                        <input type="text" class="form-control fw-bold" id="fd_cliente_nombre" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="INDUSTRIAS OLEAGINOSAS S.A.">
+                        <label class="fw-bold small text-uppercase" style="font-size:0.9rem;">CLIENTE / PROVEEDOR</label>
+                        <input type="text" class="form-control fw-bold" id="fd_cliente_nombre" style="border-radius:0;border:3px solid #000;padding:12px;font-size:1.1rem;" placeholder="INDUSTRIAS OLEAGINOSAS S.A.">
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
                     <div class="col-12">
-                        <label class="fw-bold small text-uppercase">CONCEPTO <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control fw-bold" id="fd_concepto" style="border-radius:0;border:3px solid #000;padding:10px;" required placeholder="TRANSPORTE DE SOYA">
+                        <label class="fw-bold small text-uppercase" style="font-size:0.9rem;">CONCEPTO <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control fw-bold" id="fd_concepto" style="border-radius:0;border:3px solid #000;padding:12px;font-size:1.1rem;" required placeholder="TRANSPORTE DE SOYA">
                     </div>
                 </div>
                 <div class="d-flex gap-2 mt-4">
@@ -394,7 +390,6 @@ function seleccionarRuta(select) {
     if (t) {
         document.getElementById('fd_origen').value = t.origen || '';
         document.getElementById('fd_destino').value = t.destino || '';
-        document.getElementById('fd_kilometraje').value = t.kilometros || '0';
         const precioTon = parseFloat(t.precio_dolar_tonelada || 0);
         document.getElementById('fd_precio_ton').value = precioTon ? precioTon.toFixed(2) : '';
         recalcularMontoDash();
@@ -410,6 +405,11 @@ function recalcularMontoDash() {
 }
 
 document.addEventListener('input', function(e) {
+    if (e.target.id && e.target.id.startsWith('fd_')) {
+        const savedValues = JSON.parse(localStorage.getItem('fleteValues') || '{}');
+        savedValues[e.target.id] = e.target.value;
+        localStorage.setItem('fleteValues', JSON.stringify(savedValues));
+    }
     if (e.target.id === 'fd_toneladas' || e.target.id === 'fd_precio_ton') {
         recalcularMontoDash();
     }
@@ -547,16 +547,19 @@ function prepararIngreso(id) {
     if (!v) return;
     document.getElementById('fleteDashUnidad').textContent = 'UNIDAD: ' + (v.placa_vehiculo || '—');
     document.getElementById('fd_id_vehiculo_val').value = id;
-    document.getElementById('fd_id_tramo').value = '';
-    document.getElementById('fd_monto').value = '';
-    document.getElementById('fd_cliente_nombre').value = 'INDUSTRIAS OLEAGINOSAS S.A.';
-    document.getElementById('fd_origen').value = '';
-    document.getElementById('fd_destino').value = '';
-    document.getElementById('fd_toneladas').value = '0';
-    document.getElementById('fd_kilometraje').value = '0';
-    document.getElementById('fd_precio_ton').value = '';
-    document.getElementById('fd_concepto').value = 'TRANSPORTE DE SOYA';
-    document.getElementById('fd_fecha_ingreso').value = new Date().toISOString().split('T')[0];
+    
+    // Cargar valores guardados del localStorage o usar defaults
+    const savedValues = JSON.parse(localStorage.getItem('fleteValues') || '{}');
+    
+    document.getElementById('fd_id_tramo').value = savedValues.fd_id_tramo || '';
+    document.getElementById('fd_monto').value = savedValues.fd_monto || '';
+    document.getElementById('fd_cliente_nombre').value = savedValues.fd_cliente_nombre || 'INDUSTRIAS OLEAGINOSAS S.A.';
+    document.getElementById('fd_origen').value = savedValues.fd_origen || '';
+    document.getElementById('fd_destino').value = savedValues.fd_destino || '';
+    document.getElementById('fd_toneladas').value = savedValues.fd_toneladas || '0';
+    document.getElementById('fd_precio_ton').value = savedValues.fd_precio_ton || '';
+    document.getElementById('fd_concepto').value = savedValues.fd_concepto || 'TRANSPORTE DE SOYA';
+    document.getElementById('fd_fecha_ingreso').value = savedValues.fd_fecha_ingreso || new Date().toISOString().split('T')[0];
 
     // Set conductor from vehicle data directly
     const conductorId = v.id_personal;
@@ -584,7 +587,6 @@ function guardarFleteDash(event) {
         origen: document.getElementById('fd_origen').value,
         destino: document.getElementById('fd_destino').value,
         toneladas: document.getElementById('fd_toneladas').value || 0,
-        kilometraje_conducido: document.getElementById('fd_kilometraje').value || 0,
         concepto: document.getElementById('fd_concepto').value,
         fecha_ingreso: document.getElementById('fd_fecha_ingreso').value,
     };
@@ -687,7 +689,7 @@ function abrirReporte(id, placa) {
                                 const bg = item.tipo_registro === 'INGRESO' ? '#e2ffd6' : '#ffdcd6';
                                 const color = item.tipo_registro === 'INGRESO' ? '#007400' : '#cc0000';
                                 const detalle = item.tipo_registro === 'INGRESO'
-                                    ? '<span class="fw-bold">CLIENTE:</span> ' + (item.cliente_nombre || '—') + ' | <span class="fw-bold">COND:</span> ' + (item.conductor_asignado || '—') + ' | <span class="fw-bold">TN:</span> ' + (item.toneladas || '0') + ' | <span class="fw-bold">PAGO:</span> ' + (item.tipo_pago || '—')
+                                    ? '<span class="fw-bold">CLIENTE:</span> ' + (item.cliente_nombre || '—') + ' | <span class="fw-bold">COND:</span> ' + (item.conductor_asignado || '—') + ' | <span class="fw-bold">TN:</span> ' + (parseFloat(item.toneladas || 0)) + ' | <span class="fw-bold">PAGO:</span> ' + (item.tipo_pago || '—')
                                     : '<span class="fw-bold">TIPO:</span> ' + (item.tipo_gasto || '—') + ' | <span class="fw-bold">PROV:</span> ' + (item.proveedor || '—') + ' | <span class="fw-bold">KM:</span> ' + (item.kilometraje || '—');
                                 const editUrl = item.tipo_registro === 'INGRESO'
                                     ? `{{ url('facturacion') }}/${item.id}/editar`
