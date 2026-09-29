@@ -98,4 +98,50 @@ class ProveedorController extends Controller
         $proveedor = DB::table('global.proveedores')->where('id_proveedor', $id)->first();
         return response()->json(['success' => true, 'data' => $proveedor]);
     }
+
+    public function estado($id)
+    {
+        $proveedor = DB::table('global.proveedores')->where('id_proveedor', $id)->first();
+        if (!$proveedor) return response()->json(['error' => 'Proveedor no encontrado'], 404);
+
+        $gastos = DB::table('global.gastos')
+            ->where('global.gastos.id_proveedor', $id)
+            ->select('global.gastos.id_gasto as id', 'global.gastos.fecha_gasto as fecha', 'global.gastos.concepto',
+                'global.gastos.monto', 'global.gastos.condicion_pago', 'global.gastos.nro_documento',
+                'global.gastos.id_proveedor')
+            ->get()
+            ->map(fn($g) => ['id' => $g->id, 'tipo' => 'GASTO', 'fecha' => $g->fecha, 'concepto' => $g->concepto,
+                'proveedor' => $proveedor->nombre_proveedor, 'monto' => $g->monto, 'nro_documento' => $g->nro_documento, 'condicion_pago' => $g->condicion_pago]);
+
+        $movimientos = DB::table('global.movimientos_inventario')
+            ->where('global.movimientos_inventario.id_proveedor', $id)
+            ->select('global.movimientos_inventario.id_movimiento as id', 'global.movimientos_inventario.fecha_movimiento as fecha',
+                'global.movimientos_inventario.costo_total as monto', 'global.movimientos_inventario.condicion_pago',
+                'global.movimientos_inventario.documento_numero as nro_documento',
+                'global.movimientos_inventario.id_proveedor')
+            ->get()
+            ->map(fn($m) => ['id' => $m->id, 'tipo' => 'MOVIMIENTO', 'fecha' => $m->fecha, 'concepto' => $m->monto,
+                'proveedor' => $proveedor->nombre_proveedor, 'monto' => $m->monto, 'nro_documento' => $m->nro_documento, 'condicion_pago' => $m->condicion_pago]);
+
+        $allMovimientos = $gastos->concat($movimientos)->sortBy('fecha')->values();
+
+        $saldo = (float) $proveedor->saldo_inicial ?? 0;
+        $allMovimientos = $allMovimientos->map(function ($m) use (&$saldo) {
+            $monto = (float) $m['monto'];
+            $saldo -= $monto;
+            $m['saldo'] = $saldo;
+            return $m;
+        });
+
+        $totalDebitos = $allMovimientos->sum('monto');
+        $saldoActual = (float) $proveedor->saldo_inicial - $totalDebitos;
+
+        return response()->json([
+            'success' => true,
+            'proveedor' => $proveedor,
+            'movimientos' => $allMovimientos,
+            'totalDebitos' => $totalDebitos,
+            'saldoActual' => $saldoActual
+        ]);
+    }
 }

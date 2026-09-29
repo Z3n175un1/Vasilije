@@ -127,7 +127,8 @@ class FacturacionController extends Controller
             ->select('numero_factura', 'fecha_factura', 'cliente_nombre',
                 DB::raw('COUNT(*) as cantidad_fletes'),
                 DB::raw('SUM(monto) as total_monto'),
-                'estado_factura')
+                'estado_factura',
+                DB::raw('SUM(toneladas) as toneladas'))
             ->whereNotNull('numero_factura')
             ->where('estado_factura', '!=', 'ANULADA')
             ->groupBy('numero_factura', 'fecha_factura', 'cliente_nombre', 'estado_factura')

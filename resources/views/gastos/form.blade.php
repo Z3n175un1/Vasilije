@@ -61,7 +61,7 @@
                 <div class="col-md-4">
                     <div class="form-group mb-0">
                         <label>MONTO (Bs) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="monto" value="{{ old('monto', $gasto->monto ?? '') }}" required min="0" placeholder="0.00">
+                        <input type="number" step="0.01" name="monto" id="montoInput" value="{{ old('monto', $gasto->monto ?? '') }}" required placeholder="0.00">
                     </div>
                 </div>
             </div>
@@ -260,6 +260,32 @@ document.addEventListener('DOMContentLoaded', function() {
     filtrarProveedores();
     toggleCombustible();
     toggleCondicionPago();
+    
+    // Validación de monto negativo (devolución)
+    const form = document.querySelector('form.form-bento');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const montoInput = document.getElementById('montoInput');
+            const monto = parseFloat(montoInput.value);
+            if (!isNaN(monto) && monto < 0) {
+                e.preventDefault();
+                Swal.fire({
+                    title: '¡Está seguro de registrar una devolución!',
+                    text: 'El monto es negativo, esto registrará una devolución.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, registrar devolución',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            }
+        });
+    }
 });
 </script>
 @endpush

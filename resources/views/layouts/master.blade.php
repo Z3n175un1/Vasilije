@@ -49,6 +49,7 @@
                         ['route' => 'documentos.index', 'label' => 'INICIO', 'icon' => 'fa-home'],
                         ['route' => 'dashboard.index', 'label' => 'UNIDADES', 'icon' => 'fa-truck'],
                         ['route' => 'personal.index', 'label' => 'PERSONAL', 'icon' => 'fa-users'],
+                        ['route' => 'gastos-generales.index', 'label' => 'GASTOS GENERALES', 'icon' => 'fa-file-invoice-dollar'],
                         ['route' => 'grupos.index', 'label' => 'GRUPOS', 'icon' => 'fa-layer-group'],
                         ['route' => 'items.index', 'label' => 'ÍTEMS', 'icon' => 'fa-box'],
                         ['route' => 'almacen.index', 'label' => 'MOV. ALMACÉN', 'icon' => 'fa-warehouse'],
@@ -56,7 +57,6 @@
                         ['route' => 'facturacion.index', 'label' => 'FACTURACIÓN', 'icon' => 'fa-file-invoice'],
                         ['route' => 'bancos.index', 'label' => 'BANCOS', 'icon' => 'fa-university'],
                         ['route' => 'proveedores.index', 'label' => 'PROVEEDORES', 'icon' => 'fa-handshake'],
-                        ['route' => 'gastos-generales.index', 'label' => 'GASTOS GENERALES', 'icon' => 'fa-file-invoice-dollar'],
                         ['route' => 'reportes.index', 'label' => 'REPORTES', 'icon' => 'fa-chart-bar'],
                     ];
                     if (auth()->user()?->rol === 'admin') {

@@ -46,7 +46,7 @@
                 <div class="col-md-3">
                     <div class="form-group mb-0">
                         <label>MONTO (Bs) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="monto" value="{{ $gasto->monto ?? old('monto') }}" required min="0" placeholder="0.00">
+                        <input type="number" step="0.01" name="monto" id="montoInput" value="{{ $gasto->monto ?? old('monto') }}" required placeholder="0.00">
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -121,5 +121,32 @@ function toggleCamposPago() {
     const camposContado = document.getElementById('camposContado');
     // Siempre mostrar los campos, pero cambiar comportamiento si es necesario
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form.form-bento');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const montoInput = document.getElementById('montoInput');
+            const monto = parseFloat(montoInput.value);
+            if (!isNaN(monto) && monto < 0) {
+                e.preventDefault();
+                Swal.fire({
+                    title: '¡Está seguro de registrar una devolución!',
+                    text: 'El monto es negativo, esto registrará una devolución.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, registrar devolución',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            }
+        });
+    }
+});
 </script>
 @endsection

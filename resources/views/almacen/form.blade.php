@@ -28,23 +28,23 @@
             <div class="row g-4 mb-4">
                 <div class="col-md-4">
                     <div class="form-group mb-0">
-                        <label style="font-size:1rem;font-weight:900;color:#000;">CÓDIGO DE FÁBRICA <span class="text-danger">*</span></label>
+                        <label style="font-size:1.3rem;font-weight:900;color:#000;">CÓDIGO DE FÁBRICA <span class="text-danger">*</span></label>
                         <input type="text" name="codigo_barras" value="{{ old('codigo_barras', $producto->codigo_barras ?? '') }}" 
                                placeholder="CÓDIGO DEL FABRICANTE" 
-                               style="font-size:1.1rem;padding:12px;border:4px solid #000;font-weight:700;">
+                               style="font-size:1.4rem;padding:12px;border:4px solid #000;font-weight:700;">
                         <small class="text-muted fw-bold">Campo principal de identificación del producto</small>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group mb-0">
-                        <label>NOMBRE <span class="text-danger">*</span></label>
-                        <input type="text" name="nombre_producto" value="{{ old('nombre_producto', $producto->nombre_producto ?? '') }}" required placeholder="NOMBRE DEL PRODUCTO">
+                        <label style="font-size:1.3rem;">NOMBRE <span class="text-danger">*</span></label>
+                        <input type="text" name="nombre_producto" value="{{ old('nombre_producto', $producto->nombre_producto ?? '') }}" required placeholder="NOMBRE DEL PRODUCTO" style="font-size:1.3rem;">
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group mb-0">
-                        <label>GRUPO <span class="text-danger">*</span></label>
-                        <select name="id_categoria" id="id_categoria" required onchange="generarCodigo()">
+                        <label style="font-size:1.3rem;">GRUPO <span class="text-danger">*</span></label>
+                        <select name="id_categoria" id="id_categoria" required onchange="generarCodigo()" style="font-size:1.3rem;">
                             <option value="">SELECCIONE...</option>
                             @foreach($categorias as $c)
                                 <option value="{{ $c->id_categoria }}" {{ old('id_categoria', $producto->id_categoria ?? '') == $c->id_categoria ? 'selected' : '' }}>{{ $c->nombre }}</option>
@@ -57,14 +57,14 @@
             <div class="row g-4 mb-4">
                 <div class="col-md-3">
                     <div class="form-group mb-0">
-                        <label>CÓDIGO INTERNO</label>
-                        <input type="text" name="codigo" id="codigo" value="{{ old('codigo', $producto->codigo ?? '') }}" placeholder="SE GENERARÁ AUTOMÁTICAMENTE" {{ $producto ? '' : 'readonly' }}>
+                        <label style="font-size:1.3rem;">CÓDIGO INTERNO</label>
+                        <input type="text" name="codigo" id="codigo" value="{{ old('codigo', $producto->codigo ?? '') }}" placeholder="SE GENERARÁ AUTOMÁTICAMENTE" {{ $producto ? '' : 'readonly' }}" style="font-size:1.3rem;">
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group mb-0">
-                        <label>UNIDAD DE MEDIDA <span class="text-danger">*</span></label>
-                        <select name="unidad_medida" required>
+                        <label style="font-size:1.3rem;">UNIDAD DE MEDIDA <span class="text-danger">*</span></label>
+                        <select name="unidad_medida" required style="font-size:1.3rem;">
                             @foreach(['UNIDAD', 'LITRO', 'GALÓN', 'KILO', 'CAJA', 'PAR', 'METRO', 'LIBRA', 'TAMBOR'] as $u)
                                 <option value="{{ $u }}" {{ old('unidad_medida', $producto->unidad_medida ?? '') == $u ? 'selected' : '' }}>{{ $u }}</option>
                             @endforeach
@@ -73,14 +73,14 @@
                 </div>
                 <div class="col-md-3">
                     <div class="form-group mb-0">
-                        <label>MARCA</label>
-                        <input type="text" name="marca" value="{{ old('marca', $producto->marca ?? '') }}" placeholder="MARCA">
+                        <label style="font-size:1.3rem;">MARCA</label>
+                        <input type="text" name="marca" value="{{ old('marca', $producto->marca ?? '') }}" placeholder="MARCA" style="font-size:1.3rem;">
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group mb-0">
-                        <label>MODELO</label>
-                        <input type="text" name="modelo" value="{{ old('modelo', $producto->modelo ?? '') }}" placeholder="MODELO">
+                        <label style="font-size:1.3rem;">MODELO</label>
+                        <input type="text" name="modelo" value="{{ old('modelo', $producto->modelo ?? '') }}" placeholder="MODELO" style="font-size:1.3rem;">
                     </div>
                 </div>
             </div>
@@ -88,26 +88,26 @@
             <div class="row g-4 mb-4">
                 <div class="col-md-3">
                     <div class="form-group mb-0">
-                        <label>STOCK ACTUAL</label>
-                        <input type="number" step="0.01" name="stock_actual" value="{{ old('stock_actual', $producto->stock_actual ?? '0') }}" min="0">
+                        <label style="font-size:1.3rem;">STOCK ACTUAL</label>
+                        <input type="number" step="0.01" name="stock_actual" value="{{ old('stock_actual', $producto->stock_actual ?? '0') }}" min="0" style="font-size:1.3rem;">
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group mb-0">
-                        <label>STOCK MÍNIMO</label>
-                        <input type="number" step="0.01" name="stock_minimo" value="{{ old('stock_minimo', $producto->stock_minimo ?? '0') }}" min="0">
+                        <label style="font-size:1.3rem;">STOCK MÍNIMO</label>
+                        <input type="number" step="0.01" name="stock_minimo" value="{{ old('stock_minimo', $producto->stock_minimo ?? '0') }}" min="0" style="font-size:1.3rem;">
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group mb-0">
-                        <label>PRECIO COMPRA (Bs)</label>
-                        <input type="number" step="0.01" name="precio_compra" value="{{ old('precio_compra', $producto->precio_compra ?? '0') }}" min="0">
+                        <label style="font-size:1.3rem;">PRECIO COMPRA (Bs)</label>
+                        <input type="number" step="0.01" name="precio_compra" value="{{ old('precio_compra', $producto->precio_compra ?? '0') }}" min="0" style="font-size:1.3rem;">
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group mb-0">
-                        <label>PROVEEDOR</label>
-                        <select name="id_proveedor">
+                        <label style="font-size:1.3rem;">PROVEEDOR</label>
+                        <select name="id_proveedor" style="font-size:1.3rem;">
                             <option value="">SELECCIONE...</option>
                             @foreach($proveedores as $p)
                                 <option value="{{ $p->id_proveedor }}" {{ old('id_proveedor', $producto->id_proveedor ?? '') == $p->id_proveedor ? 'selected' : '' }}>{{ $p->nombre_proveedor }}</option>
@@ -118,13 +118,13 @@
             </div>
 
             <div class="form-group mb-4">
-                <label>DESCRIPCIÓN</label>
-                <textarea name="descripcion" rows="3" placeholder="DETALLE DEL PRODUCTO...">{{ old('descripcion', $producto->descripcion ?? '') }}</textarea>
+                <label style="font-size:1.3rem;">DESCRIPCIÓN</label>
+                <textarea name="descripcion" rows="3" placeholder="DETALLE DEL PRODUCTO..." style="font-size:1.3rem;">{{ old('descripcion', $producto->descripcion ?? '') }}</textarea>
             </div>
 
             <div class="d-flex justify-content-end gap-3 mt-5">
-                <a href="{{ route('almacen.index') }}" class="btn-bento btn-bento-outline font-bold" style="border-width:4px!important;text-decoration:none;">CANCELAR</a>
-                <button type="submit" class="btn-bento btn-bento-primary px-5 font-bold" style="border-width:4px!important;">
+                <a href="{{ route('almacen.index') }}" class="btn-bento btn-bento-outline font-bold" style="border-width:4px!important;text-decoration:none;font-size:1.2rem;">CANCELAR</a>
+                <button type="submit" class="btn-bento btn-bento-primary px-5 font-bold" style="border-width:4px!important;font-size:1.2rem;">
                     <i class="fas fa-save me-2"></i> {{ $producto ? 'GUARDAR CAMBIOS' : 'REGISTRAR PRODUCTO' }}
                 </button>
             </div>

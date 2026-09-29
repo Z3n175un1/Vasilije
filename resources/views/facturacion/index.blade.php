@@ -127,17 +127,18 @@
             <div style="border:4px solid #000;overflow:hidden;">
                 <table class="table-excel mb-0" style="font-size:.9rem;">
                     <thead>
-                        <tr>
-                            <th>FECHA</th>
-                            <th>N° DOC</th>
-                            <th>UNIDAD</th>
-                            <th>CLIENTE</th>
-                            <th>RUTA</th>
-                            <th>CONCEPTO</th>
-                            <th>MONTO</th>
-                            <th>ESTADO</th>
-                            <th>ACCIONES</th>
-                        </tr>
+<tr>
+    <th>FECHA</th>
+    <th>N° DOC</th>
+    <th>UNIDAD</th>
+    <th>CLIENTE</th>
+    <th>RUTA</th>
+    <th>CONCEPTO</th>
+    <th>MONTO</th>
+    <th>TONELADAS</th>
+    <th>ESTADO</th>
+    <th>ACCIONES</th>
+</tr>
                     </thead>
                     <tbody id="fletesBody"></tbody>
                 </table>
@@ -473,6 +474,7 @@ function cargarFletes() {
                 <td>${ruta || '—'}</td>
                 <td>${f.concepto || '—'}</td>
                 <td class="fw-bold" style="color:#007400;">${formatCurrency(f.monto)}</td>
+                <td>${f.toneladas || '—'}</td>
                 <td><span class="badge fw-bold px-2 py-1" style="border:2px solid #000;background:${estadoBg};color:${estadoColor};">${f.estado_factura || '—'}</span></td>
                 <td>
                     <div class="d-flex gap-1 justify-content-center">

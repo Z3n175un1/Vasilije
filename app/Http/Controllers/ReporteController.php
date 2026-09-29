@@ -21,9 +21,16 @@ class ReporteController extends Controller
         $tipo = strtoupper($request->tipo ?? 'TODO');
         $idVehiculo = $request->id_vehiculo;
 
-        $gastos = $this->getGastos($fechaInicio, $fechaFin, $tipo, $idVehiculo);
-        $ingresos = $this->getIngresos($fechaInicio, $fechaFin, $tipo, $idVehiculo);
-        $consumos = $this->getConsumos($fechaInicio, $fechaFin, $tipo, $idVehiculo);
+        // Cuando el tipo es INGRESOS, filtrar solo ingresos
+        if ($tipo === 'INGRESOS') {
+            $gastos = [];
+            $consumos = [];
+            $ingresos = $this->getIngresos($fechaInicio, $fechaFin, $tipo, $idVehiculo);
+        } else {
+            $gastos = $this->getGastos($fechaInicio, $fechaFin, $tipo, $idVehiculo);
+            $ingresos = $this->getIngresos($fechaInicio, $fechaFin, $tipo, $idVehiculo);
+            $consumos = $this->getConsumos($fechaInicio, $fechaFin, $tipo, $idVehiculo);
+        }
 
         $todo = collect($gastos)->concat($ingresos)->concat($consumos)->sortByDesc('fecha')->values();
 
@@ -245,6 +252,9 @@ class ReporteController extends Controller
 
     private function getGastos($fechaInicio, $fechaFin, $tipo, $idVehiculo = null)
     {
+        // Si el tipo es INGRESOS, retornar array vacío (solo mostraremos ingresos)
+        if ($tipo === 'INGRESOS') return [];
+
         $query = DB::table('global.gastos as g')
             ->leftJoin('global.vehiculos as v', 'g.id_vehiculo', '=', 'v.id_vehiculo')
             ->whereBetween('g.fecha_gasto', [$fechaInicio, $fechaFin])
@@ -314,6 +324,9 @@ class ReporteController extends Controller
 
     private function getConsumos($fechaInicio, $fechaFin, $tipo, $idVehiculo = null)
     {
+        // Si el tipo es INGRESOS, retornar array vacío (solo mostraremos ingresos)
+        if ($tipo === 'INGRESOS') return [];
+
         if ($tipo !== 'TODO' && $tipo !== 'UNIDADES') return [];
 
         $query = DB::table('global.movimientos_inventario as m')

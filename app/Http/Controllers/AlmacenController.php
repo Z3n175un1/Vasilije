@@ -27,6 +27,11 @@ class AlmacenController extends Controller
 
     public function edit($id)
     {
+        // Verificar permisos: solo usuarios con rol 'admin' pueden editar productos existentes
+        if (auth()->check() && auth()->user()->rol !== 'admin') {
+            return redirect()->route('almacen.index')->with('error', 'No tiene permisos para editar productos. Solo los administradores pueden modificar registros.');
+        }
+
         $producto = DB::table('global.inventario')->where('id_inventario', $id)->first();
         if (!$producto) return redirect()->route('almacen.index')->with('error', 'Producto no encontrado');
         $categorias = DB::table('global.categorias_almacen')->orderBy('nombre')->get();
@@ -72,6 +77,11 @@ class AlmacenController extends Controller
 
     public function update(Request $request, $id)
     {
+        // Verificar permisos: solo usuarios con rol 'admin' pueden editar productos existentes
+        if (auth()->check() && auth()->user()->rol !== 'admin') {
+            return redirect()->route('almacen.index')->with('error', 'No tiene permisos para editar productos. Solo los administradores pueden modificar registros.');
+        }
+
         $data = $request->validate([
             'codigo' => 'required|string|max:20|unique:inventario,codigo,' . $id . ',id_inventario',
             'nombre_producto' => 'required|string|max:100',
@@ -185,6 +195,7 @@ class AlmacenController extends Controller
                 'metodo_pago' => 'nullable|string|in:BANCO,CAJA_CHICA',
                 'fecha_limite_pago' => 'nullable|date',
                 'observaciones' => 'nullable|string',
+                'numero_documento' => 'nullable|string|max:50',
             ]);
 
             $movId = DB::table('global.movimientos_inventario')->insertGetId([
@@ -202,6 +213,7 @@ class AlmacenController extends Controller
                 'id_vehiculo' => $validated['id_vehiculo'] ?? null,
                 'id_personal' => $validated['id_personal'] ?? null,
                 'observaciones' => $validated['observaciones'] ?? null,
+                'numero_documento' => $validated['numero_documento'] ?? null,
             ], 'id_movimiento');
 
             $updateInventario = [];

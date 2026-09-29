@@ -42,7 +42,7 @@ class GastoController extends Controller
 
         $data = $request->validate([
             'id_vehiculo' => 'required|integer',
-            'tipo_gasto' => 'required|string',
+            'tipo_gasto' => 'required|string|in:Combustible,Sueldo,Viatico,Mantenimiento,Peaje',
             'concepto' => 'required|string',
             'monto' => 'required|numeric',
             'fecha_gasto' => 'required|date',
@@ -95,7 +95,7 @@ class GastoController extends Controller
 
         $data = $request->validate([
             'id_vehiculo' => 'required|integer',
-            'tipo_gasto' => 'required|string',
+            'tipo_gasto' => 'required|string|in:Combustible,Sueldo,Viatico,Mantenimiento,Peaje',
             'concepto' => 'required|string',
             'monto' => 'required|numeric',
             'fecha_gasto' => 'required|date',
