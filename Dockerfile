@@ -7,23 +7,19 @@ FROM node:22-alpine AS frontend-builder
 
 WORKDIR /app
 
-# Activar Corepack para utilizar pnpm
+# Activar pnpm
 RUN corepack enable
 
-# Copiar únicamente archivos de dependencias
-# para aprovechar el cache de Docker
-COPY package.json pnpm-lock.yaml ./
+# Copiar package.json
+COPY package.json ./
 
-# Instalar dependencias exactamente según el lockfile
-RUN pnpm install --frozen-lockfile
+# Instalar dependencias
+RUN pnpm install
 
-# Copiar el proyecto completo
+# Copiar el proyecto
 COPY . .
 
-# Compilar assets de producción
-# Esto genera:
-# /app/public/build/manifest.json
-# /app/public/build/assets/*
+# Compilar Vite para producción
 RUN pnpm run build
 
 
@@ -35,10 +31,8 @@ FROM composer:2 AS vendor
 
 WORKDIR /app
 
-# Copiar proyecto
 COPY . .
 
-# Instalar dependencias PHP
 RUN composer install \
     --no-dev \
     --prefer-dist \
@@ -47,7 +41,6 @@ RUN composer install \
     --optimize-autoloader \
     --no-scripts
 
-# Optimizar autoload
 RUN composer dump-autoload --optimize
 
 
@@ -57,10 +50,7 @@ RUN composer dump-autoload --optimize
 
 FROM php:8.3-fpm
 
-# ---------------------------------------------------------
 # Dependencias del sistema
-# ---------------------------------------------------------
-
 RUN apt-get update \
     && apt-get install -y \
         libpq-dev \
@@ -68,95 +58,39 @@ RUN apt-get update \
         zip \
     && rm -rf /var/lib/apt/lists/*
 
-
-# ---------------------------------------------------------
-# Extensiones PHP
-# ---------------------------------------------------------
-
+# Extensiones PostgreSQL
 RUN docker-php-ext-install -j$(nproc) \
     pgsql \
     pdo_pgsql
 
-
-# ---------------------------------------------------------
-# Directorio de trabajo
-# ---------------------------------------------------------
-
 WORKDIR /app
 
-
-# ---------------------------------------------------------
-# Copiar aplicación Laravel
-# ---------------------------------------------------------
-
+# Copiar aplicación
 COPY . .
 
-
-# ---------------------------------------------------------
-# Copiar dependencias Composer
-# ---------------------------------------------------------
-
+# Copiar vendor
 COPY --from=vendor /app/vendor ./vendor
 
-
-# ---------------------------------------------------------
-# COPIAR BUILD DE VITE
-#
-# Esto es lo que faltaba en tu Dockerfile anterior.
-#
-# El frontend-builder genera:
-#
-# public/build/
-# ├── manifest.json
-# └── assets/
-#
-# ---------------------------------------------------------
-
+# Copiar build de Vite
 COPY --from=frontend-builder /app/public/build ./public/build
 
-
-# ---------------------------------------------------------
-# Directorios necesarios de Laravel
-# ---------------------------------------------------------
-
+# Crear directorios Laravel
 RUN mkdir -p \
     storage/framework/cache \
     storage/framework/sessions \
     storage/framework/views \
     bootstrap/cache
 
-
-# ---------------------------------------------------------
 # Permisos
-# ---------------------------------------------------------
-
 RUN chmod -R 775 storage bootstrap/cache
 
-
-# ---------------------------------------------------------
-# Descubrir paquetes Laravel
-# ---------------------------------------------------------
-
+# Laravel package discovery
 RUN php artisan package:discover --ansi
 
-
-# =========================================================
-# VARIABLES DE PRODUCCIÓN
-# =========================================================
-
+# Producción
 ENV APP_ENV=production
 ENV APP_DEBUG=false
 
-
-# =========================================================
-# PUERTO
-# =========================================================
-
 EXPOSE 10000
-
-
-# =========================================================
-# ARRANQUE
-# =========================================================
 
 CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
