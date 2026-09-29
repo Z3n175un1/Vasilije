@@ -1590,3 +1590,249 @@ table td {
       0.65rem 0.8rem;
   }
 }
+/* =========================================================
+   CATEGORÍAS DEL MENÚ
+   ========================================================= */
+
+.nav-category {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.category-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  padding: 0.85rem 1.25rem;
+
+  background: #fff;
+  color: #000;
+
+  border: 3px solid #000;
+  border-radius: 8px;
+
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.category-toggle > span {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.category-toggle:hover {
+  background: #000;
+  color: #fff;
+}
+
+.category-toggle.open {
+  background: #000;
+  color: #fff;
+}
+
+.category-toggle .fa-chevron-down {
+  transition: transform 0.25s ease;
+}
+
+.category-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  width: 100%;
+
+  max-height: 0;
+  overflow: hidden;
+
+  margin-top: 0;
+
+  opacity: 0;
+
+  transition:
+    max-height 0.3s ease,
+    opacity 0.2s ease,
+    margin-top 0.3s ease;
+}
+
+.category-items.open {
+  max-height: 600px;
+  margin-top: 0.5rem;
+  opacity: 1;
+}
+
+.category-items a {
+  display: flex !important;
+  align-items: center;
+  gap: 0.6rem;
+
+  padding: 0.65rem 1rem 0.65rem 2rem !important;
+
+  background: #fff !important;
+  color: #000 !important;
+
+  border: 2px solid #000;
+  border-radius: 6px;
+
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+
+  text-decoration: none !important;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    padding-left 0.2s ease;
+}
+
+.category-items a:hover {
+  background: #000 !important;
+  color: #fff !important;
+  padding-left: 2.25rem !important;
+}
+
+.category-items a.active {
+  background: var(--hover) !important;
+  color: #000 !important;
+}
+
+
+/* =========================================================
+   SECCIÓN ADMIN
+   ========================================================= */
+
+.drawer-admin-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px solid #000;
+}
+
+.drawer-admin-section a {
+  display: flex !important;
+  align-items: center;
+  gap: 0.75rem;
+
+  margin-bottom: 0.5rem;
+
+  padding: 0.75rem 1rem !important;
+
+  background: #fff !important;
+  color: #000 !important;
+
+  border: 2px solid #000;
+  border-radius: 8px;
+
+  font-weight: 900 !important;
+  text-decoration: none !important;
+}
+
+.drawer-admin-section a:hover {
+  background: var(--hover) !important;
+  color: #000 !important;
+}
+
+
+/* =========================================================
+   LOGO SUPERIOR DERECHO
+   ========================================================= */
+
+.top-right-logo {
+  position: fixed;
+
+  top: 24px;
+  right: 24px;
+
+  z-index: 2000;
+
+  width: 72px;
+  height: 72px;
+
+  padding: 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #fff;
+
+  border: 2px solid #000;
+  border-radius: 12px;
+}
+
+.top-right-logo img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+  border-radius: 8px;
+}
+
+
+/* =========================================================
+   LABEL DEL BOTÓN MENÚ
+   ========================================================= */
+
+.menu-toggle-label {
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+
+/* =========================================================
+   EVITAR SCROLL DEL BODY CUANDO EL MENÚ ESTÁ ABIERTO
+   ========================================================= */
+
+body.menu-open {
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  .menu-sidebar-drawer {
+    width: min(320px, 88vw);
+    padding: 1.5rem;
+  }
+
+  .navbar-bento-floating {
+    top: 15px;
+    left: 15px;
+  }
+
+  .top-right-logo {
+    top: 15px;
+    right: 15px;
+
+    width: 58px;
+    height: 58px;
+  }
+
+  .menu-toggle-label {
+    display: none;
+  }
+
+  .btn-menu-toggle {
+    width: 52px;
+    height: 52px;
+
+    padding: 0 !important;
+  }
+
+}

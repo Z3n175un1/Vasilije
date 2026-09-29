@@ -4,13 +4,24 @@
 <head>
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta
+        name="csrf-token"
+        content="{{ csrf_token() }}"
+    >
 
-    <title>@yield('title') - DS TRANSPORTE S.R.L</title>
+    <title>
+        @yield('title') - DS TRANSPORTE S.R.L
+    </title>
 
-    {{-- Fuentes --}}
+    {{-- =====================================================
+         FUENTES
+         ===================================================== --}}
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
 
     <link
@@ -18,22 +29,37 @@
         rel="stylesheet"
     >
 
-    {{-- Font Awesome --}}
+    {{-- =====================================================
+         FONT AWESOME
+         ===================================================== --}}
+
     <link
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         rel="stylesheet"
     >
 
-    {{-- Bootstrap --}}
+    {{-- =====================================================
+         BOOTSTRAP
+         ===================================================== --}}
+
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
         rel="stylesheet"
     >
 
-    {{-- Vite: CSS + JS --}}
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- =====================================================
+         VITE
+         ===================================================== --}}
 
-    {{-- Favicon --}}
+    @vite([
+        'resources/css/app.css',
+        'resources/js/app.js'
+    ])
+
+    {{-- =====================================================
+         FAVICON
+         ===================================================== --}}
+
     <link
         rel="icon"
         type="image/x-icon"
@@ -46,7 +72,10 @@
 
 <body class="animate-fade-in">
 
-    {{-- Componentes globales --}}
+    {{-- =====================================================
+         COMPONENTES GLOBALES
+         ===================================================== --}}
+
     <x-notification />
     <x-confirm-dialog />
     <x-loading-spinner />
@@ -55,7 +84,7 @@
     @auth
 
     {{-- =====================================================
-         NAVBAR
+         HEADER / BOTÓN MENÚ
          ===================================================== --}}
 
     <header
@@ -63,7 +92,9 @@
         id="app-header"
     >
 
-        {{-- BOTÓN MENÚ --}}
+        {{-- =================================================
+             BOTÓN HAMBURGUESA
+             ================================================= --}}
 
         <button
             type="button"
@@ -71,38 +102,29 @@
             id="menuToggle"
             aria-expanded="false"
             aria-controls="menuDrawer"
-            style="
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                gap:0.75rem;
-                border-width:4px !important;
-                border-radius:0 !important;
-            "
+            aria-label="Abrir menú"
         >
 
             <div
                 class="hamburger-icon"
                 id="hamburgerIcon"
+                aria-hidden="true"
             >
                 <span class="bar bar-1"></span>
                 <span class="bar bar-2"></span>
                 <span class="bar bar-3"></span>
             </div>
 
-            <span
-                style="
-                    font-size:0.85rem;
-                    letter-spacing:1px;
-                "
-            >
+            <span class="menu-toggle-label">
                 MENÚ
             </span>
 
         </button>
 
 
-        {{-- BACKDROP --}}
+        {{-- =================================================
+             BACKDROP
+             ================================================= --}}
 
         <div
             class="menu-backdrop"
@@ -114,32 +136,29 @@
              SIDEBAR
              ================================================= --}}
 
-        <div
+        <aside
             class="menu-sidebar-drawer"
             id="menuDrawer"
+            aria-label="Menú principal"
         >
 
-            {{-- CONTENIDO --}}
+            {{-- =================================================
+                 CONTENIDO DEL DRAWER
+                 ================================================= --}}
 
             <div class="drawer-content-wrapper">
 
-
-                {{-- HEADER DEL DRAWER --}}
+                {{-- =================================================
+                     HEADER DEL DRAWER
+                     ================================================= --}}
 
                 <div class="drawer-header pb-3 mb-4">
 
-                    <h1
-                        class="text-white font-black mb-0 fs-mid d-flex flex-wrap align-items-center gap-1"
-                    >
-                        <span>
-                            DS TRANSPORTE S.R.L
-                        </span>
+                    <h1 class="text-white font-black mb-0 fs-mid">
+                        DS TRANSPORTE S.R.L
                     </h1>
 
-                    <p
-                        class="small fw-bold text-white mt-2 mb-0"
-                        style="opacity:0.8;"
-                    >
+                    <p class="small fw-bold text-white mt-2 mb-0">
                         <i class="fas fa-user me-1"></i>
 
                         {{ auth()->user()->name }}
@@ -152,30 +171,21 @@
                      NAVEGACIÓN
                      ================================================= --}}
 
-                <nav class="drawer-nav-links flex flex-col gap-1">
+                <nav class="drawer-nav-links">
 
-
-                    {{-- INICIO --}}
+                    {{-- =================================================
+                         INICIO
+                         ================================================= --}}
 
                     <a
                         href="{{ route('documentos.index') }}"
                         class="{{ request()->routeIs('documentos*') ? 'active' : '' }}"
-                        style="
-                            display:flex;
-                            align-items:center;
-                            gap:0.75rem;
-                            padding:0.75rem 1rem;
-                            background:white ;
-                            color:white;
-                            border:3px solid #000;
-                            border-radius:8px;
-                            font-weight:900;
-                            text-decoration:none;
-                        "
                     >
-                        <i class="fas fa-home me-2"></i>
+                        <i class="fas fa-home"></i>
 
-                        INICIO
+                        <span>
+                            INICIO
+                        </span>
                     </a>
 
 
@@ -194,29 +204,28 @@
                                     [
                                         'route' => 'dashboard.index',
                                         'label' => 'UNIDADES',
-                                        'icon' => 'fa-truck'
+                                        'icon' => 'fa-truck',
                                     ],
 
                                     [
                                         'route' => 'personal.index',
                                         'label' => 'PERSONAL',
-                                        'icon' => 'fa-users'
+                                        'icon' => 'fa-users',
                                     ],
 
                                     [
                                         'route' => 'almacen.index',
                                         'label' => 'MOV. ALMACÉN',
-                                        'icon' => 'fa-warehouse'
+                                        'icon' => 'fa-warehouse',
                                     ],
 
                                     [
                                         'route' => 'tramos.index',
                                         'label' => 'RUTAS',
-                                        'icon' => 'fa-route'
+                                        'icon' => 'fa-route',
                                     ],
-                                ]
+                                ],
                             ],
-
 
                             'FINANCIERO' => [
                                 'icon' => 'fa-money-bill-wave',
@@ -225,29 +234,28 @@
                                     [
                                         'route' => 'facturacion.index',
                                         'label' => 'FACTURACIÓN',
-                                        'icon' => 'fa-file-invoice'
+                                        'icon' => 'fa-file-invoice',
                                     ],
 
                                     [
                                         'route' => 'bancos.index',
                                         'label' => 'BANCOS',
-                                        'icon' => 'fa-university'
+                                        'icon' => 'fa-university',
                                     ],
 
                                     [
                                         'route' => 'gastos-generales.index',
                                         'label' => 'GASTOS GENERALES',
-                                        'icon' => 'fa-file-invoice-dollar'
+                                        'icon' => 'fa-file-invoice-dollar',
                                     ],
 
                                     [
                                         'route' => 'reportes.index',
                                         'label' => 'REPORTES',
-                                        'icon' => 'fa-chart-bar'
+                                        'icon' => 'fa-chart-bar',
                                     ],
-                                ]
+                                ],
                             ],
-
 
                             'INVENTARIO' => [
                                 'icon' => 'fa-boxes-stacked',
@@ -256,27 +264,27 @@
                                     [
                                         'route' => 'almacen.index',
                                         'label' => 'MOV. ALMACÉN',
-                                        'icon' => 'fa-warehouse'
+                                        'icon' => 'fa-warehouse',
                                     ],
 
                                     [
                                         'route' => 'items.index',
                                         'label' => 'ÍTEMS',
-                                        'icon' => 'fa-box'
+                                        'icon' => 'fa-box',
                                     ],
 
                                     [
                                         'route' => 'grupos.index',
                                         'label' => 'GRUPOS',
-                                        'icon' => 'fa-layer-group'
+                                        'icon' => 'fa-layer-group',
                                     ],
 
                                     [
                                         'route' => 'proveedores.index',
                                         'label' => 'PROVEEDORES',
-                                        'icon' => 'fa-handshake'
+                                        'icon' => 'fa-handshake',
                                     ],
-                                ]
+                                ],
                             ],
 
                         ];
@@ -284,84 +292,59 @@
                     @endphp
 
 
-                    {{-- RECORRER CATEGORÍAS --}}
+                    {{-- =================================================
+                         RENDER DE CATEGORÍAS
+                         ================================================= --}}
 
                     @foreach($categorias as $nombre => $categoria)
 
                         <div class="nav-category">
 
-
-                            {{-- BOTÓN CATEGORÍA --}}
+                            {{-- =============================================
+                                 BOTÓN DE CATEGORÍA
+                                 ============================================= --}}
 
                             <button
                                 type="button"
-                                class="category-toggle flex items-center justify-between py-2 px-3 fw-bold text-uppercase text-sm"
+                                class="category-toggle"
                                 aria-expanded="false"
-                                style="
-                                    background:#fff;
-                                    border:2px solid #000;
-                                    border-radius:8px;
-                                    color:#000;
-                                    gap:0.5rem;
-                                    width:100%;
-                                    text-align:left;
-                                    transition:all 0.2s ease;
-                                "
-                                onmouseover="this.style.background='#000'; this.style.color='#fff'; this.querySelector('i.fa-chevron-down').style.color='#fff'; this.querySelector('i.fas:not(.fa-chevron-down)').style.color='#fff';"
-                                onmouseout="this.style.background='#fff'; this.style.color='#000'; this.querySelector('i.fa-chevron-down').style.color='#000'; this.querySelector('i.fas:not(.fa-chevron-down)').style.color='#000';"
->
+                                aria-controls="category-{{ Str::slug($nombre) }}"
+                            >
 
-                                <span class="flex items-center gap-2">
-
-                                    <i
-                                        class="fas {{ $categoria['icon'] }}"
-                                    ></i>
+                                <span>
+                                    <i class="fas {{ $categoria['icon'] }}"></i>
 
                                     {{ $nombre }}
-
                                 </span>
 
-
-                                <i
-                                    class="fas fa-chevron-down transition-transform duration-200"
-                                ></i>
+                                <i class="fas fa-chevron-down"></i>
 
                             </button>
 
 
-                            {{-- ITEMS --}}
+                            {{-- =============================================
+                                 ITEMS DE CATEGORÍA
+                                 ============================================= --}}
 
                             <div
-                                class="category-items flex flex-col gap-1 mt-2"
-                                style="
-                                    overflow:hidden;
-                                    max-height:0;
-                                    transition:max-height 0.3s ease;
-                                "
+                                class="category-items"
+                                id="category-{{ Str::slug($nombre) }}"
                             >
 
                                 @foreach($categoria['items'] as $item)
 
                                     <a
                                         href="{{ route($item['route']) }}"
-                                        class="{{ request()->routeIs(explode('.', $item['route'])[0].'*') ? 'active' : '' }}"
-                                        style="
-                                            display:block;
-                                            padding:0.5rem 2rem;
-                                            background:#fff;
-                                            border:2px solid #000;
-                                            border-radius:6px;
-                                            font-weight:700;
-                                            color:#000;
-                                            text-decoration:none;
-                                        "
+                                        class="{{ request()->routeIs(explode('.', $item['route'])[0] . '*') ? 'active' : '' }}"
                                     >
 
                                         <i
-                                            class="fas {{ $item['icon'] }} me-2"
+                                            class="fas {{ $item['icon'] }}"
                                         ></i>
 
-                                        {{ $item['label'] }}
+                                        <span>
+                                            {{ $item['label'] }}
+                                        </span>
 
                                     </a>
 
@@ -380,63 +363,40 @@
 
                     @if(auth()->user()?->rol === 'admin')
 
-                        <div
-                            style="
-                                margin-top:1rem;
-                                border-top:2px solid #000;
-                                padding-top:1rem;
-                            "
-                        >
+                        <div class="drawer-admin-section">
 
-                            {{-- USUARIOS --}}
+                            {{-- =============================================
+                                 USUARIOS
+                                 ============================================= --}}
 
                             <a
                                 href="{{ route('usuarios.index') }}"
                                 class="{{ request()->routeIs('usuarios*') ? 'active' : '' }}"
-                                style="
-                                    display:flex;
-                                    align-items:center;
-                                    gap:0.75rem;
-                                    padding:0.75rem 1rem;
-                                    background:#fff;
-                                    border:2px solid #000;
-                                    border-radius:8px;
-                                    color:black;
-                                    font-weight:900;
-                                    text-decoration:none;
-                                "
                             >
 
-                                <i class="fas fa-user-shield me-2"></i>
+                                <i class="fas fa-user-shield"></i>
 
-                                USUARIOS
+                                <span>
+                                    USUARIOS
+                                </span>
 
                             </a>
 
 
-                            {{-- CONFIGURACIÓN --}}
+                            {{-- =============================================
+                                 CONFIGURACIÓN
+                                 ============================================= --}}
 
                             <a
                                 href="{{ route('configuracion.index') }}"
                                 class="{{ request()->routeIs('configuracion*') ? 'active' : '' }}"
-                                style="
-                                    display:flex;
-                                    align-items:center;
-                                    gap:0.75rem;
-                                    padding:0.75rem 1rem;
-                                    background:#fff;
-                                    border:2px solid #000;
-                                    border-radius:8px;
-                                    color:#000;
-                                    font-weight:900;
-                                    text-decoration:none;
-                                    margin-top:0.5rem;
-                                "
                             >
 
-                                <i class="fas fa-sliders me-2"></i>
+                                <i class="fas fa-sliders"></i>
 
-                                CONFIGURACIÓN
+                                <span>
+                                    CONFIGURACIÓN
+                                </span>
 
                             </a>
 
@@ -450,13 +410,10 @@
 
 
             {{-- =================================================
-                 FOOTER
+                 FOOTER DEL DRAWER
                  ================================================= --}}
 
-            <div class="drawer-footer pt-3">
-
-
-                {{-- LOGOUT --}}
+            <div class="drawer-footer">
 
                 <form
                     method="POST"
@@ -470,18 +427,11 @@
                         type="button"
                         class="btn font-bold w-100 py-3"
                         id="logoutBtn"
-                        style="
-                            border:2px solid #000;
-                            border-radius:12px;
-                            font-size:0.9rem;
-                            background:#fff;
-                            color:#000;
-                        "
                     >
 
                         <i class="fas fa-power-off me-2"></i>
 
-                        CERRAR SESION
+                        CERRAR SESIÓN
 
                     </button>
 
@@ -489,7 +439,7 @@
 
             </div>
 
-        </div>
+        </aside>
 
     </header>
 
@@ -498,33 +448,11 @@
          LOGO SUPERIOR DERECHO
          ===================================================== --}}
 
-    <div
-        style="
-            position:fixed;
-            top:24px;
-            right:24px;
-            z-index:2000;
-            background:#fff;
-            border:2px solid #000;
-            border-radius:12px;
-            padding:8px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            width:72px;
-            height:72px;
-        "
-    >
+    <div class="top-right-logo">
 
         <img
             src="{{ asset('favicon.ico') }}"
-            alt="DS"
-            style="
-                width:100%;
-                height:100%;
-                object-fit:contain;
-                border-radius:8px;
-            "
+            alt="DS Transporte"
         >
 
     </div>
@@ -544,16 +472,26 @@
 
 
     {{-- =====================================================
-         SCRIPTS EXTERNOS
+         BOOTSTRAP
          ===================================================== --}}
 
     <script
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     ></script>
 
+
+    {{-- =====================================================
+         SWEETALERT
+         ===================================================== --}}
+
     <script
         src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
     ></script>
+
+
+    {{-- =====================================================
+         CHART.JS
+         ===================================================== --}}
 
     <script
         src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
