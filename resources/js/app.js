@@ -1,10 +1,15 @@
 import './bootstrap';
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
     initMenuDrawer();
     initLogout();
     initCategoryToggles();
 });
+
+
+/* =========================================================
+   MENU LATERAL
+   ========================================================= */
 
 function initMenuDrawer() {
     const menuToggle = document.getElementById('menuToggle');
@@ -12,135 +17,546 @@ function initMenuDrawer() {
     const menuBackdrop = document.getElementById('menuBackdrop');
     const hamburgerIcon = document.getElementById('hamburgerIcon');
 
-    if (!menuToggle || !menuDrawer) return;
-
-    function toggleMenu() {
-        menuDrawer.classList.toggle('open');
-        if (menuBackdrop) menuBackdrop.classList.toggle('open');
-        if (hamburgerIcon) hamburgerIcon.classList.toggle('open');
-    }
-
-    menuToggle.addEventListener('click', toggleMenu);
-
-    if (menuBackdrop) {
-        menuBackdrop.addEventListener('click', toggleMenu);
-    }
-
-    document.querySelectorAll('.drawer-nav-links a').forEach(link => {
-        link.addEventListener('click', toggleMenu);
-    });
-}
-
-function initLogout() {
-    const logoutBtn = document.getElementById('logoutBtn');
-    const logoutForm = document.getElementById('logoutForm');
-
-    if (!logoutBtn || !logoutForm) return;
-
-    logoutBtn.addEventListener('click', function() {
-        Swal.fire({
-            title: '¿Cerrar sesión?',
-            text: 'Se cerrará su sesión actual',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sí, salir',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                logoutForm.submit();
-            }
-        });
-    });
-}
-
-function initCategoryToggles() {
-    console.log('initCategoryToggles: listener global en document');
-    document.removeEventListener('click', handleCategoryClick);
-    document.addEventListener('click', handleCategoryClick);
-    
-    restoreCategoryStates();
-}
-
-function handleCategoryClick(e) {
-    const button = e.target.closest('.category-toggle');
-    if (!button) return;
-
-    e.preventDefault();
-    console.log('CLICK EN CATEGORÍA:', button);
-    
-    const items = button.nextElementSibling;
-    console.log('nextElementSibling:', items);
-    
-    if (!items || !items.classList.contains('category-items')) {
-        console.error('category-items NO ENCONTRADO', items);
-        const items2 = button.parentElement.querySelector('.category-items');
-        console.log('Buscando en parent:', items2);
-        if (!items2) return;
+    if (!menuToggle || !menuDrawer) {
+        console.warn('Elementos del menú no encontrados.');
         return;
     }
 
-    const icon = button.querySelector('i.fa-chevron-down');
-    const isOpen = items.classList.contains('open');
-    const categoryName = button.querySelector('span')?.textContent?.trim();
+    function openMenu() {
+        menuDrawer.classList.add('open');
 
-    if (!isOpen) {
-        items.style.display = 'block';
-        items.classList.add('open');
-        if (icon) icon.style.transform = 'rotate(180deg)';
-        saveCategoryState(categoryName, true);
+        if (menuBackdrop) {
+            menuBackdrop.classList.add('open');
+        }
+
+        if (hamburgerIcon) {
+            hamburgerIcon.classList.add('open');
+        }
+
+        document.body.classList.add('menu-open');
+
+        menuToggle.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeMenu() {
+        menuDrawer.classList.remove('open');
+
+        if (menuBackdrop) {
+            menuBackdrop.classList.remove('open');
+        }
+
+        if (hamburgerIcon) {
+            hamburgerIcon.classList.remove('open');
+        }
+
+        document.body.classList.remove('menu-open');
+
+        menuToggle.setAttribute('aria-expanded', 'false');
+    }
+
+    function toggleMenu() {
+        const isOpen = menuDrawer.classList.contains('open');
+
+        if (isOpen) {
+            closeMenu();
+        } else {
+            openMenu();
+        }
+    }
+
+
+    /* -----------------------------------------------------
+       BOTÓN HAMBURGUESA
+       ----------------------------------------------------- */
+
+    menuToggle.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        toggleMenu();
+    });
+
+
+    /* -----------------------------------------------------
+       BACKDROP
+       ----------------------------------------------------- */
+
+    if (menuBackdrop) {
+        menuBackdrop.addEventListener('click', () => {
+            closeMenu();
+        });
+    }
+
+
+    /* -----------------------------------------------------
+       ENLACES DEL MENÚ
+       ----------------------------------------------------- */
+
+    document.querySelectorAll('.drawer-nav-links a').forEach((link) => {
+
+        link.addEventListener('click', () => {
+            closeMenu();
+        });
+
+    });
+
+
+    /* -----------------------------------------------------
+       ESC PARA CERRAR
+       ----------------------------------------------------- */
+
+    document.addEventListener('keydown', (event) => {
+
+        if (event.key === 'Escape') {
+            closeMenu();
+        }
+
+    });
+
+
+    /* -----------------------------------------------------
+       CLICK FUERA DEL DRAWER
+       ----------------------------------------------------- */
+
+    document.addEventListener('click', (event) => {
+
+        if (!menuDrawer.classList.contains('open')) {
+            return;
+        }
+
+        const clickedInsideDrawer =
+            menuDrawer.contains(event.target);
+
+        const clickedToggle =
+            menuToggle.contains(event.target);
+
+        if (!clickedInsideDrawer && !clickedToggle) {
+            closeMenu();
+        }
+
+    });
+}
+
+
+/* =========================================================
+   CATEGORÍAS DEL MENU
+   ========================================================= */
+
+function initCategoryToggles() {
+
+    document.querySelectorAll('.category-toggle').forEach((button) => {
+
+        button.addEventListener('click', (event) => {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            toggleCategory(button);
+
+        });
+
+    });
+
+    restoreCategoryStates();
+}
+
+
+/* =========================================================
+   ABRIR / CERRAR CATEGORÍA
+   ========================================================= */
+
+function toggleCategory(button) {
+
+    const items = getCategoryItems(button);
+
+    if (!items) {
+        console.warn(
+            'No se encontró .category-items para:',
+            button
+        );
+
+        return;
+    }
+
+    const icon = button.querySelector('.fa-chevron-down');
+
+    const isOpen =
+        items.classList.contains('open');
+
+
+    if (isOpen) {
+
+        closeCategory(
+            button,
+            items,
+            icon
+        );
+
     } else {
-        items.style.display = 'none';
-        items.classList.remove('open');
-        if (icon) icon.style.transform = 'rotate(0deg)';
-        saveCategoryState(categoryName, false);
+
+        openCategory(
+            button,
+            items,
+            icon
+        );
+
     }
 }
 
-function saveCategoryState(categoryName, isOpen) {
-    try {
-        const states = JSON.parse(localStorage.getItem('sidebarCategories') || '{}');
-        states[categoryName] = isOpen;
-        localStorage.setItem('sidebarCategories', JSON.stringify(states));
-    } catch (e) {
-        console.error('Error guardando estado:', e);
+
+/* =========================================================
+   ABRIR CATEGORÍA
+   ========================================================= */
+
+function openCategory(button, items, icon) {
+
+    items.classList.add('open');
+
+    button.classList.add('open');
+
+    button.setAttribute(
+        'aria-expanded',
+        'true'
+    );
+
+    if (icon) {
+        icon.style.transform = 'rotate(180deg)';
+    }
+
+    const categoryName =
+        getCategoryName(button);
+
+    if (categoryName) {
+        saveCategoryState(
+            categoryName,
+            true
+        );
     }
 }
+
+
+/* =========================================================
+   CERRAR CATEGORÍA
+   ========================================================= */
+
+function closeCategory(button, items, icon) {
+
+    items.classList.remove('open');
+
+    button.classList.remove('open');
+
+    button.setAttribute(
+        'aria-expanded',
+        'false'
+    );
+
+    if (icon) {
+        icon.style.transform = 'rotate(0deg)';
+    }
+
+    const categoryName =
+        getCategoryName(button);
+
+    if (categoryName) {
+        saveCategoryState(
+            categoryName,
+            false
+        );
+    }
+}
+
+
+/* =========================================================
+   BUSCAR ITEMS DE CATEGORÍA
+   ========================================================= */
+
+function getCategoryItems(button) {
+
+    const nextElement =
+        button.nextElementSibling;
+
+    if (
+        nextElement &&
+        nextElement.classList.contains('category-items')
+    ) {
+        return nextElement;
+    }
+
+
+    const parent =
+        button.closest('.nav-category');
+
+    if (parent) {
+
+        const items =
+            parent.querySelector('.category-items');
+
+        if (items) {
+            return items;
+        }
+
+    }
+
+    return null;
+}
+
+
+/* =========================================================
+   NOMBRE DE CATEGORÍA
+   ========================================================= */
+
+function getCategoryName(button) {
+
+    const span =
+        button.querySelector('span');
+
+    if (!span) {
+        return null;
+    }
+
+    return span.textContent.trim();
+}
+
+
+/* =========================================================
+   GUARDAR ESTADO
+   ========================================================= */
+
+function saveCategoryState(
+    categoryName,
+    isOpen
+) {
+
+    try {
+
+        const saved =
+            localStorage.getItem(
+                'sidebarCategories'
+            );
+
+        const states =
+            saved
+                ? JSON.parse(saved)
+                : {};
+
+        states[categoryName] =
+            isOpen;
+
+        localStorage.setItem(
+            'sidebarCategories',
+            JSON.stringify(states)
+        );
+
+    } catch (error) {
+
+        console.warn(
+            'No se pudo guardar el estado del menú:',
+            error
+        );
+
+    }
+}
+
+
+/* =========================================================
+   RESTAURAR ESTADOS
+   ========================================================= */
 
 function restoreCategoryStates() {
+
+    let states = {};
+
     try {
-        const states = JSON.parse(localStorage.getItem('sidebarCategories') || '{}');
-        document.querySelectorAll('.category-toggle').forEach(button => {
-            const categoryName = button.querySelector('span')?.textContent?.trim();
-            if (categoryName && states[categoryName] === true) {
-                const items = button.nextElementSibling;
-                if (items && items.classList.contains('category-items')) {
-                    items.style.display = 'block';
-                    items.classList.add('open');
-                    const icon = button.querySelector('i.fa-chevron-down');
-                    if (icon) icon.style.transform = 'rotate(180deg)';
-                }
-            }
-        });
-    } catch (e) {
-        console.error('Error restaurando estados:', e);
+
+        const saved =
+            localStorage.getItem(
+                'sidebarCategories'
+            );
+
+        if (saved) {
+            states = JSON.parse(saved);
+        }
+
+    } catch (error) {
+
+        console.warn(
+            'No se pudieron restaurar los estados:',
+            error
+        );
+
+        states = {};
+
     }
+
+
+    document
+        .querySelectorAll('.category-toggle')
+        .forEach((button) => {
+
+            const categoryName =
+                getCategoryName(button);
+
+            if (!categoryName) {
+                return;
+            }
+
+            const items =
+                getCategoryItems(button);
+
+            if (!items) {
+                return;
+            }
+
+            const icon =
+                button.querySelector(
+                    '.fa-chevron-down'
+                );
+
+
+            if (states[categoryName] === true) {
+
+                items.classList.add('open');
+
+                button.classList.add('open');
+
+                button.setAttribute(
+                    'aria-expanded',
+                    'true'
+                );
+
+                if (icon) {
+                    icon.style.transform =
+                        'rotate(180deg)';
+                }
+
+            } else {
+
+                items.classList.remove('open');
+
+                button.classList.remove('open');
+
+                button.setAttribute(
+                    'aria-expanded',
+                    'false'
+                );
+
+                if (icon) {
+                    icon.style.transform =
+                        'rotate(0deg)';
+                }
+
+            }
+
+        });
 }
 
-window.showNotification = function(message, type = 'success', duration = 2500) {
-    const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
-    const colors = { success: '#28a745', error: '#dc3545', warning: '#ffc107', info: '#17a2b8' };
+
+/* =========================================================
+   LOGOUT
+   ========================================================= */
+
+function initLogout() {
+
+    const logoutBtn =
+        document.getElementById('logoutBtn');
+
+    const logoutForm =
+        document.getElementById('logoutForm');
+
+    if (!logoutBtn || !logoutForm) {
+        return;
+    }
+
+
+    logoutBtn.addEventListener(
+        'click',
+        (event) => {
+
+            event.preventDefault();
+
+            Swal.fire({
+
+                title: '¿Cerrar sesión?',
+
+                text: 'Se cerrará su sesión actual',
+
+                icon: 'warning',
+
+                showCancelButton: true,
+
+                confirmButtonColor: '#2f2c79',
+
+                cancelButtonColor: '#dc3545',
+
+                confirmButtonText: 'Sí, salir',
+
+                cancelButtonText: 'Cancelar',
+
+                reverseButtons: true
+
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    logoutForm.submit();
+
+                }
+
+            });
+
+        }
+    );
+}
+
+
+/* =========================================================
+   NOTIFICACIONES
+   ========================================================= */
+
+window.showNotification = function (
+    message,
+    type = 'success',
+    duration = 2500
+) {
+
+    const iconMap = {
+
+        success: 'success',
+
+        error: 'error',
+
+        warning: 'warning',
+
+        info: 'info'
+
+    };
+
+
     Swal.fire({
+
         text: message,
-        icon: type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warning' ? 'warning' : 'info',
+
+        icon:
+            iconMap[type] || 'info',
+
         toast: true,
+
         position: 'top-end',
+
         showConfirmButton: false,
+
         timer: duration,
+
         timerProgressBar: true,
-        background: '#fff',
-        color: '#000',
-        customClass: { popup: 'fw-bold' },
+
+        background: '#ffffff',
+
+        color: '#000000',
+
+        customClass: {
+            popup: 'fw-bold'
+        }
+
     });
+
 };
