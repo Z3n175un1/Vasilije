@@ -134,6 +134,7 @@ Route::middleware('auth')->group(function () {
 
     // Usuarios (solo admin)
     Route::middleware('admin')->prefix('usuarios')->group(function () {
+        
         Route::get('/', [\App\Http\Controllers\UserController::class, 'index'])->name('usuarios.index');
         Route::get('/nuevo', [\App\Http\Controllers\UserController::class, 'create'])->name('usuarios.create');
         Route::get('/{id}/editar', [\App\Http\Controllers\UserController::class, 'edit'])->name('usuarios.edit');
@@ -186,6 +187,7 @@ Route::prefix('api')->middleware('auth')->group(function () {
     Route::get('/almacen/next-code', [AlmacenController::class, 'apiNextCode']);
     Route::get('/almacen/movimientos', [AlmacenController::class, 'apiMovimientos']);
     Route::post('/almacen/movimientos', [AlmacenController::class, 'apiGuardarMovimiento']);
+    Route::put('/almacen/movimientos/{id}', [AlmacenController::class, 'apiActualizarMovimiento']);
     Route::get('/lotes/ultimo', [AlmacenController::class, 'apiUltimoLote']);
     Route::get('/almacen/{id}', [AlmacenController::class, 'apiShow']);
     Route::get('/items', [ItemController::class, 'apiList']);

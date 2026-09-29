@@ -333,7 +333,7 @@ main {
 .menu-sidebar-drawer.open { transform: translateX(0); }
 
 .menu-sidebar-drawer .drawer-nav-links a {
-  color: #fff !important;
+  color: black !important;
   font-weight: 700 !important;
   font-size: 1.15rem !important;
   text-decoration: none !important;

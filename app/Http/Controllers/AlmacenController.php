@@ -267,6 +267,133 @@ class AlmacenController extends Controller
         }
     }
 
+    public function apiActualizarMovimiento(Request $request, $id)
+    {
+        try {
+            $movimiento = DB::table('global.movimientos_inventario')->where('id_movimiento', $id)->first();
+            if (!$movimiento) {
+                return response()->json(['success' => false, 'message' => 'Movimiento no encontrado'], 404);
+            }
+
+            $validated = $request->validate([
+                'id_inventario' => 'required|integer',
+                'tipo_movimiento' => 'required|string|in:COMPRA,SALIDA',
+                'cantidad' => 'required|numeric|min:0.01',
+                'fecha_movimiento' => 'nullable|date',
+                'proveedor' => 'nullable|string|max:200',
+                'precio_unitario' => 'nullable|numeric',
+                'precio_compra' => 'nullable|numeric',
+                'codigo_lote' => 'nullable|string|max:50',
+                'id_vehiculo' => 'nullable|integer',
+                'id_personal' => 'nullable|integer',
+                'id_proveedor' => 'nullable|integer',
+                'id_banco' => 'nullable|integer',
+                'condicion_pago' => 'nullable|string|in:CONTADO,CREDITO',
+                'metodo_pago' => 'nullable|string|in:BANCO,CAJA_CHICA',
+                'fecha_limite_pago' => 'nullable|date',
+                'observaciones' => 'nullable|string',
+                'numero_documento' => 'nullable|string|max:50',
+            ]);
+
+            // Reverse old inventory changes
+            if ($movimiento->tipo_movimiento === 'COMPRA') {
+                DB::table('global.inventario')
+                    ->where('id_inventario', $movimiento->id_inventario)
+                    ->decrement('stock_actual', $movimiento->cantidad);
+            } elseif ($movimiento->tipo_movimiento === 'SALIDA') {
+                DB::table('global.inventario')
+                    ->where('id_inventario', $movimiento->id_inventario)
+                    ->increment('stock_actual', $movimiento->cantidad);
+            }
+
+            // Reverse old lote if compra
+            if ($movimiento->tipo_movimiento === 'COMPRA' && $movimiento->codigo_lote) {
+                DB::table('global.lotes')
+                    ->where('codigo_lote', $movimiento->codigo_lote)
+                    ->where('id_inventario', $movimiento->id_inventario)
+                    ->decrement('cantidad_actual', $movimiento->cantidad);
+            }
+
+            // Apply new changes
+            $updateData = [
+                'id_inventario' => $validated['id_inventario'],
+                'tipo_movimiento' => $validated['tipo_movimiento'],
+                'cantidad' => $validated['cantidad'],
+                'fecha_movimiento' => $validated['fecha_movimiento'] ?? date('Y-m-d'),
+                'costo_unitario' => $validated['precio_unitario'] ?? null,
+                'proveedor' => $validated['proveedor'] ?? null,
+                'id_proveedor' => $validated['id_proveedor'] ?? null,
+                'id_banco' => $validated['id_banco'] ?? null,
+                'condicion_pago' => $validated['condicion_pago'] ?? 'CONTADO',
+                'metodo_pago' => $validated['metodo_pago'] ?? null,
+                'fecha_limite_pago' => $validated['fecha_limite_pago'] ?? null,
+                'id_vehiculo' => $validated['id_vehiculo'] ?? null,
+                'id_personal' => $validated['id_personal'] ?? null,
+                'observaciones' => $validated['observaciones'] ?? null,
+                'numero_documento' => $validated['numero_documento'] ?? null,
+            ];
+
+            if ($validated['tipo_movimiento'] === 'COMPRA') {
+                $updateData['precio_compra'] = $validated['precio_compra'] ?? $validated['precio_unitario'] ?? null;
+                $updateData['codigo_lote'] = $validated['codigo_lote'] ?? null;
+            }
+
+            DB::table('global.movimientos_inventario')
+                ->where('id_movimiento', $id)
+                ->update($updateData);
+
+            // Apply new inventory changes
+            if ($validated['tipo_movimiento'] === 'COMPRA') {
+                DB::table('global.inventario')
+                    ->where('id_inventario', $validated['id_inventario'])
+                    ->increment('stock_actual', $validated['cantidad']);
+                
+                if (!empty($validated['precio_unitario'])) {
+                    DB::table('global.inventario')
+                        ->where('id_inventario', $validated['id_inventario'])
+                        ->update([
+                            'precio_compra' => $validated['precio_unitario'],
+                            'ultimo_costo' => $validated['precio_unitario'],
+                        ]);
+                }
+            } elseif ($validated['tipo_movimiento'] === 'SALIDA') {
+                DB::table('global.inventario')
+                    ->where('id_inventario', $validated['id_inventario'])
+                    ->decrement('stock_actual', $validated['cantidad']);
+            }
+
+            // Handle lote for compras
+            if ($validated['tipo_movimiento'] === 'COMPRA' && !empty($validated['codigo_lote'])) {
+                $loteExistente = DB::table('global.lotes')
+                    ->where('codigo_lote', $validated['codigo_lote'])
+                    ->where('id_inventario', $validated['id_inventario'])
+                    ->first();
+                if ($loteExistente) {
+                    DB::table('global.lotes')
+                        ->where('id_lote', $loteExistente->id_lote)
+                        ->increment('cantidad_actual', $validated['cantidad']);
+                } else {
+                    $loteId = DB::table('global.lotes')->insertGetId([
+                        'id_inventario' => $validated['id_inventario'],
+                        'codigo_lote' => $validated['codigo_lote'],
+                        'fecha_ingreso' => $validated['fecha_movimiento'] ?? date('Y-m-d'),
+                        'cantidad_inicial' => $validated['cantidad'],
+                        'cantidad_actual' => $validated['cantidad'],
+                        'precio_compra' => $validated['precio_compra'] ?? 0,
+                        'estado' => 'ACTIVO',
+                    ], 'id_lote');
+                    DB::table('global.movimientos_inventario')
+                        ->where('id_movimiento', $id)
+                        ->update(['id_lote' => $loteId]);
+                }
+            }
+
+            return response()->json(['success' => true, 'message' => 'Movimiento actualizado']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
     public function apiUltimoLote()
     {
         $lote = DB::table('global.lotes')->orderBy('id_lote', 'desc')->first();

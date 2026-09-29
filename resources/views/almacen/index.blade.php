@@ -80,7 +80,7 @@
             </div>
                 <div class="table-responsive-brutalist">
                     <table class="table-excel mb-0" style="font-size:.85rem;">
-                        <thead><tr><th>Fecha</th><th>Código</th><th>Producto</th><th>Cantidad</th><th>P. Unit.</th><th>P. Compra</th><th>Proveedor</th><th>Condición</th><th>Lote</th></tr></thead>
+                        <thead><tr><th>Fecha</th><th>Código</th><th>Producto</th><th>Cantidad</th><th>P. Unit.</th><th>P. Compra</th><th>Proveedor</th><th>Condición</th><th>Lote</th><th>Acciones</th></tr></thead>
                         <tbody id="comprasList"><tr><td colspan="9" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
                     </table>
                 </div>
@@ -95,7 +95,7 @@
             </div>
                 <div class="table-responsive-brutalist">
                     <table class="table-excel mb-0" style="font-size:.85rem;">
-                        <thead><tr><th>Fecha</th><th>Código</th><th>Producto</th><th>Cantidad</th><th>P. Unit.</th><th>Vehículo</th><th>Conductor</th></tr></thead>
+                        <thead><tr><th>Fecha</th><th>Código</th><th>Producto</th><th>Cantidad</th><th>P. Unit.</th><th>Vehículo</th><th>Conductor</th><th>Acciones</th></tr></thead>
                         <tbody id="entregasList"><tr><td colspan="7" class="text-center py-5 opacity-50">CARGANDO...</td></tr></tbody>
                     </table>
                 </div>
@@ -185,6 +185,7 @@
             <form id="formMovimiento" onsubmit="return guardarMovimiento(event)">
                 @csrf
                 <input type="hidden" name="tipo_movimiento" id="movTipo">
+                <input type="hidden" name="id_movimiento" id="movIdMovimiento">
 
                 <!-- Header with movement type info -->
                 <div class="row g-3 mb-3">
@@ -440,12 +441,12 @@ function loadCompras() {
             if (!res.success || !res.data || res.data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>'; return;
             }
-            tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'COMPRA').map(m => {
-                const total = parseFloat(m.cantidad || 0) * parseFloat(m.costo_unitario || 0);
-                const cond = m.condicion_pago || 'CONTADO';
-                const condColor = cond === 'CREDITO' ? '#ffdcd6' : '#d4edda';
-                return `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${m.codigo_barras || m.codigo || '—'}</span></td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</td><td class="fw-bold">${m.proveedor || '—'}</td><td><span class="badge fw-bold px-2 py-1" style="background:${condColor};color:#000;border:2px solid #000;">${cond}</span></td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${m.codigo_lote || '—'}</span></td></tr>`;
-            }).join('') || '<tr><td colspan="9" class="text-center py-5 opacity-50">SIN COMPRAS REGISTRADAS</td></tr>';
+tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'COMPRA').map(m => {
+                  const total = parseFloat(m.cantidad || 0) * parseFloat(m.costo_unitario || 0);
+                  const cond = m.condicion_pago || 'CONTADO';
+                  const condColor = cond === 'CREDITO' ? '#ffdcd6' : '#d4edda';
+                  return `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${m.codigo_barras || m.codigo || '—'}</span></td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</td><td class="fw-bold">${m.proveedor || '—'}</td><td><span class="badge fw-bold px-2 py-1" style="background:${condColor};color:#000;border:2px solid #000;">${cond}</span></td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${m.codigo_lote || '—'}</span></td><td><button class="btn btn-sm btn-outline-dark btn-editar-mov" onclick="editarMovimiento(${m.id_movimiento}, 'COMPRA')" style="border:2px solid #000;padding:4px 8px;"><i class="fas fa-edit"></i></button></td></tr>`;
+              }).join('') || '<tr><td colspan="10" class="text-center py-5 opacity-50">SIN COMPRAS REGISTRADAS</td></tr>';
         });
 }
 
@@ -456,9 +457,9 @@ function loadEntregas() {
             if (!res.success || !res.data || res.data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>'; return;
             }
-            tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'SALIDA').map(m =>
-                `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${m.codigo_barras || m.codigo || '—'}</span></td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">${m.placa_vehiculo || '—'}</td><td class="fw-bold">${m.conductor || '—'}</td></tr>`
-            ).join('') || '<tr><td colspan="7" class="text-center py-5 opacity-50">SIN ENTREGAS REGISTRADAS</td></tr>';
+tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'SALIDA').map(m =>
+                  `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${m.codigo_barras || m.codigo || '—'}</span></td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">${m.placa_vehiculo || '—'}</td><td class="fw-bold">${m.conductor || '—'}</td><td><button class="btn btn-sm btn-outline-dark btn-editar-mov" onclick="editarMovimiento(${m.id_movimiento}, 'SALIDA')" style="border:2px solid #000;padding:4px 8px;"><i class="fas fa-edit"></i></button></td></tr>`
+              ).join('') || '<tr><td colspan="8" class="text-center py-5 opacity-50">SIN ENTREGAS REGISTRADAS</td></tr>';
         });
 }
 
@@ -581,79 +582,140 @@ function repositionProductoAutocomplete() {
     suggestionsDiv.style.width = '100%';
 }
 
-function abrirModalMovimiento(tipo) {
+function abrirModalMovimiento(tipo, movimiento = null) {
+    const esEdicion = movimiento !== null;
     document.getElementById('movTipo').value = tipo === 'ENTREGA' ? 'SALIDA' : tipo;
-    document.getElementById('modalMovTitle').innerHTML = `<i class="fas ${tipo === 'COMPRA' ? 'fa-arrow-down' : 'fa-arrow-up'} me-2"></i> NUEVA ${tipo === 'COMPRA' ? 'COMPRA' : 'ENTREGA'}`;
+    document.getElementById('modalMovTitle').innerHTML = `<i class="fas ${tipo === 'COMPRA' ? 'fa-arrow-down' : 'fa-arrow-up'} me-2"></i> ${esEdicion ? 'EDITAR' : 'NUEVA'} ${tipo === 'COMPRA' ? 'COMPRA' : 'ENTREGA'}`;
     
     // Show/hide rows based on type
     document.getElementById('movPreciosRow').style.display = tipo === 'COMPRA' ? 'flex' : 'none';
     document.getElementById('movVehiculoRow').style.display = tipo === 'ENTREGA' ? 'flex' : 'none';
     
-    document.getElementById('movFecha').value = new Date().toISOString().split('T')[0];
-    
-    // CRITICAL: Reset product selection to avoid bug with previous selection
-    const productoSelect = document.getElementById('movIdProducto');
-    if (productoSelect) {
-        productoSelect.value = '';
-        productoSelect.selectedIndex = 0;
-    }
-    
-    // Hide autocomplete suggestions completely
-    const suggestionsDiv = document.getElementById('productoSuggestions');
-    if (suggestionsDiv) {
-        suggestionsDiv.style.display = 'none';
-        suggestionsDiv.remove();
-    }
-    
-    // Reset other fields
-    document.getElementById('movCantidad').value = '';
-    document.getElementById('movPrecioUnitario').value = '';
-    document.getElementById('movPrecioCompra').value = '';
-    document.getElementById('movObs').value = '';
-    document.getElementById('movIdVehiculo').value = '';
-    document.getElementById('movIdPersonal').value = '';
-
-    // Campos de pago (solo compras)
-    const esCompra = tipo === 'COMPRA';
-    document.getElementById('movPreciosRow').style.display = esCompra ? 'flex' : 'none';
-    document.getElementById('movPagoRow').style.display = esCompra ? 'flex' : 'none';
-    document.getElementById('movContadoRow').style.display = esCompra ? 'flex' : 'none';
-    document.getElementById('movProveedorRow').style.display = esCompra ? 'flex' : 'none';
-    document.getElementById('movCondicion').value = 'CONTADO';
-    document.getElementById('movIdBanco').value = '';
-    document.getElementById('movIdProveedor').value = '';
-    document.getElementById('movFechaLimite').value = '';
-    toggleMovCondicion();
-
-    // Generate lot code
-    let ultimoNum = 0;
-    fetch('{{ url("api/lotes/ultimo") }}', { headers: { 'Accept': 'application/json' } })
-        .then(r => r.json())
-        .then(res => {
-            if (res.success && res.data) {
-                const num = parseInt(res.data.codigo_lote.replace('LO-', '')) || 0;
-                ultimoNum = num + 1;
-            } else {
-                ultimoNum = 1;
+    if (esEdicion) {
+        // Fill form with existing movement data
+        const m = movimiento;
+        document.getElementById('movFecha').value = m.fecha_movimiento;
+        document.getElementById('movIdProducto').value = m.id_inventario;
+        document.getElementById('movCantidad').value = m.cantidad;
+        document.getElementById('movPrecioUnitario').value = m.costo_unitario || '';
+        document.getElementById('movPrecioCompra').value = m.precio_compra || (m.costo_unitario ? (m.cantidad * m.costo_unitario).toFixed(2) : '');
+        document.getElementById('movObs').value = m.observaciones || '';
+        document.getElementById('movIdVehiculo').value = m.id_vehiculo || '';
+        document.getElementById('movIdPersonal').value = m.id_personal || '';
+        
+        // Set product selection to trigger stock display
+        mostrarStockProducto();
+        
+        // Campos de pago (solo compras)
+        const esCompra = tipo === 'COMPRA';
+        document.getElementById('movPreciosRow').style.display = esCompra ? 'flex' : 'none';
+        document.getElementById('movPagoRow').style.display = esCompra ? 'flex' : 'none';
+        document.getElementById('movContadoRow').style.display = esCompra ? 'flex' : 'none';
+        document.getElementById('movProveedorRow').style.display = esCompra ? 'flex' : 'none';
+        
+        if (esCompra) {
+            document.getElementById('movCondicion').value = m.condicion_pago || 'CONTADO';
+            document.getElementById('movIdBanco').value = m.id_banco || '';
+            document.getElementById('movIdProveedor').value = m.id_proveedor || '';
+            document.getElementById('movFechaLimite').value = m.fecha_limite_pago || '';
+            toggleMovCondicion();
+            
+            // Update lot code if exists
+            if (m.codigo_lote) {
+                document.getElementById('movCodigoLote').value = m.codigo_lote;
             }
-            document.getElementById('movCodigoLote').value = 'LO-' + String(ultimoNum).padStart(6, '0');
-        })
-        .catch(() => {
-            document.getElementById('movCodigoLote').value = 'LO-000001';
-        });
+        }
+        
+        if (tipo === 'ENTREGA') {
+            document.getElementById('movIdVehiculo').value = m.id_vehiculo || '';
+            document.getElementById('movIdPersonal').value = m.id_personal || '';
+            autoAsignarConductor();
+        }
+        
+        // Store the movement ID for update
+        document.getElementById('movIdMovimiento').value = movimiento.id_movimiento;
+        
+    } else {
+        // NEW MOVEMENT - Reset all fields
+        document.getElementById('movFecha').value = new Date().toISOString().split('T')[0];
+        
+        // CRITICAL: Reset product selection to avoid bug with previous selection
+        const productoSelect = document.getElementById('movIdProducto');
+        if (productoSelect) {
+            productoSelect.value = '';
+            productoSelect.selectedIndex = 0;
+        }
+        
+        // Hide autocomplete suggestions completely
+        const suggestionsDiv = document.getElementById('productoSuggestions');
+        if (suggestionsDiv) {
+            suggestionsDiv.style.display = 'none';
+            suggestionsDiv.remove();
+        }
+        
+        // Reset other fields
+        document.getElementById('movCantidad').value = '';
+        document.getElementById('movPrecioUnitario').value = '';
+        document.getElementById('movPrecioCompra').value = '';
+        document.getElementById('movObs').value = '';
+        document.getElementById('movIdVehiculo').value = '';
+        document.getElementById('movIdPersonal').value = '';
+        
+        // Campos de pago (solo compras)
+        const esCompra = tipo === 'COMPRA';
+        document.getElementById('movPreciosRow').style.display = esCompra ? 'flex' : 'none';
+        document.getElementById('movPagoRow').style.display = esCompra ? 'flex' : 'none';
+        document.getElementById('movContadoRow').style.display = esCompra ? 'flex' : 'none';
+        document.getElementById('movProveedorRow').style.display = esCompra ? 'flex' : 'none';
+        document.getElementById('movCondicion').value = 'CONTADO';
+        document.getElementById('movIdBanco').value = '';
+        document.getElementById('movIdProveedor').value = '';
+        document.getElementById('movFechaLimite').value = '';
+        toggleMovCondicion();
 
-    const selV = document.getElementById('movIdVehiculo');
-    selV.innerHTML = '<option value="">SELECCIONE...</option>' + vehiculosInv.map(v =>
-        `<option value="${v.id_vehiculo}">${v.placa_vehiculo}</option>`).join('');
-    const selP = document.getElementById('movIdPersonal');
-    selP.innerHTML = '<option value="">SELECCIONE...</option>' + personalInv.map(p =>
-        `<option value="${p.id_personal}">${p.nombres} ${p.apellidos}</option>`).join('');
+        // Generate lot code
+        let ultimoNum = 0;
+        fetch('{{ url("api/lotes/ultimo") }}', { headers: { 'Accept': 'application/json' } })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success && res.data) {
+                    const num = parseInt(res.data.codigo_lote.replace('LO-', '')) || 0;
+                    ultimoNum = num + 1;
+                } else {
+                    ultimoNum = 1;
+                }
+                document.getElementById('movCodigoLote').value = 'LO-' + String(ultimoNum).padStart(6, '0');
+            })
+            .catch(() => {
+                document.getElementById('movCodigoLote').value = 'LO-000001';
+            });
+
+        const selV = document.getElementById('movIdVehiculo');
+        selV.innerHTML = '<option value="">SELECCIONE...</option>' + vehiculosInv.map(v =>
+            `<option value="${v.id_vehiculo}">${v.placa_vehiculo}</option>`).join('');
+        const selP = document.getElementById('movIdPersonal');
+        selP.innerHTML = '<option value="">SELECCIONE...</option>' + personalInv.map(p =>
+            `<option value="${p.id_personal}">${p.nombres} ${p.apellidos}</option>`).join('');
+    }
     
     document.getElementById('modalMovimiento').style.display = 'flex';
 }
 
 function cerrarModalMov() {
     document.getElementById('modalMovimiento').style.display = 'none';
+}
+
+function editarMovimiento(id, tipo) {
+    fetch('{{ url("api/almacen/movimientos") }}?id_movimiento=' + id, { headers: { 'Accept': 'application/json' } })
+        .then(r => r.json())
+        .then(res => {
+            if (!res.success || !res.data || res.data.length === 0) {
+                Swal.fire('Error', 'Movimiento no encontrado', 'error');
+                return;
+            }
+            const m = res.data[0];
+            abrirModalMovimiento(tipo === 'SALIDA' ? 'ENTREGA' : 'COMPRA', m);
+        });
 }
 
 function toggleMovCondicion() {
@@ -672,6 +734,9 @@ function calcularPrecioCompra() {
 function guardarMovimiento(event) {
     event.preventDefault();
     const tipo = document.getElementById('movTipo').value;
+    const movimientoId = document.getElementById('movIdMovimiento').value;
+    const esEdicion = movimientoId && movimientoId !== '';
+    
     const data = {
         id_inventario: document.getElementById('movIdProducto').value,
         tipo_movimiento: tipo,
@@ -716,8 +781,11 @@ function guardarMovimiento(event) {
     document.getElementById('btnGuardarMov').disabled = true;
     document.getElementById('btnGuardarMov').innerHTML = '<i class="fas fa-spinner fa-spin"></i> GUARDANDO...';
 
-    fetch('{{ url("api/almacen/movimientos") }}', {
-        method: 'POST',
+    const url = esEdicion ? '{{ url("api/almacen/movimientos") }}' + '/' + document.getElementById('movIdMovimiento').value : '{{ url("api/almacen/movimientos") }}';
+    const method = esEdicion ? 'PUT' : 'POST';
+
+    fetch(url, {
+        method: method,
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
         body: JSON.stringify(data)
     })
@@ -726,7 +794,7 @@ function guardarMovimiento(event) {
         document.getElementById('btnGuardarMov').disabled = false;
         document.getElementById('btnGuardarMov').innerHTML = '<i class="fas fa-save"></i> GUARDAR';
         if (res.success) {
-            Swal.fire({ icon: 'success', title: 'MOVIMIENTO REGISTRADO', timer: 1500, showConfirmButton: false });
+            Swal.fire({ icon: 'success', title: esEdicion ? 'MOVIMIENTO ACTUALIZADO' : 'MOVIMIENTO REGISTRADO', timer: 1500, showConfirmButton: false });
             cerrarModalMov();
             loadProductos(); loadCompras(); loadEntregas(); loadSaldos();
         } else {
