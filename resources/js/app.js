@@ -55,14 +55,19 @@ function initMenuDrawer() {
     }
 
     function toggleMenu() {
-        const isOpen = menuDrawer.classList.contains('open');
-
-        if (isOpen) {
-            closeMenu();
-        } else {
-            openMenu();
+        const isOpen = menuDrawer.classList.toggle('open');
+    
+        if (menuBackdrop) {
+            menuBackdrop.classList.toggle('open', isOpen);
         }
+    
+        if (hamburgerIcon) {
+            hamburgerIcon.classList.toggle('open', isOpen);
+        }
+    
+        document.body.classList.toggle('menu-open', isOpen);
     }
+
 
 
     /* -----------------------------------------------------
