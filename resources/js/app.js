@@ -55,24 +55,16 @@ function initMenuDrawer() {
     }
 
     function toggleMenu() {
-        const isOpen = menuDrawer.classList.toggle('open');
-    
-        if (menuBackdrop) {
-            menuBackdrop.classList.toggle('open', isOpen);
+        const isOpen = menuDrawer.classList.contains('open');
+
+        if (isOpen) {
+            closeMenu();
+        } else {
+            openMenu();
         }
-    
-        if (hamburgerIcon) {
-            hamburgerIcon.classList.toggle('open', isOpen);
-        }
-    
-        document.body.classList.toggle('menu-open', isOpen);
     }
 
-
-
-    /* -----------------------------------------------------
-       BOTÓN HAMBURGUESA
-       ----------------------------------------------------- */
+    /* BOTÓN HAMBURGUESA */
 
     menuToggle.addEventListener('click', (event) => {
         event.preventDefault();
@@ -82,9 +74,7 @@ function initMenuDrawer() {
     });
 
 
-    /* -----------------------------------------------------
-       BACKDROP
-       ----------------------------------------------------- */
+    /* BACKDROP */
 
     if (menuBackdrop) {
         menuBackdrop.addEventListener('click', () => {
@@ -93,22 +83,20 @@ function initMenuDrawer() {
     }
 
 
-    /* -----------------------------------------------------
-       ENLACES DEL MENÚ
-       ----------------------------------------------------- */
+    /* ENLACES DEL MENÚ */
 
-    document.querySelectorAll('.drawer-nav-links a').forEach((link) => {
+    document
+        .querySelectorAll('.drawer-nav-links a')
+        .forEach((link) => {
 
-        link.addEventListener('click', () => {
-            closeMenu();
+            link.addEventListener('click', () => {
+                closeMenu();
+            });
+
         });
 
-    });
 
-
-    /* -----------------------------------------------------
-       ESC PARA CERRAR
-       ----------------------------------------------------- */
+    /* ESC PARA CERRAR */
 
     document.addEventListener('keydown', (event) => {
 
@@ -117,57 +105,36 @@ function initMenuDrawer() {
         }
 
     });
-
-
-    /* -----------------------------------------------------
-       CLICK FUERA DEL DRAWER
-       ----------------------------------------------------- */
-
-    document.addEventListener('click', (event) => {
-
-        if (!menuDrawer.classList.contains('open')) {
-            return;
-        }
-
-        const clickedInsideDrawer =
-            menuDrawer.contains(event.target);
-
-        const clickedToggle =
-            menuToggle.contains(event.target);
-
-        if (!clickedInsideDrawer && !clickedToggle) {
-            closeMenu();
-        }
-
-    });
 }
 
 
 /* =========================================================
-   CATEGORÍAS DEL MENU
+   CATEGORÍAS DEL MENÚ
    ========================================================= */
 
 function initCategoryToggles() {
 
-    document.querySelectorAll('.category-toggle').forEach((button) => {
+    document
+        .querySelectorAll('.category-toggle')
+        .forEach((button) => {
 
-        button.addEventListener('click', (event) => {
+            button.addEventListener('click', (event) => {
 
-            event.preventDefault();
-            event.stopPropagation();
+                event.preventDefault();
+                event.stopPropagation();
 
-            toggleCategory(button);
+                toggleCategory(button);
+
+            });
 
         });
-
-    });
 
     restoreCategoryStates();
 }
 
 
 /* =========================================================
-   ABRIR / CERRAR CATEGORÍA
+   TOGGLE CATEGORÍA
    ========================================================= */
 
 function toggleCategory(button) {
@@ -183,28 +150,16 @@ function toggleCategory(button) {
         return;
     }
 
-    const icon = button.querySelector('.fa-chevron-down');
+    const icon =
+        button.querySelector('.fa-chevron-down');
 
     const isOpen =
         items.classList.contains('open');
 
-
     if (isOpen) {
-
-        closeCategory(
-            button,
-            items,
-            icon
-        );
-
+        closeCategory(button, items, icon);
     } else {
-
-        openCategory(
-            button,
-            items,
-            icon
-        );
-
+        openCategory(button, items, icon);
     }
 }
 
@@ -287,7 +242,6 @@ function getCategoryItems(button) {
         return nextElement;
     }
 
-
     const parent =
         button.closest('.nav-category');
 
@@ -327,10 +281,7 @@ function getCategoryName(button) {
    GUARDAR ESTADO
    ========================================================= */
 
-function saveCategoryState(
-    categoryName,
-    isOpen
-) {
+function saveCategoryState(categoryName, isOpen) {
 
     try {
 
@@ -344,8 +295,7 @@ function saveCategoryState(
                 ? JSON.parse(saved)
                 : {};
 
-        states[categoryName] =
-            isOpen;
+        states[categoryName] = isOpen;
 
         localStorage.setItem(
             'sidebarCategories',
@@ -390,7 +340,6 @@ function restoreCategoryStates() {
         );
 
         states = {};
-
     }
 
 
@@ -472,7 +421,6 @@ function initLogout() {
         return;
     }
 
-
     logoutBtn.addEventListener(
         'click',
         (event) => {
@@ -502,9 +450,7 @@ function initLogout() {
             }).then((result) => {
 
                 if (result.isConfirmed) {
-
                     logoutForm.submit();
-
                 }
 
             });
@@ -525,17 +471,11 @@ window.showNotification = function (
 ) {
 
     const iconMap = {
-
         success: 'success',
-
         error: 'error',
-
         warning: 'warning',
-
         info: 'info'
-
     };
-
 
     Swal.fire({
 
