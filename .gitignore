@@ -1,6 +1,14 @@
 *.log
 .DS_Store
+# =========================================================
+# CREDENCIALES
+#
+# `.env.*` cubre todas las variantes (local, produccion, staging...).
+# La excepcion mantiene versionable solo la plantilla, que no lleva claves.
+# =========================================================
 .env
+.env.*
+!.env.example
 .env.backup
 .env.production
 .phpactor.json
@@ -27,3 +35,9 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Respaldos de base de datos: pueden contener datos personales.
+storage/app/respaldos/
+
+# Entorno de pruebas: contiene credenciales de la BD de test
+.env.testing

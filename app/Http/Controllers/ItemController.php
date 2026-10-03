@@ -1,127 +1,146 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreItemRequest;
+use App\Services\AuditoriaService;
+use App\Services\InventarioService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
+/**
+ * ITEMS: alta y edicion de productos del inventario.
+ *
+ * El `stock_actual` NO se edita desde el formulario (ver
+ * StoreItemRequest::camposActualizables): es consecuencia de los
+ * movimientos. Editarlo a mano desincronizaba el inventario del kardex.
+ */
 class ItemController extends Controller
 {
-    public function index()
+    public function __construct(
+        private readonly InventarioService $inventario,
+        private readonly AuditoriaService $auditoria,
+    ) {}
+
+    public function index(): View
     {
         return view('items.index');
     }
 
-    public function create()
+    public function create(): View
     {
-        $categorias = DB::table('global.categorias_almacen')->orderBy('nombre')->get();
-        return view('items.form', ['item' => null, 'categorias' => $categorias]);
+        return view('items.form', [
+            'item' => null,
+            'categorias' => $this->categorias(),
+        ]);
     }
 
-    public function edit($id)
+    public function edit(string $id): View|RedirectResponse
     {
         $item = DB::table('global.inventario')->where('id_inventario', $id)->first();
-        if (!$item) return redirect()->route('items.index')->with('error', 'Ítem no encontrado');
-        $categorias = DB::table('global.categorias_almacen')->orderBy('nombre')->get();
-        return view('items.form', ['item' => $item, 'categorias' => $categorias]);
-    }
 
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'codigo' => 'nullable|string|max:20|unique:inventario,codigo',
-            'nombre_producto' => 'required|string|max:100',
-            'id_categoria' => 'nullable|integer|exists:categorias_almacen,id_categoria',
-            'unidad_medida' => 'required|string|max:20',
-            'stock_minimo' => 'nullable|numeric',
-            'stock_actual' => 'nullable|numeric',
-            'descripcion' => 'nullable|string',
-            'codigo_barras' => 'nullable|string|max:50',
-        ]);
-        $data['estado'] = 'ACTIVO';
-        if (!isset($data['stock_actual'])) $data['stock_actual'] = 0;
-
-        if (empty($data['codigo'])) {
-            $catName = '';
-            if (!empty($data['id_categoria'])) {
-                $cat = DB::table('global.categorias_almacen')->where('id_categoria', $data['id_categoria'])->first();
-                $catName = $cat ? $cat->nombre : '';
-            }
-            $data['codigo'] = $this->generateNextCode($catName, $data['id_categoria'] ?? null);
+        if (!$item) {
+            return redirect()->route('items.index')->with('error', 'Item no encontrado.');
         }
 
-        DB::table('global.inventario')->insert($data);
-        return redirect()->route('items.index')->with('success', 'Ítem registrado exitosamente');
-    }
-
-    public function update(Request $request, $id)
-    {
-        $data = $request->validate([
-            'codigo' => 'required|string|max:20|unique:inventario,codigo,' . $id . ',id_inventario',
-            'nombre_producto' => 'required|string|max:100',
-            'id_categoria' => 'nullable|integer|exists:categorias_almacen,id_categoria',
-            'unidad_medida' => 'required|string|max:20',
-            'stock_minimo' => 'nullable|numeric',
-            'stock_actual' => 'nullable|numeric',
-            'descripcion' => 'nullable|string',
-            'codigo_barras' => 'nullable|string|max:50',
+        return view('items.form', [
+            'item' => $item,
+            'categorias' => $this->categorias(),
         ]);
-
-        DB::table('global.inventario')->where('id_inventario', $id)->update($data);
-        return redirect()->route('items.index')->with('success', 'Ítem actualizado exitosamente');
     }
 
-    public function destroy($id)
+    public function store(StoreItemRequest $request): RedirectResponse
     {
-        DB::table('global.inventario')->where('id_inventario', $id)->update(['estado' => 'INACTIVO']);
-        return redirect()->route('items.index')->with('success', 'Ítem desactivado');
-    }
+        $datos = $request->datosNormalizados();
 
-    public function apiList()
-    {
-        $data = DB::table('global.inventario')
-            ->leftJoin('global.categorias_almacen', 'global.inventario.id_categoria', '=', 'global.categorias_almacen.id_categoria')
-            ->select('global.inventario.*', 'global.categorias_almacen.nombre as categoria')
-            ->where('global.inventario.estado', 'ACTIVO')
-            ->orderBy('global.inventario.nombre_producto')
-            ->get();
-        return response()->json(['success' => true, 'data' => $data]);
-    }
+        $datos['estado'] ??= 'ACTIVO';
+        $datos['stock_actual'] = $request->input('stock_actual') ?? 0;
+        $datos['created_by'] = auth()->user()?->getKey();
 
-    public function apiShow($id)
-    {
-        $item = DB::table('global.inventario')
-            ->leftJoin('global.categorias_almacen', 'global.inventario.id_categoria', '=', 'global.categorias_almacen.id_categoria')
-            ->select('global.inventario.*', 'global.categorias_almacen.nombre as categoria')
-            ->where('global.inventario.id_inventario', $id)
-            ->first();
-        return response()->json(['success' => true, 'data' => $item]);
-    }
-
-    private function generateNextCode($categoryName, $categoryId = null)
-    {
-        $prefix = $categoryName ? strtoupper(substr($categoryName, 0, 2)) : 'XX';
-
-        $count = DB::table('global.inventario')
-            ->where('id_categoria', $categoryId)
-            ->count();
-
-        $itemNum = str_pad($count + 1, 3, '0', STR_PAD_LEFT);
-
-        $lastProduct = DB::table('global.inventario')
-            ->where('codigo', 'like', $prefix . '-%')
-            ->orderBy('id_inventario', 'desc')
-            ->first();
-
-        $lastSeq = 0;
-        if ($lastProduct) {
-            $parts = explode('-', $lastProduct->codigo);
-            if (count($parts) === 3) {
-                $lastSeq = (int) $parts[2];
-            }
+        if (empty($datos['codigo'])) {
+            $datos['codigo'] = $this->inventario->generarCodigoProducto(
+                $this->nombreGrupo($datos['id_categoria'] ?? null),
+                isset($datos['id_categoria']) ? (int) $datos['id_categoria'] : null,
+            );
         }
-        $seqNum = str_pad($lastSeq + 1, 5, '0', STR_PAD_LEFT);
 
-        return $prefix . '-' . $itemNum . '-' . $seqNum;
+        $id = DB::table('global.inventario')->insertGetId($datos, 'id_inventario');
+
+        $this->auditoria->registrar('ITEM_CREADO', 'items', "Item {$datos['codigo']} creado", ['id' => $id]);
+
+        return redirect()->route('items.index')->with('success', 'Item registrado exitosamente');
+    }
+
+    public function update(StoreItemRequest $request, string $id): RedirectResponse
+    {
+        $datos = $request->datosActualizables();
+        $datos['updated_at'] = now();
+
+        DB::table('global.inventario')->where('id_inventario', $id)->update($datos);
+
+        $this->auditoria->registrar('ITEM_ACTUALIZADO', 'items', "Item #{$id} actualizado", ['id' => $id]);
+
+        return redirect()->route('items.index')->with('success', 'Item actualizado exitosamente');
+    }
+
+    public function destroy(Request $request, string $id): JsonResponse|RedirectResponse
+    {
+        DB::table('global.inventario')
+            ->where('id_inventario', $id)
+            ->update(['estado' => 'INACTIVO', 'updated_at' => now()]);
+
+        $this->auditoria->registrar('ITEM_DESACTIVADO', 'items', "Item #{$id} desactivado", ['id' => $id]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Item desactivado']);
+        }
+
+        return redirect()->route('items.index')->with('success', 'Item desactivado');
+    }
+
+    public function apiList(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => DB::table('global.inventario')
+                ->leftJoin('global.categorias_almacen', 'global.inventario.id_categoria', '=', 'global.categorias_almacen.id_categoria')
+                ->select('global.inventario.*', 'global.categorias_almacen.nombre as categoria')
+                ->where('global.inventario.estado', 'ACTIVO')
+                ->orderBy('global.inventario.nombre_producto')
+                ->get(),
+        ]);
+    }
+
+    public function apiShow(string $id): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => DB::table('global.inventario')
+                ->leftJoin('global.categorias_almacen', 'global.inventario.id_categoria', '=', 'global.categorias_almacen.id_categoria')
+                ->select('global.inventario.*', 'global.categorias_almacen.nombre as categoria')
+                ->where('global.inventario.id_inventario', $id)
+                ->first(),
+        ]);
+    }
+
+    private function categorias()
+    {
+        return DB::table('global.categorias_almacen')->orderBy('nombre')->get();
+    }
+
+    private function nombreGrupo(?int $idCategoria): ?string
+    {
+        if (!$idCategoria) {
+            return null;
+        }
+
+        return DB::table('global.categorias_almacen')
+            ->where('id_categoria', $idCategoria)
+            ->value('nombre');
     }
 }

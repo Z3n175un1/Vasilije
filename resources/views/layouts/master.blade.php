@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" class="animate-fade-in">
-
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 <head>
     <meta charset="UTF-8">
 
@@ -75,6 +75,11 @@
     {{-- =====================================================
          COMPONENTES GLOBALES
          ===================================================== --}}
+
+    {{-- Debe ir primero: su script inline marca `ds-pending` en el <html>
+         antes de que se pinte el primer frame, para que la pagina nueva
+         aparezca ya cubierta y no se vea el parpadeo. --}}
+    <x-page-transition />
 
     <x-notification />
     <x-confirm-dialog />
@@ -195,99 +200,54 @@
 
                     @php
 
+                        // El menu se construye a partir de la capacidad real del
+                        // usuario, no solo de su rol. Un usuario de solo lectura
+                        // no ve los enlaces de escritura porque no puede usarlos:
+                        // antes se mostraban todos y el backend los aceptaba.
+                        $rolUsuario = \App\Enums\Rol::normalizar(auth()->user()?->rol);
+
+                        // Verifica la capacidad con el formato `accion:modulo`
+                        // usado en la matriz de permisos.
+                        $puede = function (string $cap) {
+                            [$accion, $modulo] = explode(':', $cap);
+
+                            return (bool) auth()->user()?->can($accion, $modulo);
+                        };
+
+                        // Solo se pintan los items que el usuario puede usar, y
+                        // si una lista se queda vacia se descarta entera para no
+                        // mostrar desplegables sin contenido.
+                        //
+                        // `$puede` se importa con `use` porque la arrow function
+                        // vive dentro de este closure y no lo alcanza por
+                        // ámbito: sin el `use`, PHP compila `$puede` como
+                        // variable indefinida y la vista revienta.
+                        $seccion = function (string $icono, array $items) use ($puede): array {
+                            $items = array_values(array_filter($items, fn ($i) => $puede($i['cap'])));
+
+                            return ['icon' => $icono, 'items' => $items];
+                        };
+
                         $categorias = [
+                            'CATÁLOGOS' => $seccion('fa-book', [
+                                ['route' => 'personal.index', 'label' => 'PERSONAL', 'icon' => 'fa-users', 'cap' => 'ver:personal'],
+                                ['route' => 'tramos.index', 'label' => 'RUTAS', 'icon' => 'fa-route', 'cap' => 'ver:tramos'],
+                                ['route' => 'bancos.index', 'label' => 'BANCOS', 'icon' => 'fa-university', 'cap' => 'ver:bancos'],
+                                ['route' => 'grupos.index', 'label' => 'GRUPOS', 'icon' => 'fa-layer-group', 'cap' => 'ver:grupos'],
+                                ['route' => 'items.index', 'label' => 'ÍTEMS', 'icon' => 'fa-box', 'cap' => 'ver:items'],
+                                ['route' => 'proveedores.index', 'label' => 'PROVEEDORES', 'icon' => 'fa-handshake', 'cap' => 'ver:proveedores'],
+                                ['route' => 'almacen.index', 'label' => 'MOV. ALMACÉN', 'icon' => 'fa-warehouse', 'cap' => 'ver:almacen'],
+                            ]),
 
-                            'OPERACIONES' => [
-                                'icon' => 'fa-truck-fast',
-
-                                'items' => [
-                                    [
-                                        'route' => 'dashboard.index',
-                                        'label' => 'UNIDADES',
-                                        'icon' => 'fa-truck',
-                                    ],
-
-                                    [
-                                        'route' => 'personal.index',
-                                        'label' => 'PERSONAL',
-                                        'icon' => 'fa-users',
-                                    ],
-
-                                    [
-                                        'route' => 'almacen.index',
-                                        'label' => 'MOV. ALMACÉN',
-                                        'icon' => 'fa-warehouse',
-                                    ],
-
-                                    [
-                                        'route' => 'tramos.index',
-                                        'label' => 'RUTAS',
-                                        'icon' => 'fa-route',
-                                    ],
-                                ],
-                            ],
-
-                            'FINANCIERO' => [
-                                'icon' => 'fa-money-bill-wave',
-
-                                'items' => [
-                                    [
-                                        'route' => 'facturacion.index',
-                                        'label' => 'FACTURACIÓN',
-                                        'icon' => 'fa-file-invoice',
-                                    ],
-
-                                    [
-                                        'route' => 'bancos.index',
-                                        'label' => 'BANCOS',
-                                        'icon' => 'fa-university',
-                                    ],
-
-                                    [
-                                        'route' => 'gastos-generales.index',
-                                        'label' => 'GASTOS GENERALES',
-                                        'icon' => 'fa-file-invoice-dollar',
-                                    ],
-
-                                    [
-                                        'route' => 'reportes.index',
-                                        'label' => 'REPORTES',
-                                        'icon' => 'fa-chart-bar',
-                                    ],
-                                ],
-                            ],
-
-                            'INVENTARIO' => [
-                                'icon' => 'fa-boxes-stacked',
-
-                                'items' => [
-                                    [
-                                        'route' => 'almacen.index',
-                                        'label' => 'MOV. ALMACÉN',
-                                        'icon' => 'fa-warehouse',
-                                    ],
-
-                                    [
-                                        'route' => 'items.index',
-                                        'label' => 'ÍTEMS',
-                                        'icon' => 'fa-box',
-                                    ],
-
-                                    [
-                                        'route' => 'grupos.index',
-                                        'label' => 'GRUPOS',
-                                        'icon' => 'fa-layer-group',
-                                    ],
-
-                                    [
-                                        'route' => 'proveedores.index',
-                                        'label' => 'PROVEEDORES',
-                                        'icon' => 'fa-handshake',
-                                    ],
-                                ],
-                            ],
-
+                            'TRANSACCIONES' => $seccion('fa-arrow-right-arrow-left', [
+                                ['route' => 'dashboard.index', 'label' => 'UNIDADES', 'icon' => 'fa-truck', 'cap' => 'ver:vehiculos'],
+                                ['route' => 'gastos-generales.index', 'label' => 'GASTOS GENERALES', 'icon' => 'fa-file-invoice-dollar', 'cap' => 'ver:gastos_generales'],
+                                ['route' => 'clasificadores.index', 'label' => 'CLASIFICADOR DE GASTOS', 'icon' => 'fa-receipt', 'cap' => 'ver:clasificadores'],
+                            ]),
                         ];
+
+                        // Ocultar las categorias que se quedaron sin items.
+                        $categorias = array_filter($categorias, fn ($c) => !empty($c['items']));
 
                     @endphp
 
@@ -358,10 +318,51 @@
 
 
                     {{-- =================================================
+                         ATAJOS SOLTOS
+                         Facturación y Reportes no son catálogos ni
+                         transacciones: van como acceso directo.
+                         ================================================= --}}
+
+                    @if($puede('ver:facturacion'))
+
+                        <a
+                            href="{{ route('facturacion.index') }}"
+                            class="{{ request()->routeIs('facturacion*') ? 'active' : '' }}"
+                        >
+
+                            <i class="fas fa-file-invoice-dollar"></i>
+
+                            <span>
+                                FACTURACIÓN
+                            </span>
+
+                        </a>
+
+                    @endif
+
+                    @if($puede('ver:reportes'))
+
+                        <a
+                            href="{{ route('reportes.index') }}"
+                            class="{{ request()->routeIs('reportes*') ? 'active' : '' }}"
+                        >
+
+                            <i class="fas fa-chart-bar"></i>
+
+                            <span>
+                                REPORTES
+                            </span>
+
+                        </a>
+
+                    @endif
+
+
+                    {{-- =================================================
                          CONFIGURACIÓN - SOLO ADMIN
                          ================================================= --}}
 
-                    @if(auth()->user()?->rol === 'admin')
+                    @if($rolUsuario->esAdmin())
 
                         <div class="drawer-admin-section">
 

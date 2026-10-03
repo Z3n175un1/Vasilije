@@ -115,9 +115,16 @@
         </div>
 
         <div class="col-md-4">
+            <a href="{{ route('gastos-generales.index') }}" class="btn-inicio w-100">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>REGISTRAR GASTOS GENERALES</span>
+            </a>
+        </div>
+
+        <div class="col-md-4">
             <a href="{{ route('gastos.index') }}" class="btn-inicio w-100">
                 <i class="fas fa-minus-circle"></i>
-                <span>REGISTRO DE GASTOS</span>
+                <span>REGISTRAR GASTOS DE UNIDAD</span>
             </a>
         </div>
 
@@ -165,6 +172,7 @@
                 <div class="nomen-opt" onclick="cargarNomen('items')"><i class="fas fa-box"></i> ÍTEMS</div>
                 <div class="nomen-opt" onclick="cargarNomen('tramos')"><i class="fas fa-route"></i> RUTAS</div>
                 <div class="nomen-opt" onclick="cargarNomen('bancos')"><i class="fas fa-university"></i> BANCOS</div>
+                <div class="nomen-opt" onclick="cargarNomen('clasificadores')"><i class="fas fa-receipt"></i> CLASIFICADOR DE GASTOS</div>
                 <div class="nomen-opt" onclick="cargarNomen('config')"><i class="fas fa-cogs"></i> CONFIGURACIÓN</div>
             </div>
         </div>
@@ -188,47 +196,65 @@ function cargarNomen(tabla) {
         items: { url: '{{ url("api/items") }}', title: 'ÍTEMS' },
         tramos: { url: '{{ url("api/tramos") }}', title: 'RUTAS' },
         bancos: { url: '{{ url("api/bancos") }}', title: 'BANCOS' },
+        clasificadores: { url: '{{ url("api/clasificadores") }}', title: 'CLASIFICADOR DE GASTOS' },
         config: { url: '{{ url("api/config") }}', title: 'CONFIGURACIÓN' },
     };
     const ep = endpoints[tabla];
     if (!ep) return;
-    document.getElementById('nomenTableTitle').innerHTML = '<i class="fas fa-table me-2"></i> ' + ep.title;
+    document.getElementById('nomenTableTitle').innerHTML = '<i class="fas fa-table me-2"></i> ' + esc(ep.title);
 
+    // Todos los renderers escapan: estos datos los escribe un usuario.
     const renderers = {
         personal: (data) => {
             head.innerHTML = '<tr><th>NOMBRES</th><th>APELLIDOS</th><th>CI</th><th>TELÉFONO</th><th>ESTADO</th></tr>';
-            if (!data || data.length === 0) { body.innerHTML = '<tr><td colspan="5" class="text-center py-4 opacity-50">SIN REGISTROS</td></tr>'; return; }
-            body.innerHTML = data.map(r => `<tr><td class="fw-bold">${r.nombres || '—'}</td><td class="fw-bold">${r.apellidos || '—'}</td><td class="fw-bold">${r.ci || '—'}</td><td class="fw-bold">${r.telefono || r.celular || '—'}</td><td class="fw-bold">${r.estado == 1 ? 'ACTIVO' : 'INACTIVO'}</td></tr>`).join('');
+            if (!data || data.length === 0) { body.innerHTML = vacio(5); return; }
+            body.innerHTML = data.map(r => `<tr><td class="fw-bold">${txt(r.nombres)}</td><td class="fw-bold">${txt(r.apellidos)}</td><td class="fw-bold">${txt(r.ci)}</td><td class="fw-bold">${txt(r.telefono)}</td><td class="fw-bold">${Number(r.estado) === 1 ? 'ACTIVO' : 'INACTIVO'}</td></tr>`).join('');
         },
         grupos: (data) => {
             head.innerHTML = '<tr><th>NOMBRE</th><th>DESCRIPCIÓN</th><th>TOTAL PRODUCTOS</th></tr>';
-            if (!data || data.length === 0) { body.innerHTML = '<tr><td colspan="3" class="text-center py-4 opacity-50">SIN REGISTROS</td></tr>'; return; }
-            body.innerHTML = data.map(r => `<tr><td class="fw-bold">${r.nombre || '—'}</td><td class="fw-bold">${r.descripcion || '—'}</td><td class="fw-bold">${r.total_productos || 0}</td></tr>`).join('');
+            if (!data || data.length === 0) { body.innerHTML = vacio(3); return; }
+            body.innerHTML = data.map(r => `<tr><td class="fw-bold">${txt(r.nombre)}</td><td class="fw-bold">${txt(r.descripcion)}</td><td class="fw-bold">${Number(r.total_productos || 0)}</td></tr>`).join('');
         },
         items: (data) => {
             head.innerHTML = '<tr><th>CÓDIGO</th><th>NOMBRE</th><th>GRUPO</th><th>UNIDAD</th><th>STOCK MÍN</th></tr>';
-            if (!data || data.length === 0) { body.innerHTML = '<tr><td colspan="5" class="text-center py-4 opacity-50">SIN REGISTROS</td></tr>'; return; }
-            body.innerHTML = data.map(r => `<tr><td class="fw-bold">${r.codigo || '—'}</td><td class="fw-bold">${r.nombre_producto || '—'}</td><td class="fw-bold">${r.categoria || '—'}</td><td class="fw-bold">${r.unidad_medida || '—'}</td><td class="fw-bold">${parseFloat(r.stock_minimo || 0).toFixed(2)}</td></tr>`).join('');
+            if (!data || data.length === 0) { body.innerHTML = vacio(5); return; }
+            body.innerHTML = data.map(r => `<tr><td class="fw-bold">${txt(r.codigo)}</td><td class="fw-bold">${txt(r.nombre_producto)}</td><td class="fw-bold">${txt(r.categoria)}</td><td class="fw-bold">${txt(r.unidad_medida)}</td><td class="fw-bold">${bs(r.stock_minimo || 0)}</td></tr>`).join('');
         },
         tramos: (data) => {
-            head.innerHTML = '<tr><th>ORIGEN</th><th>DESTINO</th><th>DISTANCIA</th><th>PRECIO</th><th>Bs/TON</th></tr>';
-            if (!data || data.length === 0) { body.innerHTML = '<tr><td colspan="5" class="text-center py-4 opacity-50">SIN REGISTROS</td></tr>'; return; }
-            body.innerHTML = data.map(r => `<tr><td class="fw-bold">${r.origen || '—'}</td><td class="fw-bold">${r.destino || '—'}</td><td class="fw-bold">${r.distancia_km || '—'}</td><td class="fw-bold">Bs. ${parseFloat(r.precio_total || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(r.precio_dolar_tonelada || 0).toFixed(2)}</td></tr>`).join('');
+            head.innerHTML = '<tr><th>ORIGEN</th><th>DESTINO</th><th>DISTANCIA (KM)</th><th>PRECIO</th><th>Bs/TON</th></tr>';
+            if (!data || data.length === 0) { body.innerHTML = vacio(5); return; }
+            // La columna real es `kilometros`; antes se leia `distancia_km`
+            // y por eso la distancia salia siempre vacia.
+            body.innerHTML = data.map(r => `<tr><td class="fw-bold">${txt(r.origen)}</td><td class="fw-bold">${txt(r.destino)}</td><td class="fw-bold">${txt(r.kilometros)}</td><td class="fw-bold">Bs. ${bs(r.precio_total || 0)}</td><td class="fw-bold">Bs. ${bs(r.precio_dolar_tonelada || 0)}</td></tr>`).join('');
         },
         bancos: (data) => {
             head.innerHTML = '<tr><th>BANCO</th><th>TIPO</th><th>N° CUENTA</th><th>TITULAR</th><th>SALDO</th></tr>';
-            if (!data || data.length === 0) { body.innerHTML = '<tr><td colspan="5" class="text-center py-4 opacity-50">SIN REGISTROS</td></tr>'; return; }
-            body.innerHTML = data.map(r => `<tr><td class="fw-bold">${r.nombre_banco || '—'}</td><td class="fw-bold">${r.tipo_cuenta || '—'}</td><td class="fw-bold">${r.numero_cuenta || '—'}</td><td class="fw-bold">${r.titular || '—'}</td><td class="fw-bold">Bs. ${parseFloat(r.saldo_actual || 0).toFixed(2)}</td></tr>`).join('');
+            if (!data || data.length === 0) { body.innerHTML = vacio(5); return; }
+            body.innerHTML = data.map(r => `<tr><td class="fw-bold">${txt(r.nombre_banco)}</td><td class="fw-bold">${txt(r.tipo_cuenta)}</td><td class="fw-bold">${txt(r.numero_cuenta)}</td><td class="fw-bold">${txt(r.titular)}</td><td class="fw-bold">Bs. ${bs(r.saldo_actual || 0)}</td></tr>`).join('');
+        },
+        clasificadores: (data) => {
+            head.innerHTML = '<tr><th>CÓDIGO</th><th>DESCRIPCIÓN</th><th>TIPO DE GASTO</th><th>UNIDAD</th><th>GENERAL</th></tr>';
+            if (!data || data.length === 0) { body.innerHTML = vacio(5); return; }
+            body.innerHTML = data.map(r => `<tr><td class="fw-bold" style="font-family:monospace;">${txt(r.codigo)}</td><td class="fw-bold">${txt(r.descripcion)}</td><td class="fw-bold">${txt(r.tipo_gasto)}</td><td class="fw-bold">${r.afecta_unidad ? 'SI' : '—'}</td><td class="fw-bold">${r.afecta_general ? 'SI' : '—'}</td></tr>`).join('');
         },
         config: (data) => {
             head.innerHTML = '<tr><th>CONFIGURACIÓN</th><th>VALOR</th></tr>';
-            if (!data || !data.data) { body.innerHTML = '<tr><td colspan="2" class="text-center py-4 opacity-50">SIN DATOS</td></tr>'; return; }
-            const labels = { tipo_cambio: 'Tipo de Cambio (Bs)', precio_tonelada_usd: 'Precio Tonelada (Bs)' };
+            if (!data || !data.data) { body.innerHTML = vacio(2); return; }
+            const labels = {
+                tipo_cambio: 'Tipo de Cambio (Bs)',
+                precio_tonelada_usd: 'Precio Tonelada (Bs)',
+                valor_flota_por_unidad: 'Valor Flota por Unidad (Bs)',
+                saldo_inicial_proveedores: 'Saldo Inicial Proveedores (Bs)',
+            };
             body.innerHTML = Object.entries(data.data).map(([k, v]) =>
-                `<tr><td class="fw-bold">${labels[k] || k}</td><td class="fw-bold">${v}</td></tr>`
+                `<tr><td class="fw-bold">${esc(labels[k] || k)}</td><td class="fw-bold">${esc(v)}</td></tr>`
             ).join('');
         }
     };
+
+    function vacio(columnas) {
+        return `<tr><td colspan="${columnas}" class="text-center py-4 opacity-50">SIN REGISTROS</td></tr>`;
+    }
 
     const fn = renderers[tabla];
     if (!fn) return;

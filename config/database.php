@@ -95,25 +95,46 @@ return [
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
-            'search_path' => 'global',
+            'search_path' => env('DB_SCHEMA', 'global'),
             'sslmode' => env('DB_SSLMODE', 'prefer'),
             'options' => [
-                PDO::ATTR_EMULATE_PREPARES => true,
+                PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::ATTR_STRINGIFY_FETCHES => false,
             ],
         ],
 
-        'pgsql_supabase' => [
+        /*
+         |----------------------------------------------------------------------
+         | Pooler gestionado (Supabase / Neon / cualquier PgBouncer)
+         |----------------------------------------------------------------------
+         |
+         | Credenciales EXCLUSIVAMENTE por variable de entorno. Nunca hardcodear
+         | usuario ni password en este archivo: queda versionado en el repo.
+         | Configuracion tipica en .env:
+         |
+         |   DB_HOST_POOLER=aws-0-us-east-1.pooler.supabase.com
+         |   DB_PORT_POOLER=6543
+         |   DB_USERNAME_POOLER=postgres.xxxxxxxx
+         |   DB_PASSWORD_POOLER=xxxx
+         |
+         */
+        'pgsql_pooler' => [
             'driver' => 'pgsql',
-            'host' => env('DB_HOST_SUPABASE', 'aws-1-us-east-1.pooler.supabase.com'),
-            'port' => env('DB_PORT_SUPABASE', '6543'),
-            'database' => env('DB_DATABASE_SUPABASE', 'postgres'),
-            'username' => env('DB_USERNAME_SUPABASE', 'postgres.swrqjhvrcfmgrcjbrssg'),
-            'password' => env('DB_PASSWORD_SUPABASE', '090660c2a19077b0271d4d2f5c8185c698e9b17a44ea94bc9f4df7cc300099c0'),
+            'host' => env('DB_HOST_POOLER', '127.0.0.1'),
+            'port' => env('DB_PORT_POOLER', 5432),
+            'database' => env('DB_DATABASE_POOLER', 'postgres'),
+            'username' => env('DB_USERNAME_POOLER', 'postgres'),
+            'password' => env('DB_PASSWORD_POOLER', ''),
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
-            'search_path' => 'global',
-            'sslmode' => 'require',
+            'search_path' => env('DB_SCHEMA', 'global'),
+            'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Obligatorio con PgBouncer en modo transaction: fuerza el uso de
+            // reales prepared statements en lugar de emularlos por cliente.
+            'options' => [
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ],
         ],
 
         'sqlsrv' => [

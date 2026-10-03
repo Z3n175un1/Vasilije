@@ -1,7 +1,7 @@
 @extends('layouts.master')
 
 @section('title', 'Dashboard')
-
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 @push('styles')
 <style>
 #reporteTableDash tbody tr:not([id^="dash-detalle-"]):hover { background: #f0f0f0 !important; }
@@ -71,6 +71,35 @@
             </div>
         </div>
 
+        {{-- Movimientos del mes por tipo. La devolución (monto negativo) se
+             muestra aparte porque su efecto es contrario al del gasto. --}}
+        <div id="quickDetalle" class="row g-3 mb-4" style="display:none;">
+            <div class="col-md-3 col-6">
+                <div class="p-2 text-center" style="background:#fff;border:3px solid #000;">
+                    <div class="small fw-bold text-uppercase text-secondary">Período</div>
+                    <div class="fw-bold" id="statPeriodo">—</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="p-2 text-center" style="background:#e2ffd6;border:3px solid #000;">
+                    <div class="small fw-bold text-uppercase text-secondary">Personal Activo</div>
+                    <div class="fs-5 fw-bold" style="color:#007400;" id="statPersonal">0</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="p-2 text-center" style="background:#d1ecf1;border:3px solid #000;">
+                    <div class="small fw-bold text-uppercase text-secondary">Stock Bajo / Mínimo</div>
+                    <div class="fs-5 fw-bold" id="statStockBajo">0</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="p-2 text-center" style="background:#fff3cd;border:3px solid #000;">
+                    <div class="small fw-bold text-uppercase text-secondary">Devoluciones (Bs)</div>
+                    <div class="fs-5 fw-bold" style="color:#856404;" id="statDevoluciones">Bs. 0.00</div>
+                </div>
+            </div>
+        </div>
+
         <div class="d-flex flex-wrap gap-2 mb-3" id="estadoFilter">
             <button class="btn font-bold uppercase btn-filtro-activo" data-estado="1">ACTIVO</button>
             <button class="btn font-bold uppercase btn-filtro-inactivo" data-estado="2">MANTENIMIENTO</button>
@@ -96,7 +125,7 @@
                 <table class="table-excel mb-0" id="vehiculosTable">
                     <thead>
                         <tr>
-                        
+
                             <th class="text-center">Estado</th>
                             <th class="text-center">Placa</th>
                             <th class="text-center">Categoría</th>
@@ -262,12 +291,17 @@ function loadDashboardStats() {
         if (!res.success || !res.data) return;
         const d = res.data;
         document.getElementById('quickStats').style.display = 'flex';
+        document.getElementById('quickDetalle').style.display = 'flex';
         if (d.vehiculos) {
             document.getElementById('statUnidadesActivas').textContent = d.vehiculos.activos || 0;
         }
-        document.getElementById('statIngresosMes').textContent = 'Bs. ' + parseFloat(d.ingresos_mes || 0).toFixed(2);
-        document.getElementById('statGastosMes').textContent = 'Bs. ' + parseFloat(d.gastos_mes || 0).toFixed(2);
+        document.getElementById('statIngresosMes').textContent = 'Bs. ' + bs(d.ingresos_mes || 0);
+        document.getElementById('statGastosMes').textContent = 'Bs. ' + bs(d.gastos_mes || 0);
         document.getElementById('statPendientesFacturar').textContent = d.pendientes_facturar || 0;
+        document.getElementById('statPersonal').textContent = d.personal_activo || 0;
+        document.getElementById('statStockBajo').textContent = d.stock_bajo || 0;
+        document.getElementById('statDevoluciones').textContent = 'Bs. ' + bs(d.devoluciones_mes || 0);
+        document.getElementById('statPeriodo').textContent = d.mes || '—';
     })
     .catch(() => {});
 }
@@ -327,41 +361,44 @@ function renderVehiculos(data) {
         };
         const ec = estadoColors[v.estado] || estadoColors[3];
         const diff = (v.total_ingresos || 0) - (v.total_gastos || 0);
+        const id = Number(v.id_vehiculo);
+        // Placa y conductor van escapados: ambos los escribe un usuario.
+        const placa = esc(v.placa_vehiculo || '—');
 
         return `<tr>
-            <td class="text-center cursor-pointer" onclick="filtrarPorEstado(${v.estado})">
+            <td class="text-center cursor-pointer" onclick="filtrarPorEstado(${Number(v.estado)})">
                 <div class="d-flex align-items-center gap-2 justify-content-center">
                     <span style="width:18px;height:18px;border:2px solid #000;display:inline-block;border-radius:50%;background:${ec.dot}"></span>
-                    <span class="badge font-bold uppercase" style="background:${ec.bg};color:${ec.text};font-size:12px;padding:6px 14px;border:3px solid #000;">${ec.label}</span>
+                    <span class="badge font-bold uppercase" style="background:${ec.bg};color:${ec.text};font-size:12px;padding:6px 14px;border:3px solid #000;">${esc(ec.label)}</span>
                 </div>
             </td>
             <td class="text-center">
-                <span class="badge bg-black text-white px-4 py-3 font-bold border border-white" style="letter-spacing:2px;font-family:monospace;font-size:1.25rem;">${v.placa_vehiculo}</span>
+                <span class="badge bg-black text-white px-4 py-3 font-bold border border-white" style="letter-spacing:2px;font-family:monospace;font-size:1.25rem;">${placa}</span>
             </td>
-            <td class="uppercase font-bold text-black fs-mid text-center">${v.tipo_vehiculo || '—'}</td>
-            <td class="font-bold text-black fs-mid text-center"><i class="fas fa-user-tie me-2 text-warning"></i> ${v.conductor || 'SIN CONDUCTOR'}</td>
+            <td class="uppercase font-bold text-black fs-mid text-center">${txt(v.tipo_vehiculo)}</td>
+            <td class="font-bold text-black fs-mid text-center"><i class="fas fa-user-tie me-2 text-warning"></i> ${txt(v.conductor || 'SIN CONDUCTOR')}</td>
             <td class="text-center align-middle">
                 <div class="d-flex gap-2 justify-content-center align-items-center">
-                    <button class="btn-action-mini bg-success text-white border-black" onclick="mostrarOpcionesIngreso(${v.id_vehiculo})" title="INGRESO / VENTA" ${v.estado != 1 && v.estado != 2 ? 'disabled style="opacity:0.35"' : ''} style="width:40px;height:40px;border-width:2px;border-radius:0;display:flex;align-items:center;justify-content:center;">
+                    <button class="btn-action-mini bg-success text-white border-black" onclick="mostrarOpcionesIngreso(${id})" title="INGRESO / VENTA" ${(v.estado != 1 && v.estado != 2) ? 'disabled style="opacity:0.35"' : ''} style="width:40px;height:40px;border-width:2px;border-radius:0;display:flex;align-items:center;justify-content:center;">
                         <i class="fas fa-dollar-sign" style="font-size:1rem;"></i>
                     </button>
-                    <button class="btn-action-mini bg-danger text-white border-black" onclick="prepararGasto(${v.id_vehiculo})" title="REGISTRAR GASTO (-Bs)" ${v.estado != 1 && v.estado != 2 ? 'disabled style="opacity:0.35"' : ''} style="width:40px;height:40px;border-width:2px;border-radius:0;display:flex;align-items:center;justify-content:center;">
+                    <button class="btn-action-mini bg-danger text-white border-black" onclick="prepararGasto(${id})" title="REGISTRAR GASTO (-Bs)" ${(v.estado != 1 && v.estado != 2) ? 'disabled style="opacity:0.35"' : ''} style="width:40px;height:40px;border-width:2px;border-radius:0;display:flex;align-items:center;justify-content:center;">
                         <i class="fas fa-minus-circle" style="font-size:1rem;"></i>
                     </button>
                     <span style="width:2px;height:28px;background:#000;display:inline-block;"></span>
-                    <button class="btn-action-mini bg-warning text-black border-black" onclick="editarVehiculo(${v.id_vehiculo})" title="EDITAR" style="width:40px;height:40px;border-width:2px;border-radius:0;display:flex;align-items:center;justify-content:center;">
+                    <button class="btn-action-mini bg-warning text-black border-black" onclick="editarVehiculo(${id})" title="EDITAR" style="width:40px;height:40px;border-width:2px;border-radius:0;display:flex;align-items:center;justify-content:center;">
                         <i class="fas fa-pencil-alt" style="font-size:1rem;"></i>
                     </button>
-                    <button class="btn-action-mini bg-white text-black border-black" onclick="abrirReporte(${v.id_vehiculo},'${v.placa_vehiculo}')" title="REPORTES" style="width:40px;height:40px;border-width:2px;border-radius:0;display:flex;align-items:center;justify-content:center;">
+                    <button class="btn-action-mini bg-white text-black border-black" onclick="abrirReporte(${id}, '${placa}')" title="REPORTES" style="width:40px;height:40px;border-width:2px;border-radius:0;display:flex;align-items:center;justify-content:center;">
                         <i class="fas fa-file-invoice-dollar text-warning" style="font-size:1rem;"></i>
                     </button>
                     <span style="width:2px;height:28px;background:#000;display:inline-block;"></span>
-                    <button class="btn-action-mini border-black" onclick="eliminarUnidad(${v.id_vehiculo},'${v.placa_vehiculo}')" title="ELIMINAR" style="width:40px;height:40px;border-width:2px;border-radius:0;display:flex;align-items:center;justify-content:center;background:#c82333;color:#fff;">
+                    <button class="btn-action-mini border-black" onclick="eliminarUnidad(${id}, '${placa}')" title="DAR DE BAJA" style="width:40px;height:40px;border-width:2px;border-radius:0;display:flex;align-items:center;justify-content:center;background:#c82333;color:#fff;">
                         <i class="fas fa-trash" style="font-size:1rem;"></i>
                     </button>
                 </div>
             </td>
-            <td class="font-bold text-center">${v.capacidad || '—'}</td>
+            <td class="font-bold text-center">${txt(v.capacidad)}</td>
             <td class="font-bold text-center" style="color:#007400;">${formatCurrency(v.total_ingresos || 0)}</td>
             <td class="font-bold text-center" style="color:#740000;">${formatCurrency(v.total_gastos || 0)}</td>
             <td class="font-bold text-center" style="color:${diff >= 0 ? '#007400' : '#740000'}">${formatCurrency(diff)}</td>
@@ -433,10 +470,10 @@ function mostrarOpcionesIngreso(id) {
     Swal.fire({
         title: 'SELECCIONE OPCIÓN',
         html: `<div style="display:flex;flex-direction:column;gap:12px;padding:8px;">
-            <button class="btn fw-bold py-3" style="border:4px solid #000;background:#fff3cd;font-size:1.1rem;border-radius:0;" onclick="prepararIngreso(${id});Swal.close()">
+            <button class="btn fw-bold py-3" style="border:4px solid #000;background:#fff3cd;font-size:1.1rem;border-radius:0;" onclick="prepararIngreso(${Number(id)});Swal.close()">
                 <i class="fas fa-truck me-2 text-warning"></i> REGISTRAR FLETE (INGRESO)
             </button>
-            <button class="btn fw-bold py-3" style="border:4px solid #000;background:#f8d7da;font-size:1.1rem;border-radius:0;" onclick="venderVehiculo(${id},'${v.placa_vehiculo}');Swal.close()">
+            <button class="btn fw-bold py-3" style="border:4px solid #000;background:#f8d7da;font-size:1.1rem;border-radius:0;" onclick="venderVehiculo(${Number(id)},'${esc(v.placa_vehiculo)}');Swal.close()">
                 <i class="fas fa-handshake me-2 text-danger"></i> VENTA DE VEHÍCULO
             </button>
         </div>`,
@@ -547,10 +584,10 @@ function prepararIngreso(id) {
     if (!v) return;
     document.getElementById('fleteDashUnidad').textContent = 'UNIDAD: ' + (v.placa_vehiculo || '—');
     document.getElementById('fd_id_vehiculo_val').value = id;
-    
+
     // Cargar valores guardados del localStorage o usar defaults
     const savedValues = JSON.parse(localStorage.getItem('fleteValues') || '{}');
-    
+
     document.getElementById('fd_id_tramo').value = savedValues.fd_id_tramo || '';
     document.getElementById('fd_monto').value = savedValues.fd_monto || '';
     document.getElementById('fd_cliente_nombre').value = savedValues.fd_cliente_nombre || 'INDUSTRIAS OLEAGINOSAS S.A.';

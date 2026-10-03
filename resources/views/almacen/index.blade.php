@@ -76,7 +76,7 @@
         <div class="bento-card p-0 border-black" style="border-width:4px;overflow:hidden;">
             <div class="bg-white text-black font-bold p-3 border-bottom border-black d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-arrow-down me-2"></i> Compras (Ingresos a Almacén)</span>
-                <button class="btn btn-sm fw-bold" style="background:#000;color:white;border:3px solid #000;padding:8px 16px;" onclick="abrirModalMovimiento('COMPRA')"><i class="fas fa-plus me-1"></i> NUEVA COMPRA</button>
+                <a href="{{ route('almacen.movimiento', 'COMPRA') }}" class="btn btn-sm fw-bold text-decoration-none" style="background:#000;color:white;border:3px solid #000;padding:8px 16px;"><i class="fas fa-plus me-1"></i> NUEVA COMPRA</a>
             </div>
                 <div class="table-responsive-brutalist">
                     <table class="table-excel mb-0" style="font-size:.85rem;">
@@ -91,7 +91,7 @@
         <div class="bento-card p-0 border-black" style="border-width:4px;overflow:hidden;">
             <div class="bg-white text-black font-bold p-3 border-bottom border-black d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-arrow-up me-2"></i> Entregas (Salidas de Almacén)</span>
-                <button class="btn btn-sm fw-bold" style="background:#000;color:#fff;border:3px solid #000;padding:8px 16px;" onclick="abrirModalMovimiento('ENTREGA')"><i class="fas fa-plus me-1"></i> NUEVA ENTREGA</button>
+                <a href="{{ route('almacen.movimiento', 'ENTREGA') }}" class="btn btn-sm fw-bold text-decoration-none" style="background:#000;color:#fff;border:3px solid #000;padding:8px 16px;"><i class="fas fa-plus me-1"></i> NUEVA ENTREGA</a>
             </div>
                 <div class="table-responsive-brutalist">
                     <table class="table-excel mb-0" style="font-size:.85rem;">
@@ -176,227 +176,35 @@
     </div>
 </div>
 
-<div class="modal-overlay-fact" id="modalMovimiento" style="display:none;z-index:9999;" onclick="if(event.target===this)cerrarModalMov()">
-    <div class="modal-content-fact" onclick="event.stopPropagation()">
-        <div class="p-3" style="background:#000;color:#fff;">
-            <h3 class="mb-0 fw-bold fs-5" id="modalMovTitle"><i class="fas fa-exchange-alt me-2"></i> REGISTRAR MOVIMIENTO</h3>
-        </div>
-        <div class="p-3" style="background:#fff;border:4px solid #000;border-top:none;">
-            <form id="formMovimiento" onsubmit="return guardarMovimiento(event)">
-                @csrf
-                <input type="hidden" name="tipo_movimiento" id="movTipo">
-                <input type="hidden" name="id_movimiento" id="movIdMovimiento">
-
-                <!-- Header with movement type info -->
-                <div class="row g-3 mb-3">
-                    <div class="col-12">
-                        <label class="fw-bold small text-uppercase">TIPO DE MOVIMIENTO</label>
-                        <input type="hidden" id="movTipoDisplay" style="border:0;padding:5px;font-size:1.2rem;">
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-md-12">
-                        <label class="fw-bold small text-uppercase">FECHA <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control fw-bold" id="movFecha" style="border-radius:0;border:3px solid #000;padding:10px;">
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-12">
-                        <label class="fw-bold small text-uppercase">PRODUCTO <span class="text-danger">*</span></label>
-                        <select class="form-control fw-bold select-producto" id="movIdProducto" style="border-radius:0;border:3px solid #000;padding:10px;" required onchange="mostrarStockProducto()">
-                            <option value="">SELECCIONE UN PRODUCTO...</option>
-                        </select>
-                        <small class="text-muted fw-bold">Empiece a escribir el código o nombre del producto</small>
-                        <div id="movStockInfo" class="mt-2 p-2 fw-bold text-center" style="border:3px solid #000;display:none;background:#f8f9fa;"></div>
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-12">
-                        <label class="fw-bold small text-uppercase">CANTIDAD <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <input type="number" step="0.01" class="form-control fw-bold" id="movCantidad" style="border-radius:0;border:3px solid #000;padding:10px;width:100%;" required min="0.01" placeholder="0.00">
-                            <input type="text" id="movCodigoLote" class="form-control fw-bold" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0;font-family:monospace;letter-spacing:1px;text-align:center;" readonly placeholder="LO-000001">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-3" id="movPreciosRow">
-                    <div class="col-12">
-                        <label class="fw-bold small text-uppercase">PRECIO UNITARIO (Bs)</label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="movPrecioUnitario" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" placeholder="0.00" oninput="calcularPrecioCompra()">
-                    </div>
-                    <div class="col-12">
-                        <label class="fw-bold small text-uppercase">TOTAL COMPRA (Bs)</label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="movPrecioCompra" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0;" min="0" placeholder="0.00" readonly>
-                    </div>
-                </div>
-
-                <!-- Conditional payment rows -->
-                <div class="row g-3 mb-3" id="movPagoRow">
-                    <div class="col-12">
-                        <label class="fw-bold small text-uppercase">CONDICIÓN DE PAGO <span class="text-danger">*</span></label>
-                        <select class="form-control fw-bold" id="movCondicion" style="border-radius:0;border:3px solid #000;padding:10px;" onchange="toggleMovCondicion()">
-                            <option value="CONTADO">CONTADO</option>
-                            <option value="CREDITO">CRÉDITO</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-3" id="movContadoRow">
-                    <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">CTA. BANCO</label>
-                        <select class="form-control fw-bold" id="movIdBanco" style="border-radius:0;border:3px solid #000;padding:10px;">
-                            <option value="">SELECCIONE BANCO...</option>
-                            @foreach($bancos as $b)
-                                <option value="{{ $b->id_banco }}">{{ $b->nombre_banco }} - {{ $b->numero_cuenta }} ({{ $b->moneda ?? 'BOB' }})</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">FECHA POSIBLE PAGO</label>
-                        <input type="date" class="form-control fw-bold" id="movFechaLimite" style="border-radius:0;border:3px solid #000;padding:10px;">
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-3" id="movProveedorRow">
-                    <div class="col-12">
-                        <label class="fw-bold small text-uppercase">PROVEEDOR <span class="text-danger">*</span></label>
-                        <select class="form-control fw-bold" id="movIdProveedor" style="border-radius:0;border:3px solid #000;padding:10px;">
-                            <option value="">SELECCIONE PROVEEDOR...</option>
-                            @foreach($proveedores as $p)
-                                <option value="{{ $p->id_proveedor }}" data-nombre="{{ $p->nombre_proveedor }}">{{ $p->nombre_proveedor }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-3" id="movVehiculoRow">
-                    <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">VEHÍCULO</label>
-                        <select class="form-control fw-bold" id="movIdVehiculo" style="border-radius:0;border:3px solid #000;padding:10px;" onchange="autoAsignarConductor()">
-                            <option value="">SELECCIONE...</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">CONDUCTOR</label>
-                        <select class="form-control fw-bold" id="movIdPersonal" style="border-radius:0;border:3px solid #000;padding:10px;">
-                            <option value="">SELECCIONE...</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-12">
-                        <label class="fw-bold small text-uppercase">OBSERVACIONES</label>
-                        <textarea class="form-control fw-bold" id="movObs" rows="3" style="border-radius:0;border:3px solid #000;padding:10px;"></textarea>
-                    </div>
-                </div>
-
-                <div class="d-flex gap-2 mt-4">
-                    <button type="submit" class="btn fw-bold flex-grow-1" style="background:#000;color:#fff;border:4px solid #000;padding:12px;font-size:1.1rem;" id="btnGuardarMov">
-                        <i class="fas fa-save"></i> GUARDAR
-                    </button>
-                    <button type="button" class="btn fw-bold" style="border:4px solid #000;padding:12px;font-size:1.1rem;" onclick="cerrarModalMov()">CANCELAR</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 @endsection
 
 @push('scripts')
 <script>
 let productosInv = [];
-let vehiculosInv = [];
-let personalInv = [];
 
 document.addEventListener('DOMContentLoaded', function() {
     loadProductos();
     loadCompras();
     loadEntregas();
     loadSaldos();
-    fetch('{{ url("api/vehiculos") }}?estado=1', { headers: { 'Accept': 'application/json' } })
-        .then(r => r.json()).then(res => { if (res.success) vehiculosInv = res.data || []; });
-    fetch('{{ url("api/personal") }}', { headers: { 'Accept': 'application/json' } })
-        .then(r => r.json()).then(res => { if (res.success) personalInv = res.data || []; });
+
+    // Ya no se precargan unidades ni personal: el formulario de movimientos
+    // es otra pagina y carga sus propias listas al abrirse.
     fetch('{{ url("api/almacen") }}', { headers: { 'Accept': 'application/json' } })
         .then(r => r.json()).then(res => {
             if (res.success) {
                 productosInv = res.data || [];
-                const selP = document.getElementById('movIdProducto');
-                selP.innerHTML = '<option value="">SELECCIONE...</option>' + (res.data || []).map(p =>
-                    `<option value="${p.id_inventario}">${p.codigo_barras || p.codigo} - ${p.nombre_producto}</option>`).join('');
+
+                // El selector de productos del formulario de movimientos se
+                // llena ahora en `form-alm.blade.php`; aquí solo queda el del
+                // kardex, que sigue dentro de esta página.
                 const selK = document.getElementById('kardexProducto');
                 selK.innerHTML = '<option value="">SELECCIONE PRODUCTO...</option>' + (res.data || []).map(p =>
-                    `<option value="${p.id_inventario}">${p.codigo_barras || p.codigo} - ${p.nombre_producto}</option>`).join('');
+                    `<option value="${p.id_inventario}">${esc(p.codigo_barras || p.codigo)} - ${esc(p.nombre_producto)}</option>`).join('');
             }
         });
-
-    // Inicializar autocomplete para producto
-    initProductoAutocomplete();
 });
 
-function initProductoAutocomplete() {
-    const existingSuggestions = document.getElementById('productoSuggestions');
-    if (existingSuggestions) {
-        existingSuggestions.remove();
-    }
-    const input = document.getElementById('movIdProducto');
-    if (!input) return;
-    const suggestionsDiv = document.createElement('div');
-    suggestionsDiv.id = 'productoSuggestions';
-    suggestionsDiv.style.cssText = 'position: absolute !important; top: calc(100% + 12px) !important; left: 0 !important; width: 100% !important; max-width: 100% !important; border: 3px solid #000 !important; border-top: none !important; background: #fff !important; max-height: 250px !important; overflow-y: auto !important; z-index: 9999 !important; font-family: inherit !important; font-size: 1.2rem !important; box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; color: #000 !important; line-height: 1.4 !important;';
-    input.parentElement.style.position = 'relative';
-    input.parentElement.style.zIndex = '1000';
-    input.parentElement.appendChild(suggestionsDiv);
-
-    input.addEventListener('input', function() {
-        const term = this.value.trim();
-        if (term.length < 1) {
-            suggestionsDiv.style.display = 'none';
-            return;
-        }
-
-        const filtered = productosInv.filter(p =>
-            (p.codigo_barras || '').toLowerCase().includes(term.toLowerCase()) ||
-            (p.codigo || '').toLowerCase().includes(term.toLowerCase()) ||
-            (p.nombre_producto || '').toLowerCase().includes(term.toLowerCase())
-        );
-
-        if (filtered.length === 0) {
-            suggestionsDiv.innerHTML = '<div style="padding: 12px; color: #666; font-size: 1rem;">No se encontraron productos</div>';
-            suggestionsDiv.style.display = 'block';
-            return;
-        }
-
-        suggestionsDiv.innerHTML = filtered.map(p => `
-            <div style="padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #e0e0e0; font-size: 1rem;">
-                <strong style="color: #000;">${p.codigo_barras || p.codigo || '—'}</strong> - ${p.nombre_producto}
-            </div>
-        `).join('');
-
-        suggestionsDiv.style.display = 'block';
-    });
-
-    // Cerrar autocomplete al hacer clic fuera
-    document.addEventListener('click', function(e) {
-        const isClickInside = e.target.closest('#productoSuggestions') || e.target === input;
-        if (!isClickInside) {
-            suggestionsDiv.style.display = 'none';
-        }
-    });
-}
-
-function seleccionarProducto(id, nombre) {
-    initProductoAutocomplete();
-    document.getElementById('movIdProducto').value = id;
-    document.getElementById('productoSuggestions').style.display = 'none';
-    document.getElementById('movStockInfo').style.display = 'block';
-    mostrarStockProducto();
-}
 
 function switchTabAlm(tab, btn) {
     document.querySelectorAll('.tab-btn-alm').forEach(b => b.classList.remove('active'));
@@ -416,17 +224,17 @@ function loadProductos() {
             tbody.innerHTML = res.data.map(p => {
                 const sb = parseFloat(p.stock_actual || 0) <= parseFloat(p.stock_minimo || 0);
                 return `<tr>
-                    <td class="font-bold"><span class="badge bg-black text-white px-2">${p.codigo_barras || p.codigo || '—'}</span></td>
-                    <td class="font-bold">${p.nombre_producto}</td>
-                    <td><span class="badge font-bold px-2 py-1" style="background:#2f2c79;color:#fff;border:2px solid #000;">${p.categoria}</span></td>
-                    <td class="font-bold">${p.unidad_medida}</td>
-                    <td class="font-bold" style="color:${sb ? '#dc3545' : '#007400'};">${parseFloat(p.stock_actual || 0).toFixed(2)}</td>
-                    <td class="font-bold">${parseFloat(p.stock_minimo || 0).toFixed(2)}</td>
-                    <td class="font-bold">Bs. ${parseFloat(p.precio_compra || 0).toFixed(2)}</td>
-                    <td class="font-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${p.codigo_lote || '—'}</span></td>
+                    <td class="font-bold"><span class="badge bg-black text-white px-2">${esc(p.codigo_barras || p.codigo)}</span></td>
+                    <td class="font-bold">${esc(p.nombre_producto)}</td>
+                    <td><span class="badge font-bold px-2 py-1" style="background:#2f2c79;color:#fff;border:2px solid #000;">${esc(p.categoria)}</span></td>
+                    <td class="font-bold">${esc(p.unidad_medida)}</td>
+                    <td class="font-bold" style="color:${sb ? '#dc3545' : '#007400'};">${bs(p.stock_actual || 0)}</td>
+                    <td class="font-bold">${bs(p.stock_minimo || 0)}</td>
+                    <td class="font-bold">Bs. ${bs(p.precio_compra || 0)}</td>
+                    <td class="font-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${esc(p.codigo_lote)}</span></td>
                     <td>
                         <div class="d-flex gap-1 justify-content-center">
-                            <button class="btn btn-sm btn-danger border-black font-bold" onclick="eliminarProducto(${p.id_inventario})"><i class="fas fa-ban"></i></button>
+                            <button class="btn btn-sm btn-danger border-black font-bold" onclick="eliminarProducto(${Number(p.id_inventario)})"><i class="fas fa-ban"></i></button>
                         </div>
                     </td>
                 </tr>`;
@@ -445,7 +253,7 @@ tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'COMPRA').map(m => 
                   const total = parseFloat(m.cantidad || 0) * parseFloat(m.costo_unitario || 0);
                   const cond = m.condicion_pago || 'CONTADO';
                   const condColor = cond === 'CREDITO' ? '#ffdcd6' : '#d4edda';
-                  return `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${m.codigo_barras || m.codigo || '—'}</span></td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</td><td class="fw-bold">${m.proveedor || '—'}</td><td><span class="badge fw-bold px-2 py-1" style="background:${condColor};color:#000;border:2px solid #000;">${cond}</span></td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${m.codigo_lote || '—'}</span></td><td><button class="btn btn-sm btn-outline-dark btn-editar-mov" onclick="editarMovimiento(${m.id_movimiento}, 'COMPRA')" style="border:2px solid #000;padding:4px 8px;"><i class="fas fa-edit"></i></button></td></tr>`;
+                  return `<tr><td class="fw-bold">${esc(m.fecha_movimiento)}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${esc(m.codigo_barras || m.codigo)}</span></td><td class="fw-bold">${txt(m.nombre_producto)}</td><td class="fw-bold">${bs(m.cantidad || 0)}</td><td class="fw-bold">Bs. ${bs(m.costo_unitario || 0)}</td><td class="fw-bold">Bs. ${bs(total)}</td><td class="fw-bold">${txt(m.proveedor)}</td><td><span class="badge fw-bold px-2 py-1" style="background:${condColor};color:#000;border:2px solid #000;">${esc(cond)}</span></td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${esc(m.codigo_lote)}</span></td><td><a href="{{ url('almacen/movimiento/COMPRA') }}/${Number(m.id_movimiento)}" class="btn btn-sm btn-outline-dark btn-editar-mov" style="border:2px solid #000;padding:4px 8px;" title="EDITAR"><i class="fas fa-edit"></i></a></td></tr>`;
               }).join('') || '<tr><td colspan="10" class="text-center py-5 opacity-50">SIN COMPRAS REGISTRADAS</td></tr>';
         });
 }
@@ -458,7 +266,7 @@ function loadEntregas() {
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>'; return;
             }
 tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'SALIDA').map(m =>
-                  `<tr><td class="fw-bold">${m.fecha_movimiento}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${m.codigo_barras || m.codigo || '—'}</span></td><td class="fw-bold">${m.nombre_producto || '—'}</td><td class="fw-bold">${parseFloat(m.cantidad || 0).toFixed(2)}</td><td class="fw-bold">Bs. ${parseFloat(m.costo_unitario || 0).toFixed(2)}</td><td class="fw-bold">${m.placa_vehiculo || '—'}</td><td class="fw-bold">${m.conductor || '—'}</td><td><button class="btn btn-sm btn-outline-dark btn-editar-mov" onclick="editarMovimiento(${m.id_movimiento}, 'SALIDA')" style="border:2px solid #000;padding:4px 8px;"><i class="fas fa-edit"></i></button></td></tr>`
+                  `<tr><td class="fw-bold">${esc(m.fecha_movimiento)}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${esc(m.codigo_barras || m.codigo)}</span></td><td class="fw-bold">${txt(m.nombre_producto)}</td><td class="fw-bold">${bs(m.cantidad || 0)}</td><td class="fw-bold">Bs. ${bs(m.costo_unitario || 0)}</td><td class="fw-bold">${txt(m.placa_vehiculo)}</td><td class="fw-bold">${txt(m.conductor)}</td><td><a href="{{ url('almacen/movimiento/ENTREGA') }}/${Number(m.id_movimiento)}" class="btn btn-sm btn-outline-dark btn-editar-mov" style="border:2px solid #000;padding:4px 8px;" title="EDITAR"><i class="fas fa-edit"></i></a></td></tr>`
               ).join('') || '<tr><td colspan="8" class="text-center py-5 opacity-50">SIN ENTREGAS REGISTRADAS</td></tr>';
         });
 }
@@ -483,12 +291,12 @@ function cargarKardex() {
             tbody.innerHTML = res.data.map(m => {
                 saldo += m.tipo_movimiento === 'COMPRA' ? parseFloat(m.cantidad || 0) : -parseFloat(m.cantidad || 0);
                 return `<tr>
-                    <td class="fw-bold">${m.fecha_movimiento}</td>
+                    <td class="fw-bold">${esc(m.fecha_movimiento)}</td>
                     <td><span class="badge fw-bold px-2 py-1" style="border:2px solid #000;background:${m.tipo_movimiento === 'COMPRA' ? '#d4edda' : '#f8d7da'};color:#000;">${m.tipo_movimiento === 'COMPRA' ? 'COMPRA' : 'ENTREGA'}</span></td>
-                    <td class="fw-bold" style="color:#007400;">${m.tipo_movimiento === 'COMPRA' ? parseFloat(m.cantidad || 0).toFixed(2) : '—'}</td>
-                    <td class="fw-bold" style="color:#dc3545;">${m.tipo_movimiento === 'SALIDA' ? parseFloat(m.cantidad || 0).toFixed(2) : '—'}</td>
-                    <td class="fw-bold">${saldo.toFixed(2)}</td>
-                    <td class="fw-bold">${m.motivo || m.observaciones || '—'}</td>
+                    <td class="fw-bold" style="color:#007400;">${m.tipo_movimiento === 'COMPRA' ? bs(m.cantidad || 0) : '—'}</td>
+                    <td class="fw-bold" style="color:#dc3545;">${m.tipo_movimiento === 'SALIDA' ? bs(m.cantidad || 0) : '—'}</td>
+                    <td class="fw-bold">${bs(saldo)}</td>
+                    <td class="fw-bold">${txt(m.motivo || m.observaciones)}</td>
                 </tr>`;
             }).join('');
         });
@@ -521,14 +329,14 @@ function renderSaldos(data) {
         const precio = parseFloat(p.ultimo_precio || p.precio_compra || 0);
         const total = parseFloat(p.stock_actual || 0) * precio;
         return `<tr>
-            <td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${p.codigo_barras || p.codigo || '—'}</span></td>
-            <td class="fw-bold">${p.nombre_producto}</td>
-            <td class="fw-bold">${p.categoria || '—'}</td>
-            <td class="fw-bold">${p.unidad_medida || '—'}</td>
-            <td class="fw-bold" style="color:${sb ? '#dc3545' : '#007400'};">${parseFloat(p.stock_actual || 0).toFixed(2)}</td>
-            <td class="fw-bold">${parseFloat(p.stock_minimo || 0).toFixed(2)}</td>
-            <td class="fw-bold">Bs. ${precio.toFixed(2)}</td>
-            <td class="fw-bold">Bs. ${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</td>
+            <td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${esc(p.codigo_barras || p.codigo)}</span></td>
+            <td class="fw-bold">${esc(p.nombre_producto)}</td>
+            <td class="fw-bold">${txt(p.categoria)}</td>
+            <td class="fw-bold">${txt(p.unidad_medida)}</td>
+            <td class="fw-bold" style="color:${sb ? '#dc3545' : '#007400'};">${bs(p.stock_actual || 0)}</td>
+            <td class="fw-bold">${bs(p.stock_minimo || 0)}</td>
+            <td class="fw-bold">Bs. ${bs(precio)}</td>
+            <td class="fw-bold">Bs. ${bs(total)}</td>
             <td><span class="badge fw-bold px-3 py-2" style="border:2px solid #000;background:${sb ? '#f8d7da' : '#d4edda'};color:${sb ? '#dc3545' : '#007400'};">${sb ? 'BAJO' : 'OK'}</span></td>
         </tr>`;
     }).join('');
@@ -543,266 +351,6 @@ function filtrarSaldos() {
     );
     renderSaldos(data);
 }
-
-function mostrarStockProducto() {
-    const id = document.getElementById('movIdProducto').value;
-    const info = document.getElementById('movStockInfo');
-    const tipo = document.getElementById('movTipo').value;
-    if (!id) { info.style.display = 'none'; return; }
-    const prod = productosInv.find(p => p.id_inventario == id);
-    if (!prod) { info.style.display = 'none'; return; }
-    const stock = parseFloat(prod.stock_actual || 0);
-    const min = parseFloat(prod.stock_minimo || 0);
-    const color = stock <= min ? '#dc3545' : '#007400';
-    const label = tipo === 'SALIDA' ? 'STOCK DISPONIBLE' : 'STOCK ACTUAL';
-    info.innerHTML = `<i class="fas fa-box me-2"></i> ${label}: <span style="color:${color}">${stock.toFixed(2)}</span> ${prod.unidad_medida || ''}`;
-    info.style.display = 'block';
-}
-
-function autoAsignarConductor() {
-    const vId = document.getElementById('movIdVehiculo').value;
-    const selP = document.getElementById('movIdPersonal');
-    if (!vId) { selP.value = ''; return; }
-    const v = vehiculosInv.find(v => v.id_vehiculo == vId);
-    if (v && v.id_personal) {
-        selP.value = v.id_personal;
-    } else {
-        selP.value = '';
-    }
-}
-
-function repositionProductoAutocomplete() {
-    const input = document.getElementById('movIdProducto');
-    const suggestionsDiv = document.getElementById('productoSuggestions');
-    if (!input || !suggestionsDiv) return;
-    input.parentElement.style.position = 'relative';
-    input.parentElement.style.zIndex = '1000';
-    suggestionsDiv.style.top = 'calc(100% + 12px)';
-    suggestionsDiv.style.left = '0';
-    suggestionsDiv.style.width = '100%';
-}
-
-function abrirModalMovimiento(tipo, movimiento = null) {
-    const esEdicion = movimiento !== null;
-    document.getElementById('movTipo').value = tipo === 'ENTREGA' ? 'SALIDA' : tipo;
-    document.getElementById('modalMovTitle').innerHTML = `<i class="fas ${tipo === 'COMPRA' ? 'fa-arrow-down' : 'fa-arrow-up'} me-2"></i> ${esEdicion ? 'EDITAR' : 'NUEVA'} ${tipo === 'COMPRA' ? 'COMPRA' : 'ENTREGA'}`;
-    
-    // Show/hide rows based on type
-    document.getElementById('movPreciosRow').style.display = tipo === 'COMPRA' ? 'flex' : 'none';
-    document.getElementById('movVehiculoRow').style.display = tipo === 'ENTREGA' ? 'flex' : 'none';
-    
-    if (esEdicion) {
-        // Fill form with existing movement data
-        const m = movimiento;
-        document.getElementById('movFecha').value = m.fecha_movimiento;
-        document.getElementById('movIdProducto').value = m.id_inventario;
-        document.getElementById('movCantidad').value = m.cantidad;
-        document.getElementById('movPrecioUnitario').value = m.costo_unitario || '';
-        document.getElementById('movPrecioCompra').value = m.precio_compra || (m.costo_unitario ? (m.cantidad * m.costo_unitario).toFixed(2) : '');
-        document.getElementById('movObs').value = m.observaciones || '';
-        document.getElementById('movIdVehiculo').value = m.id_vehiculo || '';
-        document.getElementById('movIdPersonal').value = m.id_personal || '';
-        
-        // Set product selection to trigger stock display
-        mostrarStockProducto();
-        
-        // Campos de pago (solo compras)
-        const esCompra = tipo === 'COMPRA';
-        document.getElementById('movPreciosRow').style.display = esCompra ? 'flex' : 'none';
-        document.getElementById('movPagoRow').style.display = esCompra ? 'flex' : 'none';
-        document.getElementById('movContadoRow').style.display = esCompra ? 'flex' : 'none';
-        document.getElementById('movProveedorRow').style.display = esCompra ? 'flex' : 'none';
-        
-        if (esCompra) {
-            document.getElementById('movCondicion').value = m.condicion_pago || 'CONTADO';
-            document.getElementById('movIdBanco').value = m.id_banco || '';
-            document.getElementById('movIdProveedor').value = m.id_proveedor || '';
-            document.getElementById('movFechaLimite').value = m.fecha_limite_pago || '';
-            toggleMovCondicion();
-            
-            // Update lot code if exists
-            if (m.codigo_lote) {
-                document.getElementById('movCodigoLote').value = m.codigo_lote;
-            }
-        }
-        
-        if (tipo === 'ENTREGA') {
-            document.getElementById('movIdVehiculo').value = m.id_vehiculo || '';
-            document.getElementById('movIdPersonal').value = m.id_personal || '';
-            autoAsignarConductor();
-        }
-        
-        // Store the movement ID for update
-        document.getElementById('movIdMovimiento').value = movimiento.id_movimiento;
-        
-    } else {
-        // NEW MOVEMENT - Reset all fields
-        document.getElementById('movFecha').value = new Date().toISOString().split('T')[0];
-        
-        // CRITICAL: Reset product selection to avoid bug with previous selection
-        const productoSelect = document.getElementById('movIdProducto');
-        if (productoSelect) {
-            productoSelect.value = '';
-            productoSelect.selectedIndex = 0;
-        }
-        
-        // Hide autocomplete suggestions completely
-        const suggestionsDiv = document.getElementById('productoSuggestions');
-        if (suggestionsDiv) {
-            suggestionsDiv.style.display = 'none';
-            suggestionsDiv.remove();
-        }
-        
-        // Reset other fields
-        document.getElementById('movCantidad').value = '';
-        document.getElementById('movPrecioUnitario').value = '';
-        document.getElementById('movPrecioCompra').value = '';
-        document.getElementById('movObs').value = '';
-        document.getElementById('movIdVehiculo').value = '';
-        document.getElementById('movIdPersonal').value = '';
-        
-        // Campos de pago (solo compras)
-        const esCompra = tipo === 'COMPRA';
-        document.getElementById('movPreciosRow').style.display = esCompra ? 'flex' : 'none';
-        document.getElementById('movPagoRow').style.display = esCompra ? 'flex' : 'none';
-        document.getElementById('movContadoRow').style.display = esCompra ? 'flex' : 'none';
-        document.getElementById('movProveedorRow').style.display = esCompra ? 'flex' : 'none';
-        document.getElementById('movCondicion').value = 'CONTADO';
-        document.getElementById('movIdBanco').value = '';
-        document.getElementById('movIdProveedor').value = '';
-        document.getElementById('movFechaLimite').value = '';
-        toggleMovCondicion();
-
-        // Generate lot code
-        let ultimoNum = 0;
-        fetch('{{ url("api/lotes/ultimo") }}', { headers: { 'Accept': 'application/json' } })
-            .then(r => r.json())
-            .then(res => {
-                if (res.success && res.data) {
-                    const num = parseInt(res.data.codigo_lote.replace('LO-', '')) || 0;
-                    ultimoNum = num + 1;
-                } else {
-                    ultimoNum = 1;
-                }
-                document.getElementById('movCodigoLote').value = 'LO-' + String(ultimoNum).padStart(6, '0');
-            })
-            .catch(() => {
-                document.getElementById('movCodigoLote').value = 'LO-000001';
-            });
-
-        const selV = document.getElementById('movIdVehiculo');
-        selV.innerHTML = '<option value="">SELECCIONE...</option>' + vehiculosInv.map(v =>
-            `<option value="${v.id_vehiculo}">${v.placa_vehiculo}</option>`).join('');
-        const selP = document.getElementById('movIdPersonal');
-        selP.innerHTML = '<option value="">SELECCIONE...</option>' + personalInv.map(p =>
-            `<option value="${p.id_personal}">${p.nombres} ${p.apellidos}</option>`).join('');
-    }
-    
-    document.getElementById('modalMovimiento').style.display = 'flex';
-}
-
-function cerrarModalMov() {
-    document.getElementById('modalMovimiento').style.display = 'none';
-}
-
-function editarMovimiento(id, tipo) {
-    fetch('{{ url("api/almacen/movimientos") }}?id_movimiento=' + id, { headers: { 'Accept': 'application/json' } })
-        .then(r => r.json())
-        .then(res => {
-            if (!res.success || !res.data || res.data.length === 0) {
-                Swal.fire('Error', 'Movimiento no encontrado', 'error');
-                return;
-            }
-            const m = res.data[0];
-            abrirModalMovimiento(tipo === 'SALIDA' ? 'ENTREGA' : 'COMPRA', m);
-        });
-}
-
-function toggleMovCondicion() {
-    const cond = document.getElementById('movCondicion').value;
-    const esCredito = cond === 'CREDITO';
-    document.getElementById('movContadoRow').style.display = esCredito ? 'none' : 'flex';
-    document.getElementById('movProveedorRow').style.display = 'flex';
-}
-
-function calcularPrecioCompra() {
-    const cantidad = parseFloat(document.getElementById('movCantidad').value) || 0;
-    const unitario = parseFloat(document.getElementById('movPrecioUnitario').value) || 0;
-    document.getElementById('movPrecioCompra').value = (cantidad * unitario).toFixed(2);
-}
-
-function guardarMovimiento(event) {
-    event.preventDefault();
-    const tipo = document.getElementById('movTipo').value;
-    const movimientoId = document.getElementById('movIdMovimiento').value;
-    const esEdicion = movimientoId && movimientoId !== '';
-    
-    const data = {
-        id_inventario: document.getElementById('movIdProducto').value,
-        tipo_movimiento: tipo,
-        cantidad: document.getElementById('movCantidad').value,
-        fecha_movimiento: document.getElementById('movFecha').value,
-        precio_unitario: document.getElementById('movPrecioUnitario').value || null,
-        codigo_lote: document.getElementById('movCodigoLote').value || null,
-        observaciones: document.getElementById('movObs').value,
-    };
-    if (tipo === 'COMPRA') {
-        const selProv = document.getElementById('movIdProveedor');
-        data.condicion_pago = document.getElementById('movCondicion').value;
-        data.id_banco = document.getElementById('movIdBanco').value || null;
-        data.id_proveedor = selProv.value || null;
-        data.proveedor = selProv.selectedOptions[0]?.textContent || null;
-        data.precio_compra = document.getElementById('movPrecioCompra').value || null;
-        data.fecha_limite_pago = document.getElementById('movFechaLimite').value || null;
-    }
-    if (tipo === 'SALIDA') data.id_vehiculo = document.getElementById('movIdVehiculo').value || null;
-    if (tipo === 'SALIDA') data.id_personal = document.getElementById('movIdPersonal').value || null;
-
-    if (!data.id_inventario || !data.cantidad) { Swal.fire('Requerido', 'Complete los campos obligatorios', 'warning'); return; }
-
-    if (tipo === 'COMPRA') {
-        if (data.condicion_pago === 'CREDITO' && !data.id_proveedor) {
-            Swal.fire('Requerido', 'Para compra a crédito debe seleccionar un proveedor', 'warning'); return;
-        }
-        if (data.condicion_pago === 'CONTADO' && !data.id_banco) {
-            Swal.fire('Requerido', 'Seleccione la cuenta de banco', 'warning'); return;
-        }
-    }
-
-    if (tipo === 'SALIDA') {
-        const prod = productosInv.find(p => p.id_inventario == data.id_inventario);
-        if (prod && parseFloat(data.cantidad) > parseFloat(prod.stock_actual || 0)) {
-            Swal.fire('Stock Insuficiente', `Solo hay ${parseFloat(prod.stock_actual || 0).toFixed(2)} ${prod.unidad_medida || ''} disponible`, 'error');
-            document.getElementById('btnGuardarMov').disabled = false;
-            return;
-        }
-    }
-
-    document.getElementById('btnGuardarMov').disabled = true;
-    document.getElementById('btnGuardarMov').innerHTML = '<i class="fas fa-spinner fa-spin"></i> GUARDANDO...';
-
-    const url = esEdicion ? '{{ url("api/almacen/movimientos") }}' + '/' + document.getElementById('movIdMovimiento').value : '{{ url("api/almacen/movimientos") }}';
-    const method = esEdicion ? 'PUT' : 'POST';
-
-    fetch(url, {
-        method: method,
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
-        body: JSON.stringify(data)
-    })
-    .then(r => r.json())
-    .then(res => {
-        document.getElementById('btnGuardarMov').disabled = false;
-        document.getElementById('btnGuardarMov').innerHTML = '<i class="fas fa-save"></i> GUARDAR';
-        if (res.success) {
-            Swal.fire({ icon: 'success', title: esEdicion ? 'MOVIMIENTO ACTUALIZADO' : 'MOVIMIENTO REGISTRADO', timer: 1500, showConfirmButton: false });
-            cerrarModalMov();
-            loadProductos(); loadCompras(); loadEntregas(); loadSaldos();
-        } else {
-            Swal.fire('Error', res.message || 'Error al guardar', 'error');
-        }
-    });
-}
-
 function eliminarProducto(id) {
     Swal.fire({
         title: 'DESACTIVAR PRODUCTO', text: '¿Está seguro?', icon: 'warning',

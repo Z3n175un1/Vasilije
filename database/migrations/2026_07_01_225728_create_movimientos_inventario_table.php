@@ -13,12 +13,15 @@ return new class extends Migration
         Schema::connection('pgsql')->create('global.movimientos_inventario', function (Blueprint $table) {
             $table->id('id_movimiento');
             $table->unsignedBigInteger('id_inventario');
-            $table->foreign('id_inventario')->references('id_inventario')->on('global.inventario')->onDelete('cascade');
+            // NOTA: la FK a global.inventario se agrega despues. Esta tabla se
+            // creaba antes que global.inventario, de modo que una base limpia
+            // fallaba. Ver 2026_10_01_000011_completar_fks_inventario.
             $table->unsignedBigInteger('id_lote')->nullable();
             $table->foreign('id_lote')->references('id_lote')->on('global.lotes')->onDelete('set null');
             $table->string('tipo_movimiento', 20);
             $table->decimal('cantidad', 12, 2);
             $table->decimal('costo_unitario', 12, 2)->nullable();
+            $table->decimal('costo_total', 12, 2)->nullable();
             $table->decimal('cant_pedida', 12, 2)->default(0);
             $table->integer('id_gasto')->nullable();
             $table->unsignedBigInteger('id_vehiculo')->nullable();
@@ -27,7 +30,6 @@ return new class extends Migration
             $table->foreign('id_personal')->references('id_personal')->on('global.personal')->onDelete('set null');
             $table->string('documento_tipo', 20)->nullable();
             $table->string('documento_numero', 50)->nullable();
-            $table->string('nro_doc', 50)->nullable();
             $table->string('proveedor', 100)->nullable();
             $table->date('fecha_movimiento')->useCurrent();
             $table->text('motivo')->nullable();

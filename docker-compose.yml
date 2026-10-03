@@ -15,6 +15,11 @@ services:
       DB_DATABASE: NewTransporte
       DB_USERNAME: ${DB_USERNAME:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      # El esquema `global` no esta en el search_path por defecto de
+      # PostgreSQL y casi todas las consultas lo nombran sin calificar.
+      # `config/database.php` lo lee de DB_SCHEMA.
+      DB_SCHEMA: global
+      DB_SSLMODE: prefer
     depends_on:
       db:
         condition: service_healthy

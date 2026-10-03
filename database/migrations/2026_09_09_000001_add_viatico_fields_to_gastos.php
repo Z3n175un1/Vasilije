@@ -12,6 +12,9 @@ return new class extends Migration
             if (!Schema::connection('pgsql')->hasColumn('global.gastos', 'tipo_viatico')) {
                 $table->string('tipo_viatico', 20)->nullable()->after('tipo_gasto');
             }
+            if (!Schema::connection('pgsql')->hasColumn('global.gastos', 'destino_viatico')) {
+                $table->string('destino_viatico', 200)->nullable()->after('tipo_viatico');
+            }
         });
     }
 

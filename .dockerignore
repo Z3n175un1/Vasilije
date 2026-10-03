@@ -1,11 +1,25 @@
+# =========================================================
+# EXCLUSIONES DE CONTEXTO DE BUILD
+# =========================================================
 .git
 .github
 node_modules
 vendor
+
 .env
 .env.*
+
+# El manifiesto de Vite con `public/hot` hace que `@vite` apunte al
+# servidor de desarrollo en vez de a `public/build`. El Dockerfile lo
+# borra antes de compilar, pero conviene no mandarlo siquiera.
+public/hot
+
 storage/logs/*
 storage/framework/cache/*
 storage/framework/sessions/*
 storage/framework/views/*
 bootstrap/cache/*.php
+
+.phpunit.cache
+.phpunit.result.cache
+*.log

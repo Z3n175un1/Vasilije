@@ -13,7 +13,16 @@ return new class extends Migration
         Schema::connection('pgsql')->create('global.lotes', function (Blueprint $table) {
             $table->id('id_lote');
             $table->unsignedBigInteger('id_inventario');
-            $table->foreign('id_inventario')->references('id_inventario')->on('global.inventario')->onDelete('cascade');
+            // NOTA: la FK a global.inventario NO se declara aqui.
+            //
+            // En el orden original este archivo se ejecutaba ANTES que
+            // 2026_07_01_225732_create_inventario_table, de modo que una base
+            // recien creada fallaba con:
+            //     ERROR: no existe la relacion "global.inventario"
+            // El unico motivo por el que nunca se noto es que la base de
+            // desarrollo ya tenia las tablas creadas fuera de las
+            // migraciones. La FK se agrega ahora en
+            // 2026_10_01_000011_completar_fks_inventario.
             $table->string('codigo_lote', 50);
             $table->date('fecha_ingreso')->useCurrent();
             $table->decimal('cantidad_inicial', 12, 2)->default(0);

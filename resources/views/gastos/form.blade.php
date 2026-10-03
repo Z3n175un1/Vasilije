@@ -33,22 +33,42 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-4">
+
+                {{-- CLASIFICADOR DE GASTO: solo los de alcance UNIDAD --}}
+                <div class="col-md-5">
                     <div class="form-group mb-0">
-                        <label>TIPO GASTO <span class="text-danger">*</span></label>
-                        <select name="tipo_gasto" id="tipoGasto" required onchange="toggleCombustible()">
-                            @foreach(['Combustible', 'Mantenimiento', 'Peaje', 'Seguro', 'Lubricante', 'Llantas', 'Otro'] as $tipo)
-                                <option value="{{ $tipo }}" {{ old('tipo_gasto', $gasto->tipo_gasto ?? '') == $tipo ? 'selected' : '' }}>{{ $tipo }}</option>
+                        <label>CLASIFICADOR DE GASTO <span class="text-danger">*</span></label>
+                        <select name="id_clasificador" id="idClasificador" required
+                                onchange="aplicarClasificador()">
+                            <option value="">SELECCIONE...</option>
+                            @foreach($clasificadores as $c)
+                                <option value="{{ $c->id_clasificador }}"
+                                        data-tipo="{{ $c->tipo_gasto }}"
+                                        data-codigo="{{ $c->codigo }}"
+                                        {{ old('id_clasificador', $gasto->id_clasificador ?? '') == $c->id_clasificador ? 'selected' : '' }}>
+                                    {{ $c->codigo }} — {{ $c->descripcion }} [{{ $c->tipo_gasto }}]
+                                </option>
                             @endforeach
                         </select>
+                        <small class="d-block mt-2 text-black-50">
+                            Solo se muestran los clasificadores que <strong>afectan a unidad</strong>.
+                            El tipo de gasto se deriva del clasificador.
+                        </small>
                     </div>
                 </div>
-                <div class="col-md-4">
+
+                <div class="col-md-3">
                     <div class="form-group mb-0">
                         <label>FECHA <span class="text-danger">*</span></label>
                         <input type="date" name="fecha_gasto" value="{{ old('fecha_gasto', $gasto->fecha_gasto ?? date('Y-m-d')) }}" required>
                     </div>
                 </div>
+            </div>
+
+            {{-- Aviso del tipo derivado --}}
+            <div id="avisoTipo" class="mb-4 p-2 fw-bold text-uppercase"
+                 style="display:none; background:#eef2ff; border:3px solid #2f2c79;">
+                Tipo de gasto: <span id="avisoTipoTexto"></span>
             </div>
 
             <div class="row g-4 mb-4">
@@ -61,12 +81,28 @@
                 <div class="col-md-4">
                     <div class="form-group mb-0">
                         <label>MONTO (Bs) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="monto" id="montoInput" value="{{ old('monto', $gasto->monto ?? '') }}" required placeholder="0.00">
+                        <input type="number" step="0.01" name="monto" id="montoInput"
+                               value="{{ old('monto', $gasto->monto ?? '') }}" required placeholder="0.00">
+                        <small class="d-block mt-2 text-black-50">
+                            Un monto <strong>negativo</strong> registra una <strong>devolución</strong>.
+                        </small>
                     </div>
                 </div>
             </div>
 
-            <div id="combustibleSection" class="row g-4 mb-4" style="display:{{ old('tipo_gasto', $gasto->tipo_gasto ?? '') === 'Combustible' ? 'flex' : 'none' }};">
+            {{-- Aviso de devolución --}}
+            <div id="avisoDevolucion" class="mb-4 p-3"
+                 style="display:none; background:#fff3cd; border:4px solid #dc3545;">
+                <div class="fw-bold text-uppercase" style="color:#740000;">
+                    <i class="fas fa-undo me-2"></i> DEVOLUCIÓN DETECTADA
+                </div>
+                <div class="small mt-1" style="color:#740000;">
+                    El monto es negativo. Se registrará como devolución y quedará marcado como
+                    <strong>Anulado</strong>, invirtiendo su efecto en los reportes.
+                </div>
+            </div>
+
+            <div id="combustibleSection" class="row g-4 mb-4" style="display:none;">
                 <div class="col-md-4">
                     <div class="form-group mb-0">
                         <label>TIPO COMBUSTIBLE</label>
@@ -172,7 +208,10 @@
 <script>
 const proveedores = @json($proveedores);
 
-// tipo_gasto → tipo_proveedor mapping
+/**
+ * tipo_gasto -> tipo_proveedor. El tipo ya no viene de un select propio:
+ * se deriva del clasificador seleccionado.
+ */
 const tipoMap = {
     'Combustible': 'COMBUSTIBLE',
     'Mantenimiento': ['TALLER', 'MECANICO', 'REPUESTOS', 'FILTROS'],
@@ -182,10 +221,33 @@ const tipoMap = {
     'Peaje': 'PEAJE',
 };
 
-function toggleCombustible() {
-    const tipo = document.getElementById('tipoGasto').value;
-    document.getElementById('combustibleSection').style.display = tipo === 'Combustible' ? 'flex' : 'none';
-    filtrarProveedores();
+function clasificadorActual() {
+    const sel = document.getElementById('idClasificador');
+    if (!sel || !sel.value) return null;
+    return sel.options[sel.selectedIndex];
+}
+
+/**
+ * Sincroniza la UI con el tipo del clasificador: muestra el bloque de
+ * combustible y filtra los proveedores por rubro.
+ */
+function aplicarClasificador() {
+    const opcion = clasificadorActual();
+    const tipo = opcion ? opcion.dataset.tipo : '';
+
+    document.getElementById('combustibleSection').style.display =
+        (tipo === 'Combustible') ? 'flex' : 'none';
+
+    const aviso = document.getElementById('avisoTipo');
+    const texto = document.getElementById('avisoTipoTexto');
+    if (tipo) {
+        aviso.style.display = 'block';
+        texto.textContent = opcion.dataset.codigo + ' / ' + tipo;
+    } else {
+        aviso.style.display = 'none';
+    }
+
+    filtrarProveedores(tipo);
 }
 
 function toggleCondicionPago() {
@@ -196,28 +258,35 @@ function toggleCondicionPago() {
     document.getElementById('campoProveedorContado').style.display = esCredito ? 'none' : 'block';
     document.getElementById('creditoSection').style.display = esCredito ? 'flex' : 'none';
     banco.required = !esCredito;
+    const selCredito = document.getElementById('proveedorCreditoSelect');
+    if (selCredito) selCredito.required = esCredito;
 }
 
 function calcMontoCombustible() {
     const litros = parseFloat(document.getElementById('litros').value) || 0;
     const precio = parseFloat(document.getElementById('precioLitro').value) || 0;
-    if (litros > 0 && precio > 0) {
-        const montoInput = document.querySelector('input[name="monto"]');
-        if (montoInput) montoInput.value = (litros * precio).toFixed(2);
+    const montoInput = document.getElementById('montoInput');
+    // No se sobreescribe si el monto es negativo: es una devolucion y el
+    // operador probablemente lo puso a proposito.
+    if (litros > 0 && precio > 0 && !(parseFloat(montoInput.value) < 0)) {
+        montoInput.value = (litros * precio).toFixed(2);
+        revisarDevolucion();
     }
 }
 
 document.addEventListener('input', function(e) {
     if (e.target.id === 'litros' || e.target.id === 'precioLitro') {
-        if (document.getElementById('tipoGasto').value === 'Combustible') {
+        const opcion = clasificadorActual();
+        if (opcion && opcion.dataset.tipo === 'Combustible') {
             calcMontoCombustible();
         }
     }
+    if (e.target.id === 'montoInput') {
+        revisarDevolucion();
+    }
 });
 
-function filtrarProveedores() {
-    const tipo = document.getElementById('tipoGasto').value;
-
+function filtrarProveedores(tipo) {
     const tiposPermitidos = tipoMap[tipo] || ['GENERAL', null];
     const permitidos = Array.isArray(tiposPermitidos) ? tiposPermitidos : [tiposPermitidos];
 
@@ -225,16 +294,18 @@ function filtrarProveedores() {
         permitidos.includes(p.tipo_proveedor) || permitidos.includes(null)
     );
 
-    // If no matches, fallback to ALL proveedores
-    const list = filtrados.length > 0 ? filtrados : proveedores;
+    // Si el rubro no tiene coincidencias se ofrecen todos: es preferible un
+    // proveedor de otra clase a quedarse sin opciones.
+    const lista = filtrados.length > 0 ? filtrados : proveedores;
 
     ['proveedorContadoSelect', 'proveedorCreditoSelect'].forEach(selId => {
         const select = document.getElementById(selId);
-        const currentVal = select.value;
+        if (!select) return;
+        const valorPrevio = select.value;
 
         select.innerHTML = '<option value="">SELECCIONE PROVEEDOR...</option>';
 
-        list.forEach(p => {
+        lista.forEach(p => {
             const opt = document.createElement('option');
             opt.value = p.id_proveedor;
             opt.textContent = p.nombre_proveedor;
@@ -242,48 +313,89 @@ function filtrarProveedores() {
             select.appendChild(opt);
         });
 
-        // Restaurar la selección previa (id_proveedor) si sigue disponible
-        if ([...select.options].some(o => o.value === currentVal)) {
-            select.value = currentVal;
+        if ([...select.options].some(o => o.value === valorPrevio)) {
+            select.value = valorPrevio;
         }
     });
 }
 
-['proveedorContadoSelect', 'proveedorCreditoSelect'].forEach(selId => {
-    document.getElementById(selId).addEventListener('change', function() {
-        // El select siempre envía id_proveedor
-        this.name = 'id_proveedor';
-    });
-});
+/**
+ * Marca visualmente cuando el monto es negativo (devolucion).
+ */
+function revisarDevolucion() {
+    const monto = parseFloat(document.getElementById('montoInput').value);
+    document.getElementById('avisoDevolucion').style.display =
+        (!Number.isNaN(monto) && monto < 0) ? 'block' : 'none';
+}
 
 document.addEventListener('DOMContentLoaded', function() {
-    filtrarProveedores();
-    toggleCombustible();
+    document.getElementById('condicionPago')?.addEventListener('change', toggleCondicionPago);
+    document.getElementById('idClasificador')?.addEventListener('change', aplicarClasificador);
+
+    aplicarClasificador();
     toggleCondicionPago();
-    
-    // Validación de monto negativo (devolución)
+    revisarDevolucion();
+
+    /**
+     * REGLA DE DEVOLUCION
+     * -------------------
+     * Un monto negativo significa devolucion. Antes de enviar el formulario
+     * se pide confirmacion explicita, porque el efecto es contrario al
+     * habitual (suma en vez de restar al balance).
+     */
     const form = document.querySelector('form.form-bento');
+
     if (form) {
         form.addEventListener('submit', function(e) {
-            const montoInput = document.getElementById('montoInput');
-            const monto = parseFloat(montoInput.value);
-            if (!isNaN(monto) && monto < 0) {
-                e.preventDefault();
-                Swal.fire({
-                    title: '¡Está seguro de registrar una devolución!',
-                    text: 'El monto es negativo, esto registrará una devolución.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Sí, registrar devolución',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
+            const monto = parseFloat(document.getElementById('montoInput').value);
+
+            if (Number.isNaN(monto) || monto >= 0) {
+                return;
             }
+
+            e.preventDefault();
+
+            const concepto = form.querySelector('input[name="concepto"]').value || '(sin concepto)';
+
+            Swal.fire({
+                title: '¿ESTÁ SEGURO DE REGISTRAR ESTA DEVOLUCIÓN?',
+                html: `
+                    <div class="text-start" style="font-size:.95rem;">
+                        <p class="mb-2">
+                            El monto es <strong style="color:#dc3545;">Bs. ${bs(monto)}</strong>.
+                        </p>
+                        <p class="mb-1"><strong>Concepto:</strong> ${esc(concepto)}</p>
+                        <p class="mb-0 small">
+                            Se registrará como devolución y quedará marcado como <strong>Anulado</strong>.
+                            Invertirá su efecto en los reportes y en el estado de cuenta.
+                        </p>
+                    </div>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'SÍ, REGISTRAR DEVOLUCIÓN',
+                cancelButtonText: 'CANCELAR',
+                reverseButtons: true
+            }).then((resultado) => {
+                if (!resultado.isConfirmed) {
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'REGISTRANDO DEVOLUCIÓN...',
+                    html: 'Enviando el registro al servidor',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                // `submit()` y no `requestSubmit()`: ver la nota equivalente
+                // en gastos-generales sobre por qué re-disparar el evento
+                // submit entraría en bucle.
+                form.submit();
+            });
         });
     }
 });

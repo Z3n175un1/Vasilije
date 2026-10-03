@@ -65,7 +65,7 @@ return [
     |
     */
 
-    'timezone' => env('TIMEZONE', 'America/La_Paz'),
+    'timezone' => env('APP_TIMEZONE', 'America/La_Paz'),
 
     /*
     |--------------------------------------------------------------------------

@@ -1,174 +1,279 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Enums\EstadoVehiculo;
+use App\Enums\Rol;
+use App\Enums\TipoGasto;
+use App\Http\Requests\Gasto\StoreGastoUnidadRequest;
+use App\Services\AuditoriaService;
+use App\Services\ClasificadorGastoService;
+use App\Services\DocumentoService;
+use App\Services\GastoService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
+/**
+ * Gastos OPERACIONALES de la flota (uno por unidad, fecha y concepto).
+ *
+ * CAMBIOS RESPECTO A LA VERSION ANTERIOR
+ * --------------------------------------
+ *  1. El tipo de gasto se elige de un CLASIFICADOR, no de un <select> con
+ *     literales. Solo aparecen los clasificadores con afecta_unidad = true.
+ *  2. El tipo se DERIVA del clasificador, lo que elimina de raiz la
+ *     contradiccion entre el enum de PHP ('Sueldo') y el CHECK de la BD
+ *     ('Sueldos').
+ *  3. El monto admite negativos: es una DEVOLUCION. Antes el formulario
+ *     permitia escribirlo pero la validacion del general lo rechazaba con
+ *     min:0, y el estado de pago quedaba incoherente.
+ *  4. La numeracion usa la secuencia atomica de la serie E_.
+ *  5. Se respeta el rol: un usuario de solo lectura no registra gastos.
+ */
 class GastoController extends Controller
 {
-    public function index()
+    public function __construct(
+        private readonly DocumentoService $documentos,
+        private readonly GastoService $gastos,
+        private readonly ClasificadorGastoService $clasificadores,
+        private readonly AuditoriaService $auditoria,
+    ) {}
+
+    public function index(): RedirectResponse
     {
         return redirect()->route('mantenimiento.index');
     }
 
-    public function create(Request $request)
+    public function create(Request $request): View
     {
-        $id_vehiculo = $request->query('id_vehiculo');
-        $vehiculos = DB::table('global.vehiculos')->where('estado', '<>', 3)->orderByRaw("LPAD(REGEXP_REPLACE(placa_vehiculo, '[^0-9]', '', 'g'), 10, '0')")->get();
-        $proveedores = DB::table('global.proveedores')->where('estado', 1)->orderBy('nombre_proveedor')->get();
-        $bancos = DB::table('global.bancos')->where('estado', 'ACTIVO')->orderBy('nombre_banco')->get();
-        return view('gastos.form', ['gasto' => null, 'vehiculos' => $vehiculos, 'id_vehiculo' => $id_vehiculo, 'proveedores' => $proveedores, 'bancos' => $bancos]);
+        $datos = $this->datosDeFormulario();
+
+        return view('gastos.form', array_merge($datos, [
+            'gasto' => null,
+            'id_vehiculo' => $request->query('id_vehiculo'),
+        ]));
     }
 
-    public function edit($id)
+    public function edit(string $id): View|RedirectResponse
     {
         $gasto = DB::table('global.gastos')->where('id_gasto', $id)->first();
-        if (!$gasto) return redirect()->route('dashboard.index')->with('error', 'Gasto no encontrado');
 
-        if ($gasto->tipo_gasto === 'Combustible') {
+        if (!$gasto) {
+            return redirect()->route('dashboard.index')->with('error', 'Gasto no encontrado.');
+        }
+
+        if ($gasto->tipo_gasto === TipoGasto::Combustible->value) {
             $gasto->combustible = DB::table('global.combustible_detalle')->where('id_gasto', $id)->first();
         }
 
-        $vehiculos = DB::table('global.vehiculos')->where('estado', '<>', 3)->orderByRaw("LPAD(REGEXP_REPLACE(placa_vehiculo, '[^0-9]', '', 'g'), 10, '0')")->get();
-        $proveedores = DB::table('global.proveedores')->where('estado', 1)->orderBy('nombre_proveedor')->get();
-        $bancos = DB::table('global.bancos')->where('estado', 'ACTIVO')->orderBy('nombre_banco')->get();
-        return view('gastos.form', ['gasto' => $gasto, 'vehiculos' => $vehiculos, 'id_vehiculo' => null, 'proveedores' => $proveedores, 'bancos' => $bancos]);
+        return view('gastos.form', array_merge($this->datosDeFormulario(), [
+            'gasto' => $gasto,
+            'id_vehiculo' => null,
+        ]));
     }
 
-    public function store(Request $request)
+    public function store(StoreGastoUnidadRequest $request): JsonResponse|RedirectResponse
     {
-        $condicion = $request->condicion_pago ?? 'CONTADO';
+        $datos = $request->datosNormalizados($this->clasificadores);
 
-        $data = $request->validate([
-            'id_vehiculo' => 'required|integer',
-            'tipo_gasto' => 'required|string|in:Combustible,Sueldo,Viatico,Mantenimiento,Peaje',
-            'concepto' => 'required|string',
-            'monto' => 'required|numeric',
-            'fecha_gasto' => 'required|date',
-            'descripcion' => 'nullable|string',
-            'id_proveedor' => $condicion === 'CREDITO' ? 'required|integer' : 'nullable|integer',
-            'id_banco' => $condicion === 'CONTADO' ? 'required|integer' : 'nullable|integer',
-            'condicion_pago' => 'nullable|string|in:CONTADO,CREDITO',
-            'fecha_limite_pago' => 'nullable|date',
-            'tipo_combustible' => 'nullable|string',
-            'litros' => 'nullable|numeric',
-            'precio_por_litro' => 'nullable|numeric',
-        ]);
+        $idGasto = DB::transaction(function () use ($datos, $request): int {
+            $datos['nro_documento'] = $this->documentos->siguiente('E');
+            $datos['creado_por'] = $request->user()?->id;
+            $datos['fecha_registro'] = now();
+            $datos['fecha_actualizacion'] = now();
 
-        $ultimo = DB::table('global.gastos')->where('nro_documento', 'like', 'E_%')->orderBy('id_gasto', 'desc')->first();
-        $contador = $ultimo ? intval(substr($ultimo->nro_documento, 2)) + 1 : 1;
-        $data['nro_documento'] = 'E_' . str_pad($contador, 5, '0', STR_PAD_LEFT);
-        $data['condicion_pago'] = $condicion;
-        $data['metodo_pago'] = null;
+            $id = DB::table('global.gastos')->insertGetId($datos, 'id_gasto');
 
-        // Filter out non-gastos table columns before insert
-        $gastosAllowed = ['id_vehiculo', 'tipo_gasto', 'concepto', 'monto', 'fecha_gasto', 'descripcion', 'id_proveedor', 'id_banco', 'condicion_pago', 'metodo_pago', 'fecha_limite_pago', 'nro_documento'];
-        $gastosData = array_filter($data, function($k) use ($gastosAllowed) { return in_array($k, $gastosAllowed); }, ARRAY_FILTER_USE_KEY);
-
-        $id_gasto = DB::table('global.gastos')->insertGetId($gastosData, 'id_gasto');
-        $gasto = DB::table('global.gastos')->where('id_gasto', $id_gasto)->first();
-
-        if ($data['tipo_gasto'] === 'Combustible' && !empty($data['litros']) && !empty($data['precio_por_litro'])) {
-            DB::table('global.combustible_detalle')->insert([
-                'id_gasto' => $id_gasto,
-                'tipo_carburante' => $data['tipo_combustible'] ?? 'Diesel',
-                'galones' => $data['litros'],
-                'precio_por_galon' => $data['precio_por_litro'],
-            ]);
-        }
-
-        if ($request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => "Gasto {$gasto->nro_documento} registrado exitosamente",
-                'nro_documento' => $gasto->nro_documento,
-                'id_gasto' => $id_gasto,
-            ]);
-        }
-        return redirect()->route('dashboard.index')->with('success', "Gasto {$gasto->nro_documento} registrado exitosamente");
-    }
-
-    public function update(Request $request, $id)
-    {
-        $condicion = $request->condicion_pago ?? 'CONTADO';
-
-        $data = $request->validate([
-            'id_vehiculo' => 'required|integer',
-            'tipo_gasto' => 'required|string|in:Combustible,Sueldo,Viatico,Mantenimiento,Peaje',
-            'concepto' => 'required|string',
-            'monto' => 'required|numeric',
-            'fecha_gasto' => 'required|date',
-            'descripcion' => 'nullable|string',
-            'id_proveedor' => $condicion === 'CREDITO' ? 'required|integer' : 'nullable|integer',
-            'id_banco' => $condicion === 'CONTADO' ? 'required|integer' : 'nullable|integer',
-            'condicion_pago' => 'nullable|string|in:CONTADO,CREDITO',
-            'fecha_limite_pago' => 'nullable|date',
-            'tipo_combustible' => 'nullable|string',
-            'litros' => 'nullable|numeric',
-            'precio_por_litro' => 'nullable|numeric',
-        ]);
-        $data['condicion_pago'] = $condicion;
-        $data['metodo_pago'] = null;
-
-        $gastosAllowed = ['id_vehiculo', 'tipo_gasto', 'concepto', 'monto', 'fecha_gasto', 'descripcion', 'id_proveedor', 'id_banco', 'condicion_pago', 'metodo_pago', 'fecha_limite_pago'];
-        $gastosData = array_filter($data, function($k) use ($gastosAllowed) { return in_array($k, $gastosAllowed); }, ARRAY_FILTER_USE_KEY);
-        DB::table('global.gastos')->where('id_gasto', $id)->update($gastosData);
-
-        if ($data['tipo_gasto'] === 'Combustible') {
-            $existing = DB::table('global.combustible_detalle')->where('id_gasto', $id)->first();
-            $combData = [
-                'tipo_carburante' => $data['tipo_combustible'] ?? 'Diesel',
-                'galones' => $data['litros'] ?? 0,
-                'precio_por_galon' => $data['precio_por_litro'] ?? 0,
-            ];
-            if ($existing) {
-                DB::table('global.combustible_detalle')->where('id_gasto', $id)->update($combData);
-            } else {
-                $combData['id_gasto'] = $id;
-                DB::table('global.combustible_detalle')->insert($combData);
+            [$tipo, $litros, $precio] = $request->detalleCombustible();
+            if ($datos['tipo_gasto'] === TipoGasto::Combustible->value) {
+                $this->gastos->sincronizarCombustible($id, $tipo, $litros, $precio);
             }
-        }
 
-        return redirect()->route('dashboard.index')->with('success', 'Gasto actualizado exitosamente');
+            return $id;
+        });
+
+        $gasto = DB::table('global.gastos')->where('id_gasto', $idGasto)->first();
+
+        $this->auditoria->registrar(
+            $datos['es_devolucion'] ? 'DEVOLUCION_REGISTRADA' : 'GASTO_REGISTRADO',
+            'gastos',
+            sprintf('Gasto %s de Bs. %s', $gasto->nro_documento, number_format((float) $datos['monto'], 2)),
+            ['id_gasto' => $idGasto, 'tipo' => $datos['tipo_gasto'], 'devolucion' => $datos['es_devolucion']]
+        );
+
+        return $this->respuesta(
+            $request,
+            $gasto,
+            $datos['es_devolucion']
+                ? sprintf('Devolucion %s registrada exitosamente', $gasto->nro_documento)
+                : sprintf('Gasto %s registrado exitosamente', $gasto->nro_documento)
+        );
     }
 
-    public function destroy($id)
+    public function update(StoreGastoUnidadRequest $request, string $id): JsonResponse|RedirectResponse
     {
-        DB::table('global.combustible_detalle')->where('id_gasto', $id)->delete();
-        DB::table('global.gastos')->where('id_gasto', $id)->delete();
+        $existente = DB::table('global.gastos')->where('id_gasto', $id)->first();
+
+        if (!$existente) {
+            return $this->error($request, 'Gasto no encontrado.', 404);
+        }
+
+        $datos = $request->datosNormalizados($this->clasificadores);
+
+        // El numero de documento es inmutable: los reportes y el estado de
+        // cuenta lo referencian.
+        unset($datos['nro_documento'], $datos['creado_por']);
+
+        $datos['fecha_actualizacion'] = now();
+
+        DB::transaction(function () use ($id, $datos, $request): void {
+            DB::table('global.gastos')->where('id_gasto', $id)->update($datos);
+
+            if ($datos['tipo_gasto'] === TipoGasto::Combustible->value) {
+                [$tipo, $litros, $precio] = $request->detalleCombustible();
+                $this->gastos->sincronizarCombustible((int) $id, $tipo, $litros, $precio);
+            } else {
+                DB::table('global.combustible_detalle')->where('id_gasto', $id)->delete();
+            }
+        });
+
+        $this->auditoria->registrar('GASTO_ACTUALIZADO', 'gastos', "Gasto #{$id} actualizado", ['id_gasto' => $id]);
+
+        return $this->respuesta($request, $existente, 'Gasto actualizado exitosamente');
+    }
+
+    public function destroy(Request $request, string $id): JsonResponse|RedirectResponse
+    {
+        if (!$request->user()?->can('eliminar', 'gastos')) {
+            abort(403, 'Su rol no permite eliminar gastos.');
+        }
+
+        $gasto = DB::table('global.gastos')->where('id_gasto', $id)->first();
+
+        if (!$gasto) {
+            return $this->error($request, 'Gasto no encontrado.', 404);
+        }
+
+        $this->gastos->eliminarGastoUnidad((int) $id);
+
+        $this->auditoria->registrar('GASTO_ELIMINADO', 'gastos', "Gasto {$gasto->nro_documento} eliminado", [
+            'id_gasto' => $id,
+            'monto' => $gasto->monto,
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Gasto eliminado']);
+        }
+
         return redirect()->route('dashboard.index')->with('success', 'Gasto eliminado');
     }
 
-    public function apiList(Request $request)
+    /** Listado paginado para el modulo de gastos. */
+    public function apiList(Request $request): JsonResponse
     {
         $query = DB::table('global.gastos')
             ->leftJoin('global.vehiculos', 'global.gastos.id_vehiculo', '=', 'global.vehiculos.id_vehiculo')
-            ->select('global.gastos.*', 'global.vehiculos.placa_vehiculo as placa')
-            ->orderBy('global.gastos.fecha_gasto', 'desc');
+            ->leftJoin('global.clasificador_gastos', 'global.gastos.id_clasificador', '=', 'global.clasificador_gastos.id_clasificador')
+            ->select(
+                'global.gastos.*',
+                'global.vehiculos.placa_vehiculo as placa',
+                'global.clasificador_gastos.codigo as clasificador_codigo',
+                'global.clasificador_gastos.descripcion as clasificador_descripcion'
+            );
 
         if ($request->filled('id_vehiculo')) {
-            $query->where('global.gastos.id_vehiculo', $request->id_vehiculo);
+            $query->where('global.gastos.id_vehiculo', $request->integer('id_vehiculo'));
         }
 
         if ($request->filled('tipo_gasto')) {
-            $query->where('global.gastos.tipo_gasto', $request->tipo_gasto);
+            $query->where('global.gastos.tipo_gasto', $request->string('tipo_gasto')->value());
         }
 
-        $data = $query->limit(50)->get();
+        if ($request->filled('es_devolucion')) {
+            $query->where('global.gastos.es_devolucion', $request->boolean('es_devolucion'));
+        }
+
+        if ($request->filled('desde')) {
+            $query->whereDate('global.gastos.fecha_gasto', '>=', $request->date('desde'));
+        }
+
+        if ($request->filled('hasta')) {
+            $query->whereDate('global.gastos.fecha_gasto', '<=', $request->date('hasta'));
+        }
+
+        $limite = min($request->integer('limit', 100), 500);
 
         return response()->json([
             'success' => true,
-            'data' => $data,
+            'data' => $query->orderByDesc('global.gastos.fecha_gasto')->limit($limite)->get(),
         ]);
     }
 
-    public function apiShow($id)
+    public function apiShow(string $id): JsonResponse
     {
-        $gasto = DB::table('global.gastos')->where('id_gasto', $id)->first();
-        if ($gasto && $gasto->tipo_gasto === 'Combustible') {
+        $gasto = DB::table('global.gastos')
+            ->leftJoin('global.clasificador_gastos', 'global.gastos.id_clasificador', '=', 'global.clasificador_gastos.id_clasificador')
+            ->select('global.gastos.*', 'global.clasificador_gastos.codigo as clasificador_codigo', 'global.clasificador_gastos.descripcion as clasificador_descripcion')
+            ->where('global.gastos.id_gasto', $id)
+            ->first();
+
+        if ($gasto && $gasto->tipo_gasto === TipoGasto::Combustible->value) {
             $gasto->combustible = DB::table('global.combustible_detalle')->where('id_gasto', $id)->first();
         }
+
         return response()->json(['success' => true, 'data' => $gasto]);
+    }
+
+    // ------------------------------------------------------------------
+    // Internos
+    // ------------------------------------------------------------------
+
+    /**
+     * Catalogos que alimentan el formulario.
+     *
+     * @return array<string, mixed>
+     */
+    private function datosDeFormulario(): array
+    {
+        return [
+            'vehiculos' => DB::table('global.vehiculos')
+                ->whereIn('estado', [EstadoVehiculo::Activo->value, EstadoVehiculo::Taller->value])
+                ->orderByRaw("LPAD(REGEXP_REPLACE(placa_vehiculo, '[^0-9]', '', 'g'), 10, '0')")
+                ->get(),
+            'proveedores' => DB::table('global.proveedores')
+                ->where('estado', 1)->orderBy('nombre_proveedor')->get(),
+            'bancos' => DB::table('global.bancos')
+                ->where('estado', 'ACTIVO')->orderBy('nombre_banco')->get(),
+            // SOLO los clasificadores que aplican a unidad.
+            'clasificadores' => $this->clasificadores->listar('unidad'),
+        ];
+    }
+
+    private function respuesta(Request $request, object $gasto, string $mensaje): JsonResponse|RedirectResponse
+    {
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => $mensaje,
+                'nro_documento' => $gasto->nro_documento ?? null,
+                'id_gasto' => $gasto->id_gasto ?? null,
+            ]);
+        }
+
+        return redirect()->route('dashboard.index')->with('success', $mensaje);
+    }
+
+    private function error(Request $request, string $mensaje, int $status = 422): JsonResponse|RedirectResponse
+    {
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => false, 'message' => $mensaje], $status);
+        }
+
+        return back()->with('error', $mensaje);
     }
 }

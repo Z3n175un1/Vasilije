@@ -1,151 +1,217 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Enums\EstadoVehiculo;
+use App\Enums\TipoGasto;
+use App\Http\Requests\StorePersonalRequest;
+use App\Services\AuditoriaService;
+use App\Services\DocumentoService;
+use App\Services\GastoService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
+/**
+ * PERSONAL: conductores y administrativos, con registros de sueldo y viatico.
+ *
+ * CAMBIOS RESPECTO A LA VERSION ANTERIOR
+ * --------------------------------------
+ *  1. `storeGasto` validaba `in:Sueldo,Viǭtico`: la palabra "Viático" venia
+ *     con un caracter corrupto, de modo que ese valor NUNCA pasaba la
+ *     validacion y el registro de viáticos era imposible.
+ *  2. El tipo se toma del enum canonico en singular, igual que gastos.
+ *  3. Se respeta el rol de quien registra: un lector no puede cargar sueldos.
+ */
 class PersonalController extends Controller
 {
-    public function index()
+    public function __construct(
+        private readonly DocumentoService $documentos,
+        private readonly AuditoriaService $auditoria,
+    ) {}
+
+    public function index(): View
     {
         return view('personal.index');
     }
 
-    public function create()
+    public function create(): View
     {
         return view('personal.form', ['personal' => null]);
     }
 
-    public function edit($id)
+    public function edit(string $id): View|RedirectResponse
     {
         $personal = DB::table('global.personal')->where('id_personal', $id)->first();
-        if (!$personal) return redirect()->route('personal.index')->with('error', 'Personal no encontrado');
+
+        if (!$personal) {
+            return redirect()->route('personal.index')->with('error', 'Personal no encontrado.');
+        }
+
         return view('personal.form', ['personal' => $personal]);
     }
 
-    public function store(Request $request)
+    public function store(StorePersonalRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'nombres' => 'required|string|max:100',
-            'apellidos' => 'required|string|max:100',
-            'ci' => 'nullable|string|max:20',
-            'cargo' => 'required|string|max:50',
-            'telefono' => 'nullable|string|max:20',
-            'licencia' => 'nullable|string|max:20',
-            'sueldo' => 'nullable|numeric',
-            'direccion' => 'nullable|string',
-            'email' => 'nullable|email|max:100',
-            'estado' => 'required|integer',
-        ]);
+        DB::table('global.personal')->insert($request->datosNormalizados());
 
-        $allowed = ['nombres', 'apellidos', 'ci', 'cargo', 'telefono', 'licencia', 'sueldo', 'direccion', 'email', 'estado'];
-        $data = array_filter($data, function($key) use ($allowed) {
-            return in_array($key, $allowed);
-        }, ARRAY_FILTER_USE_KEY);
+        $this->auditoria->registrar('PERSONAL_CREADO', 'personal', 'Personal registrado', []);
 
-        DB::table('global.personal')->insert($data);
         return redirect()->route('personal.index')->with('success', 'Personal registrado exitosamente');
     }
 
-    public function update(Request $request, $id)
+    public function update(StorePersonalRequest $request, string $id): RedirectResponse
     {
-        $data = $request->validate([
-            'nombres' => 'required|string|max:100',
-            'apellidos' => 'required|string|max:100',
-            'ci' => 'nullable|string|max:20',
-            'cargo' => 'required|string|max:50',
-            'telefono' => 'nullable|string|max:20',
-            'licencia' => 'nullable|string|max:20',
-            'sueldo' => 'nullable|numeric',
-            'direccion' => 'nullable|string',
-            'email' => 'nullable|email|max:100',
-            'estado' => 'required|integer',
-        ]);
+        DB::table('global.personal')
+            ->where('id_personal', $id)
+            ->update($request->datosActualizables());
 
-        $allowed = ['nombres', 'apellidos', 'ci', 'cargo', 'telefono', 'licencia', 'sueldo', 'direccion', 'email', 'estado'];
-        $filtered = array_filter($data, function($key) use ($allowed) {
-            return in_array($key, $allowed);
-        }, ARRAY_FILTER_USE_KEY);
+        $this->auditoria->registrar('PERSONAL_ACTUALIZADO', 'personal', "Personal #{$id} actualizado", ['id' => $id]);
 
-        DB::table('global.personal')->where('id_personal', $id)->update($filtered);
         return redirect()->route('personal.index')->with('success', 'Personal actualizado exitosamente');
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, string $id): RedirectResponse
     {
-        $tieneVehiculo = DB::table('global.vehiculos')->where('id_personal', $id)->exists();
-        if ($tieneVehiculo) {
-            DB::table('global.personal')->where('id_personal', $id)->update(['estado' => 0]);
-            return redirect()->route('personal.index')->with('success', 'Personal desactivado (tiene vehículos asignados)');
+        if (!$request->user()?->can('eliminar', 'personal')) {
+            abort(403, 'Su rol no permite eliminar personal.');
         }
+
+        // Con vehiculos asignados solo se desactiva: borrarlo dejaria
+        // unidades huerfanas en la columna id_personal.
+        $tieneVehiculos = DB::table('global.vehiculos')->where('id_personal', $id)->exists();
+
+        if ($tieneVehiculos) {
+            DB::table('global.personal')->where('id_personal', $id)->update(['estado' => 0]);
+
+            return redirect()->route('personal.index')
+                ->with('success', 'Personal desactivado (tiene vehiculos asignados).');
+        }
+
         DB::table('global.personal')->where('id_personal', $id)->delete();
+
+        $this->auditoria->registrar('PERSONAL_ELIMINADO', 'personal', "Personal #{$id} eliminado", ['id' => $id]);
+
         return redirect()->route('personal.index')->with('success', 'Personal eliminado');
     }
 
-    public function apiList()
-    {
-        $data = DB::table('global.personal')->orderBy('nombres')->get();
-        return response()->json(['success' => true, 'data' => $data]);
-    }
-
-    public function apiShow($id)
+    public function sueldo(string $id): View|RedirectResponse
     {
         $personal = DB::table('global.personal')->where('id_personal', $id)->first();
-        return response()->json(['success' => true, 'data' => $personal]);
-    }
 
-    public function sueldo($id)
-    {
-        $personal = DB::table('global.personal')->where('id_personal', $id)->first();
-        if (!$personal) return redirect()->route('personal.index')->with('error', 'Personal no encontrado');
+        if (!$personal) {
+            return redirect()->route('personal.index')->with('error', 'Personal no encontrado.');
+        }
+
         return view('personal.sueldo', compact('personal'));
     }
 
-    public function viatico($id)
+    public function viatico(string $id): View|RedirectResponse
     {
         $personal = DB::table('global.personal')->where('id_personal', $id)->first();
-        if (!$personal) return redirect()->route('personal.index')->with('error', 'Personal no encontrado');
-        $vehiculos = DB::table('global.vehiculos')->where('estado', 1)->orderByRaw("LPAD(REGEXP_REPLACE(placa_vehiculo, '[^0-9]', '', 'g'), 10, '0')")->get();
+
+        if (!$personal) {
+            return redirect()->route('personal.index')->with('error', 'Personal no encontrado.');
+        }
+
+        $vehiculos = DB::table('global.vehiculos')
+            ->where('estado', EstadoVehiculo::Activo->value)
+            ->orderByRaw("LPAD(REGEXP_REPLACE(placa_vehiculo, '[^0-9]', '', 'g'), 10, '0')")
+            ->get();
+
         return view('personal.viatico', compact('personal', 'vehiculos'));
     }
 
-    public function storeGasto(Request $request)
+    /**
+     * Registra un sueldo o un viatico.
+     *
+     * Un monto NEGATIVO es una devolucion, y asi se comunica al usuario.
+     */
+    public function storeGasto(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'id_personal' => 'required|integer',
-            'tipo_gasto' => 'required|string|in:Sueldo,Viático',
-            'tipo_viatico' => 'nullable|string|in:LOCAL,VIAJE',
-            'concepto' => 'required|string',
-            'monto' => 'required|numeric',
-            'fecha_gasto' => 'required|date',
-            'descripcion' => 'nullable|string',
-            'id_vehiculo' => 'nullable|integer',
-            'destino_viatico' => 'nullable|string',
+        if (!$request->user()?->can('crear', 'gastos')) {
+            abort(403, 'Su rol no permite registrar pagos a personal.');
+        }
+
+        $validado = $request->validate([
+            'id_personal' => ['required', 'integer', 'exists:personal,id_personal'],
+            // Enum canonico: el bug anterior usaba 'Viǭtico', corrupto.
+            'tipo_gasto' => ['required', 'string', 'in:' . TipoGasto::Sueldo->value . ',' . TipoGasto::Viatico->value],
+            'tipo_viatico' => ['nullable', 'string', 'in:LOCAL,VIAJE'],
+            'concepto' => ['required', 'string', 'max:200'],
+            'monto' => ['required', 'numeric', 'not_in:0'],
+            'fecha_gasto' => ['required', 'date'],
+            'descripcion' => ['nullable', 'string', 'max:2000'],
+            'id_vehiculo' => ['nullable', 'integer', 'exists:vehiculos,id_vehiculo'],
+            'destino_viatico' => ['nullable', 'string', 'max:200'],
         ]);
 
-        $ultimo = DB::table('global.gastos')->where('nro_documento', 'like', 'E_%')->orderBy('id_gasto', 'desc')->first();
-        $contador = $ultimo ? intval(substr($ultimo->nro_documento, 2)) + 1 : 1;
-        $data['nro_documento'] = 'E_' . str_pad($contador, 5, '0', STR_PAD_LEFT);
-        $data['fecha_gasto'] = $data['fecha_gasto'] ?? date('Y-m-d');
+        $monto = round((float) $validado['monto'], 2);
+        $esDevolucion = GastoService::esDevolucion($monto);
+
+        // Localiza el clasificador de alcance unidad para el tipo indicado.
+        $clasificadorId = DB::table('global.clasificador_gastos')
+            ->where('tipo_gasto', $validado['tipo_gasto'])
+            ->where('afecta_unidad', true)
+            ->where('estado', 'ACTIVO')
+            ->orderBy('id_clasificador')
+            ->value('id_clasificador');
 
         DB::table('global.gastos')->insert([
-            'id_vehiculo' => $data['id_vehiculo'] ?? null,
-            'id_personal' => $data['id_personal'],
-            'tipo_gasto' => $data['tipo_gasto'],
-            'tipo_viatico' => $data['tipo_viatico'] ?? null,
-            'concepto' => $data['concepto'],
-            'monto' => $data['monto'],
-            'fecha_gasto' => $data['fecha_gasto'],
-            'descripcion' => $data['descripcion'] ?? null,
-            'nro_documento' => $data['nro_documento'],
-            'destino_viatico' => $data['destino_viatico'] ?? null,
+            'id_vehiculo' => $validado['id_vehiculo'] ?? null,
+            'id_personal' => $validado['id_personal'],
+            'id_clasificador' => $clasificadorId,
+            'tipo_gasto' => $validado['tipo_gasto'],
+            'tipo_viatico' => $validado['tipo_viatico'] ?? null,
+            'concepto' => $validado['concepto'],
+            'monto' => $monto,
+            'fecha_gasto' => $validado['fecha_gasto'],
+            'descripcion' => $validado['descripcion'] ?? null,
+            'destino_viatico' => $validado['destino_viatico'] ?? null,
+            'nro_documento' => $this->documentos->siguiente('E'),
+            'condicion_pago' => 'CONTADO',
+            'es_devolucion' => $esDevolucion,
+            'estado_pago' => $esDevolucion ? 'Anulado' : 'Pagado',
+            'creado_por' => $request->user()?->id,
+            'fecha_registro' => now(),
+            'fecha_actualizacion' => now(),
         ]);
 
-        $mensaje = $data['monto'] < 0 
-            ? 'Devolución registrada exitosamente' 
-            : ucfirst($data['tipo_gasto']) . ' registrado exitosamente';
+        $this->auditoria->registrar(
+            $esDevolucion ? 'DEVOLUCION_PERSONAL' : 'PAGO_PERSONAL',
+            'personal',
+            sprintf('%s Bs. %s', $validado['tipo_gasto'], number_format($monto, 2)),
+            ['id_personal' => $validado['id_personal'], 'devolucion' => $esDevolucion]
+        );
+
+        $personal = DB::table('global.personal')->where('id_personal', $validado['id_personal'])->first();
+        $nombre = trim(($personal->nombres ?? '') . ' ' . ($personal->apellidos ?? ''));
+
+        $mensaje = $esDevolucion
+            ? "Devolucion de {$validado['tipo_gasto']} de {$nombre} registrada exitosamente"
+            : ucfirst(strtolower($validado['tipo_gasto'])) . " de {$nombre} registrado exitosamente";
 
         return redirect()->route('personal.index')->with('success', $mensaje);
+    }
+
+    public function apiList(): \Illuminate\Http\JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => DB::table('global.personal')
+                ->orderBy('nombres')
+                ->get(),
+        ]);
+    }
+
+    public function apiShow(string $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => DB::table('global.personal')->where('id_personal', $id)->first(),
+        ]);
     }
 }
