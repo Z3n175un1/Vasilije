@@ -23,3 +23,8 @@ bootstrap/cache/*.php
 .phpunit.cache
 .phpunit.result.cache
 *.log
+
+# Respaldos de la base: son datos de la empresa y no van dentro de la
+# imagen. `storage/app/` se copia entero por el `COPY . .`, asi que sin
+# esto el dump viaja a cada build.
+storage/app/respaldos/
