@@ -22,8 +22,20 @@
 /.zed
 /auth.json
 /node_modules
+
+# =========================================================
+# LOCKFILES
+#
+# `pnpm-lock.yaml` SI se versiona, y es deliberado: es lo que hace que
+# `pnpm install --frozen-lockfile` pueda fijar versiones exactas en el build
+# de Docker y en CI. Ignorarlo hacia que un clone limpio no lo tuviera y el
+# build fallara con "failed to compute cache key: /pnpm-lock.yaml: not
+# found". No contiene credenciales: solo nombres y versiones.
+#
+# `package-lock.json` se sigue ignorando porque este proyecto usa pnpm; tener
+# los dos lockfiles a la vez es justamente lo que genera esos conflictos.
+# =========================================================
 /package-lock.json
-/pnpm-lock.yaml
 /public/build
 /public/fonts-manifest.dev.json
 /public/hot
