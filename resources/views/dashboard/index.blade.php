@@ -202,6 +202,9 @@
                         <select class="form-control fw-bold" id="fd_id_tramo" style="border-radius:0;border:3px solid #000;padding:10px;" onchange="seleccionarRuta(this)">
                             <option value="">SELECCIONE RUTA...</option>
                         </select>
+                        <button type="button" id="btnAplicarRutaDash" class="btn btn-sm fw-bold mt-2 w-100" style="border-radius:0;border:3px solid #000;padding:10px;background:#2f2c79;color:#fff;">
+                            <i class="fas fa-rotate-right me-1"></i> APLICAR RUTA
+                        </button>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
@@ -415,41 +418,94 @@ function loadTramos() {
         if (res.success) tramos = res.data || [];
         const sel = document.getElementById('fd_id_tramo');
         if (sel) {
+            // `data-origen` y `data-destino` son los que rellenan los campos.
+            // Sin ellos el select mostraba la ruta pero ORIGEN y DESTINO
+            // seguian en su placeholder.
             sel.innerHTML = '<option value="">SELECCIONE RUTA...</option>' +
-                tramos.map(t => `<option value="${t.id_tramo}" data-precio-ton="${t.precio_dolar_tonelada || 0}" data-km="${t.kilometros || 0}">${t.origen} → ${t.destino} (Bs. ${t.precio_total})</option>`).join('');
+                tramos.map(t => `<option value="${t.id_tramo}" data-origen="${window.esc(t.origen || '')}" data-destino="${window.esc(t.destino || '')}" data-precio-ton="${t.precio_dolar_tonelada || 0}" data-km="${t.kilometros || 0}">${window.esc(t.origen || '')} → ${window.esc(t.destino || '')} (Bs. ${t.precio_total})</option>`).join('');
+
+            // El modal puede haberse abierto antes de que volviera el fetch.
+            // Si ya hay una ruta elegida, se aplica para no dejarla a medias.
+            if (sel.value) seleccionarRuta(sel);
         }
     });
 }
 
+/**
+ * Aplica la ruta elegida a los campos que dependen de ella.
+ *
+ * Lee del `data-` de la opcion y no del array `tramos`: si el fetch todavia
+ * no volvio, `find` fallaba en silencio y no rellenaba nada.
+ */
 function seleccionarRuta(select) {
-    const id = parseInt(select.value);
-    const t = tramos.find(x => x.id_tramo === id);
-    if (t) {
-        document.getElementById('fd_origen').value = t.origen || '';
-        document.getElementById('fd_destino').value = t.destino || '';
-        const precioTon = parseFloat(t.precio_dolar_tonelada || 0);
-        document.getElementById('fd_precio_ton').value = precioTon ? precioTon.toFixed(2) : '';
+    const opt = select.options[select.selectedIndex];
+    const origen = document.getElementById('fd_origen');
+    const destino = document.getElementById('fd_destino');
+    const precioTon = document.getElementById('fd_precio_ton');
+
+    // Volver a "SELECCIONE RUTA..." limpia: si no, el select muestra una
+    // ruta y los campos de abajo los datos de otra.
+    if (!opt || !opt.value) {
+        origen.value = '';
+        destino.value = '';
+        precioTon.value = '';
         recalcularMontoDash();
+        return;
     }
+
+    origen.value = opt.dataset.origen || '';
+    destino.value = opt.dataset.destino || '';
+
+    const precio = parseFloat(opt.dataset.precioTon) || 0;
+    precioTon.value = precio ? precio.toFixed(2) : '';
+
+    // Las toneladas no se tocan: son del flete, no de la ruta. Se recalcula
+    // el monto para que se vea el efecto del nuevo Bs/TON sobre lo escrito.
+    recalcularMontoDash();
 }
 
+/**
+ * MONTO = TONELADAS x BS/TON.
+ *
+ * Antes solo recalculaba con toneladas > 0 y sin salida: cuando el modal se
+ * abria restaurando el `localStorage`, el monto conservaba el valor de la
+ * carga anterior en vez de tonnes x Bs/TON de esta.
+ */
 function recalcularMontoDash() {
     const ton = parseFloat(document.getElementById('fd_toneladas').value) || 0;
     const precioTon = parseFloat(document.getElementById('fd_precio_ton').value) || 0;
+    const monto = document.getElementById('fd_monto');
+
     if (ton > 0 && precioTon > 0) {
-        document.getElementById('fd_monto').value = (ton * precioTon).toFixed(2);
+        monto.value = (ton * precioTon).toFixed(2);
+        return;
     }
+
+    // Sin datos suficientes el total va a 0, no un numero viejo.
+    monto.value = '0';
 }
 
 document.addEventListener('input', function(e) {
     if (e.target.id && e.target.id.startsWith('fd_')) {
-        const savedValues = JSON.parse(localStorage.getItem('fleteValues') || '{}');
-        savedValues[e.target.id] = e.target.value;
-        localStorage.setItem('fleteValues', JSON.stringify(savedValues));
+        // El monto es derivado (toneladas x Bs/TON): guardarlo y restaurarlo
+        // hacia que el modal abriera con el total de la carga anterior.
+        const derivados = ['fd_monto', 'fd_origen', 'fd_destino', 'fd_precio_ton'];
+
+        if (!derivados.includes(e.target.id)) {
+            const savedValues = JSON.parse(localStorage.getItem('fleteValues') || '{}');
+            savedValues[e.target.id] = e.target.value;
+            localStorage.setItem('fleteValues', JSON.stringify(savedValues));
+        }
     }
     if (e.target.id === 'fd_toneladas' || e.target.id === 'fd_precio_ton') {
         recalcularMontoDash();
     }
+});
+
+// Volver a marcar la MISMA ruta no dispara `onchange`, asi que sin esto el
+// operador se equivoca de ruta y no tiene forma de recargarla.
+document.getElementById('btnAplicarRutaDash')?.addEventListener('click', function () {
+    seleccionarRuta(document.getElementById('fd_id_tramo'));
 });
 
 function filtrarPorEstado(estado) {
@@ -589,14 +645,27 @@ function prepararIngreso(id) {
     const savedValues = JSON.parse(localStorage.getItem('fleteValues') || '{}');
 
     document.getElementById('fd_id_tramo').value = savedValues.fd_id_tramo || '';
-    document.getElementById('fd_monto').value = savedValues.fd_monto || '';
     document.getElementById('fd_cliente_nombre').value = savedValues.fd_cliente_nombre || 'INDUSTRIAS OLEAGINOSAS S.A.';
-    document.getElementById('fd_origen').value = savedValues.fd_origen || '';
-    document.getElementById('fd_destino').value = savedValues.fd_destino || '';
     document.getElementById('fd_toneladas').value = savedValues.fd_toneladas || '0';
     document.getElementById('fd_precio_ton').value = savedValues.fd_precio_ton || '';
     document.getElementById('fd_concepto').value = savedValues.fd_concepto || 'TRANSPORTE DE SOYA';
     document.getElementById('fd_fecha_ingreso').value = savedValues.fd_fecha_ingreso || new Date().toISOString().split('T')[0];
+
+    // Origen, destino y monto NO se restauran: se derivan de la ruta y de las
+    // toneladas. Restaurarlos directo era el bug: el modal abria mostrando
+    // el total del flete anterior y el operador enviaba el guardado sin
+    // tocar nada.
+    const selTramo = document.getElementById('fd_id_tramo');
+    if (selTramo.value) {
+        seleccionarRuta(selTramo);
+    } else {
+        document.getElementById('fd_origen').value = '';
+        document.getElementById('fd_destino').value = '';
+    }
+
+    // Siempre al final: el monto se recalcula desde toneladas x Bs/TON, nunca
+    // desde lo que quedara guardado de la carga anterior.
+    recalcularMontoDash();
 
     // Set conductor from vehicle data directly
     const conductorId = v.id_personal;
@@ -619,6 +688,9 @@ function guardarFleteDash(event) {
     const data = {
         id_vehiculo: document.getElementById('fd_id_vehiculo_val').value,
         id_personal: document.getElementById('fd_id_personal').value || null,
+        // Sin esto la ruta no se guardaba: el envio se arma a mano campo por
+        // campo y este faltaba, aunque el select viniera con la ruta elegida.
+        id_tramo: document.getElementById('fd_id_tramo').value || null,
         cliente_nombre: document.getElementById('fd_cliente_nombre').value,
         monto: document.getElementById('fd_monto').value,
         origen: document.getElementById('fd_origen').value,

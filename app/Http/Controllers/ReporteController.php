@@ -275,6 +275,10 @@ class ReporteController extends Controller
         $query = DB::table('global.ingresos as i')
             ->leftJoin('global.vehiculos as v', 'i.id_vehiculo', '=', 'v.id_vehiculo')
             ->leftJoin('global.personal as per', 'i.id_personal', '=', 'per.id_personal')
+            // `id_tramo` es la referencia oficial de la ruta cuando existe.
+            // LEFT JOIN para que los fletes historicos sin ruta no se pierdan
+            // del reporte: para esos manda su propio texto.
+            ->leftJoin('global.tramos as tr', 'i.id_tramo', '=', 'tr.id_tramo')
             ->whereBetween('i.fecha_ingreso', [$desde, $hasta])
             ->where('i.estado_factura', '!=', EstadoFactura::Anulada->value)
             ->select(
@@ -297,8 +301,12 @@ class ReporteController extends Controller
                 'i.toneladas',
                 'i.kilometraje_conducido',
                 DB::raw("COALESCE(CONCAT(per.nombres, ' ', per.apellidos), '') as conductor_asignado"),
-                DB::raw("COALESCE(i.origen, '') as origen"),
-                DB::raw("COALESCE(i.destino, '') as destino"),
+                // La ruta del catalogo manda cuando el flete la tiene enlazada; si no,
+                // se usa el texto guardado en el flete. asi un flete historico
+                // sin `id_tramo` sigue apareciendo con su ruta en vez de
+                // quedar como origen/destino vacio en el reporte.
+                DB::raw("COALESCE(tr.origen, i.origen, '') as origen"),
+                DB::raw("COALESCE(tr.destino, i.destino, '') as destino"),
                 DB::raw("COALESCE(i.cliente_nombre, '') as cliente_nombre"),
                 DB::raw("COALESCE(i.tipo_pago, '') as tipo_pago"),
                 'i.estado_factura',

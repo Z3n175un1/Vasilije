@@ -237,6 +237,10 @@
                         <select class="form-control fw-bold" id="nf_id_tramo" style="border-radius:0;border:3px solid #000;padding:10px;" onchange="seleccionarRutaNF(this)">
                             <option value="">SELECCIONE RUTA...</option>
                         </select>
+                        <button type="button" id="btnAplicarRutaNF" class="btn btn-sm fw-bold mt-2 w-100" style="border-radius:0;border:3px solid #000;padding:8px;background:#2f2c79;color:#fff;">
+                            <i class="fas fa-rotate-right me-1"></i> APLICAR RUTA
+                        </button>
+                        <small class="d-block mt-2 fw-bold" style="color:#666;">Al elegir la ruta se completan origen, destino, km y Bs/TON.</small>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
@@ -405,8 +409,11 @@ function cargarCombos() {
         tramosList = res.data || [];
         const selT = document.getElementById('nf_id_tramo');
         if (selT) {
+            // `data-origen` y `data-destino` son lo que rellena los campos de
+            // abajo. Sin ellos el modal mostraba la ruta en el select pero
+            // dejaba ORIGEN y DESTINO en su placeholder.
             selT.innerHTML = '<option value="">SELECCIONE RUTA...</option>' +
-                tramosList.map(t => `<option value="${t.id_tramo}" data-precio-ton="${t.precio_dolar_tonelada || 0}" data-km="${t.kilometros || 0}">${t.origen} → ${t.destino} (Bs. ${t.precio_total})</option>`).join('');
+                tramosList.map(t => `<option value="${t.id_tramo}" data-origen="${window.esc(t.origen || '')}" data-destino="${window.esc(t.destino || '')}" data-precio-ton="${t.precio_dolar_tonelada || 0}" data-km="${t.kilometros || 0}">${window.esc(t.origen || '')} → ${window.esc(t.destino || '')} (Bs. ${t.precio_total})</option>`).join('');
         }
     });
 }
@@ -523,31 +530,74 @@ function anularFlete(id) {
     });
 }
 
+/**
+ * Aplica la ruta elegida a los campos que dependen de ella.
+ *
+ * Se lee del `data-` de la opcion y no de `tramosList`: el array se arma con
+ * un fetch aparte y si todavia no volvio, la busqueda fallaba en silencio y
+ * no rellenaba nada.
+ */
 function seleccionarRutaNF(select) {
-    const id = parseInt(select.value);
-    const t = tramosList.find(x => x.id_tramo === id);
-    if (t) {
-        document.getElementById('nf_origen').value = t.origen || '';
-        document.getElementById('nf_destino').value = t.destino || '';
-        document.getElementById('nf_kilometraje').value = t.kilometros || '0';
-        const precioTon = parseFloat(t.precio_dolar_tonelada || 0);
-        document.getElementById('nf_precio_ton').value = precioTon ? precioTon.toFixed(2) : '';
+    const opt = select.options[select.selectedIndex];
+    const origen = document.getElementById('nf_origen');
+    const destino = document.getElementById('nf_destino');
+    const kilometros = document.getElementById('nf_kilometraje');
+    const precioTon = document.getElementById('nf_precio_ton');
+
+    // Volver a "SELECCIONE RUTA..." limpia: si no, el select muestra una
+    // ruta y los campos de abajo los datos de otra.
+    if (!opt || !opt.value) {
+        origen.value = '';
+        destino.value = '';
+        kilometros.value = '0';
+        precioTon.value = '';
         recalcularMontoNF();
+        return;
     }
+
+    origen.value = opt.dataset.origen || '';
+    destino.value = opt.dataset.destino || '';
+    kilometros.value = opt.dataset.km || '0';
+
+    const precio = parseFloat(opt.dataset.precioTon) || 0;
+    precioTon.value = precio ? precio.toFixed(2) : '';
+
+    // Las toneladas no se tocan: son del flete, no de la ruta. Se recalcula
+    // el monto para que se vea el efecto del nuevo Bs/TON sobre lo escrito.
+    recalcularMontoNF();
 }
 
+/**
+ * MONTO = TONELADAS x BS/TON.
+ *
+ * Antes solo recalculaba con toneladas > 0, dejando el monto de la carga
+ * anterior cuando el campo quedaba vacio: por eso el total no se actualizaba
+ * solo y había que cambiar de ruta para "despertarlo".
+ */
 function recalcularMontoNF() {
     const ton = parseFloat(document.getElementById('nf_toneladas').value) || 0;
     const precioTon = parseFloat(document.getElementById('nf_precio_ton').value) || 0;
+    const monto = document.getElementById('nf_monto');
+
     if (ton > 0 && precioTon > 0) {
-        document.getElementById('nf_monto').value = (ton * precioTon).toFixed(2);
+        monto.value = (ton * precioTon).toFixed(2);
+        return;
     }
+
+    // Sin datos suficientes se pone 0 en vez de conservar un total viejo.
+    monto.value = '0';
 }
 
 document.addEventListener('input', function(e) {
     if (e.target.id === 'nf_toneladas' || e.target.id === 'nf_precio_ton') {
         recalcularMontoNF();
     }
+});
+
+// Volver a marcar la MISMA ruta no dispara `onchange`, asi que sin esto el
+// operador se equivoca de ruta y no tiene forma de recargarla.
+document.getElementById('btnAplicarRutaNF')?.addEventListener('click', function () {
+    seleccionarRutaNF(document.getElementById('nf_id_tramo'));
 });
 
 // --- Modal Nuevo Flete ---
@@ -562,6 +612,12 @@ function abrirModalNuevoFlete() {
     document.getElementById('nf_precio_ton').value = '';
     const selR = document.getElementById('nf_id_tramo');
     if (selR) selR.value = '';
+    // `reset()` no siempre limpia los campos readonly que rellena el script.
+    ['nf_origen', 'nf_destino', 'nf_precio_ton'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    recalcularMontoNF();
     document.getElementById('modalNuevoFlete').style.display = 'flex';
 }
 
@@ -574,6 +630,9 @@ function guardarFlete(event) {
     const data = {
         id_vehiculo: document.getElementById('nf_id_vehiculo').value,
         id_personal: document.getElementById('nf_id_personal').value || null,
+        // Sin esto la ruta no se guardaba: el modal armaba el envio a mano y
+        // se le habia olvidado el campo, aunque el select viniera elegido.
+        id_tramo: document.getElementById('nf_id_tramo').value || null,
         cliente_nombre: document.getElementById('nf_cliente_nombre').value,
         monto: document.getElementById('nf_monto').value,
         origen: document.getElementById('nf_origen').value,

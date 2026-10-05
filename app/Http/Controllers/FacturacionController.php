@@ -106,8 +106,11 @@ class FacturacionController extends Controller
 
         $datos = $request->datosNormalizados();
 
-        // Inmutables: identidad del documento y estado de facturacion.
-        unset($datos['estado_factura'], $datos['nro_documento'], $datos['id_tramo']);
+// Inmutables: identidad del documento y estado de facturacion.
+// `id_tramo` NO va aqui: cambiar la ruta de un flete es una correccion
+// legitima, y sin esto el select guardaba la nueva pero la base conservaba
+// la anterior, con origen y destino descuadrados.
+unset($datos['estado_factura'], $datos['nro_documento']);
 
         DB::table('global.ingresos')->where('id_ingreso', $id)->update($datos);
 

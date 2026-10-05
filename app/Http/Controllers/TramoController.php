@@ -74,9 +74,12 @@ class TramoController extends Controller
             abort(403, 'Su rol no permite eliminar rutas.');
         }
 
-        // Un tramo es un dato tarifario de referencia, no un documento con
-        // valor contable: los fletes guardan origen/destino como texto. Se
-        // puede eliminar aunque este en uso.
+        // Un tramo es un dato tarifario de referencia, no un documento con valor
+        // contable. Los fletes guardan origen/destino como texto y ademas
+        // apuntan a la ruta por `id_tramo`, pero la FK es ON DELETE SET NULL:
+        // al borrar la ruta los fletes NO se borran, solo quedan sin referencia
+        // y conservan su origen/destino historico. Por eso se puede eliminar
+        // aunque este en uso.
         DB::table('global.tramos')->where('id_tramo', $id)->delete();
 
         $this->auditoria->registrar('TRAMO_ELIMINADO', 'tramos', "Ruta #{$id} eliminada", ['id' => $id]);

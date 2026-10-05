@@ -4,133 +4,700 @@
 
 @push('styles')
 <style>
-.report-table th {
-    background: #000 !important;
-    color: #2f2c79 !important;
-    font-weight: 800;
-    padding: 12px 10px;
-    border: 2px solid #000;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+/* ============================================================
+   VARIABLES CSS - SISTEMA BENTO
+   ============================================================ */
+:root {
+    --primary: #2f2c79;
+    --primary-dark: #1d1a50;
+    --primary-light: #403c91;
+    --accent: #9ce0db;
+    --success: #28a745;
+    --danger: #dc3545;
+    --warning: #ffc107;
+    --black: #000000;
+    --white: #ffffff;
 }
-.report-table td {
-    padding: 10px;
-    border: 1px solid #000;
-    font-weight: 600;
-    vertical-align: middle;
+
+/* ============================================================
+   FILTROS - SECCIÓN MEJORADA
+   ============================================================ */
+.filter-section {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    border: 6px solid var(--black);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    color: var(--white);
+    animation: slideDown 0.5s ease-out;
 }
-.report-table tbody tr:nth-child(even) {
-    background: #f8f9fa;
+
+.filter-section .filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    align-items: flex-end;
 }
-.report-table tbody tr:hover {
-    background: #fff8e1;
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
 }
-.summary-card {
-    border: 4px solid #000;
-    padding: 20px;
-    text-align: center;
-    background: #fff;
-}
-.summary-card .label {
-    font-size: 0.8rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #666;
-}
-.summary-card .value {
-    font-size: 1.8rem;
+
+.filter-label {
+    font-size: 0.75rem;
     font-weight: 900;
-    margin-top: 5px;
-}
-.filter-card {
-    background: #2f2c79;
-    border: 4px solid #000;
-    padding: 20px;
-}
-.filter-card label {
-    font-weight: 800;
-    font-size: 0.8rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0.65rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
-.filter-card .form-control, .filter-card .form-select {
-    border-radius: 0;
-    border: 3px solid #000;
-    padding: 10px 12px;
+
+.filter-label i {
+    color: var(--accent);
+    font-size: 0.85rem;
+}
+
+.filter-section .form-control,
+.filter-section .form-select {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: var(--black) !important;
+    border: 3px solid var(--black) !important;
+    border-radius: 4px;
+    padding: 0.85rem 1rem;
     font-weight: 700;
-}
-.detalle-row td {
+    font-size: 0.95rem;
+    font-family: inherit;
     transition: all 0.2s ease;
 }
-.tr-expandido {
-    background: #fffde7 !important;
+
+.filter-section .form-control:focus,
+.filter-section .form-select:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 4px rgba(156, 224, 219, 0.2) !important;
+    outline: none !important;
 }
-.chart-section {
-    border: 4px solid #000;
-    background: #fff;
-    padding: 20px;
-    margin-bottom: 20px;
+
+.filter-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
 }
-.chart-section .chart-title {
+
+.filter-btn {
+    padding: 0.85rem 1.5rem;
+    background: var(--white);
+    color: var(--black);
+    border: 3px solid var(--black);
+    font-weight: 900;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 4px;
+}
+
+.filter-btn:hover {
+    background: var(--black);
+    color: var(--white);
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+}
+
+.filter-btn:active {
+    transform: translate(1px, 1px);
+}
+
+/* ============================================================
+   EXPORT BUTTONS - HEADER
+   ============================================================ */
+.export-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.btn-export {
+    padding: 0.85rem 1.25rem;
+    border: 3px solid var(--black);
+    font-weight: 900;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.btn-export-xls {
+    background: #007400;
+    color: var(--white);
+}
+
+.btn-export-xls:hover {
+    background: #005a00;
+    box-shadow: 6px 6px 0 rgba(0, 116, 0, 0.3);
+    transform: translate(-2px, -2px);
+}
+
+.btn-export-pdf {
+    background: var(--danger);
+    color: var(--white);
+}
+
+.btn-export-pdf:hover {
+    background: #bb1d3d;
+    box-shadow: 6px 6px 0 rgba(220, 53, 69, 0.3);
+    transform: translate(-2px, -2px);
+}
+
+.btn-export-print {
+    background: var(--black);
+    color: var(--white);
+}
+
+.btn-export-print:hover {
+    background: var(--primary);
+    box-shadow: 6px 6px 0 var(--accent);
+    transform: translate(-2px, -2px);
+}
+
+.btn-export:active {
+    transform: translate(1px, 1px);
+}
+
+/* ============================================================
+   TOGGLE CHARTS
+   ============================================================ */
+.toggle-charts-btn {
+    background: var(--black);
+    color: var(--white);
+    border: 4px solid var(--black);
+    padding: 1rem 1.5rem;
+    font-weight: 900;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 2rem;
+}
+
+.toggle-charts-btn:hover {
+    background: var(--primary);
+    box-shadow: 0 0 0 4px var(--accent);
+    transform: scale(1.02);
+}
+
+.toggle-charts-btn:active {
+    transform: scale(0.98);
+}
+
+/* ============================================================
+   PERIODO INFO
+   ============================================================ */
+.periodo-info {
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    border: 3px solid var(--black);
+    border-left: 6px solid var(--accent);
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    color: var(--white);
     font-weight: 800;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    animation: slideDown 0.5s ease-out;
+}
+
+.periodo-badge {
+    background: var(--accent);
+    color: var(--primary-dark);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    border: 2px solid var(--black);
+}
+
+/* ============================================================
+   SUMMARY CARDS
+   ============================================================ */
+.summary-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.summary-card {
+    background: var(--white);
+    border: 6px solid var(--black);
+    padding: 2rem 1.75rem;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+}
+
+.summary-card:nth-child(2)::before {
+    background: linear-gradient(90deg, var(--danger), #ff6b6b);
+}
+
+.summary-card:nth-child(3)::before {
+    background: linear-gradient(90deg, var(--success), #5fdd84);
+}
+
+.summary-card:hover {
+    box-shadow:
+        12px 12px 0 rgba(0, 0, 0, 0.15),
+        0 0 0 1px var(--black);
+    transform: translate(-4px, -4px);
+}
+
+.summary-label {
+    font-size: 0.8rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--primary);
+    margin-bottom: 0.75rem;
+}
+
+.summary-value {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin: 0.5rem 0;
+    word-break: break-word;
+}
+
+.summary-icon {
+    font-size: 2.5rem;
+    opacity: 0.1;
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    z-index: 0;
+}
+
+.summary-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* ============================================================
+   CHARTS SECTION
+   ============================================================ */
+.charts-container {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.chart-section {
+    background: var(--white);
+    border: 6px solid var(--black);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 4px;
+}
+
+.chart-title {
+    font-weight: 900;
     font-size: 1rem;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 3px solid #000;
+    color: var(--black);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 3px solid var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
+
+.chart-title i {
+    color: var(--primary);
+    font-size: 1.2rem;
+}
+
 .chart-container {
     position: relative;
-    height: 300px;
+    height: 350px;
 }
-.toggle-charts {
-    background: #000;
-    color: #fff;
-    border: 3px solid #000;
-    padding: 10px 20px;
-    font-weight: 800;
+
+/* ============================================================
+   TABLE SECTION
+   ============================================================ */
+.table-wrapper {
+    background: var(--white);
+    border: 6px solid var(--black);
+    overflow: hidden;
+    margin-bottom: 0;
+    animation: slideUp 0.5s ease-out;
+}
+
+.report-table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: collapse;
+}
+
+.report-table th {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: var(--white);
+    font-weight: 900;
+    padding: 1.25rem 1rem;
+    border: 2px solid var(--black);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.report-table td {
+    padding: 0.95rem 1rem;
+    border: 1px solid #e0e0e0;
+    font-weight: 700;
+    vertical-align: middle;
+    font-size: 0.95rem;
+}
+
+.report-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.report-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.report-table tbody tr.tr-expandido {
+    background: #fffde7 !important;
+}
+
+.report-table tbody tr.tr-principal {
     cursor: pointer;
-    transition: all 0.2s;
 }
-.toggle-charts:hover {
-    background: #2f2c79;
+
+.report-table .badge {
+    font-weight: 900;
+    padding: 0.5rem 1rem !important;
+    border: 2px solid var(--black) !important;
+    border-radius: 4px;
 }
+
+.badge-ingreso {
+    background: #e2ffd6 !important;
+    color: var(--success) !important;
+}
+
+.badge-egreso {
+    background: #ffdcd6 !important;
+    color: var(--danger) !important;
+}
+
+.currency-positive {
+    color: var(--success);
+    font-weight: 900;
+}
+
+.currency-negative {
+    color: var(--danger);
+    font-weight: 900;
+}
+
+.table-expand-icon {
+    font-size: 0.8rem;
+    opacity: 0.6;
+    transition: transform 0.3s ease;
+}
+
+.tr-principal.tr-expandido .table-expand-icon {
+    transform: rotate(180deg);
+}
+
+/* Detail row */
+.detalle-row {
+    background: #f9f9f9 !important;
+}
+
+.detalle-row td {
+    padding: 0 !important;
+    border: 2px solid var(--primary) !important;
+    border-top: none !important;
+}
+
+.detalle-content {
+    padding: 1.5rem 1.5rem;
+    font-size: 0.9rem;
+    line-height: 1.8;
+}
+
+.detalle-row .row > div {
+    margin-bottom: 0.75rem;
+}
+
+.detalle-row strong {
+    font-weight: 900;
+    color: var(--primary);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.table-footer {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    color: var(--white);
+    padding: 1.5rem;
+    border: 6px solid var(--black);
+    border-top: none;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.table-footer-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.table-footer-label {
+    opacity: 0.9;
+    font-size: 0.85rem;
+}
+
+.table-footer-value {
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    border: 6px solid var(--black);
+    background: var(--white);
+}
+
+.empty-state-icon {
+    font-size: 5rem;
+    opacity: 0.15;
+    margin-bottom: 1rem;
+}
+
+.empty-state-title {
+    font-size: 1.4rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--primary);
+}
+
+.loading-state {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.spinner-border {
+    border-width: 4px !important;
+    border-color: var(--primary) !important;
+    border-right-color: transparent !important;
+}
+
+.loading-text {
+    margin-top: 1.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--primary);
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+    .filter-section {
+        padding: 1.5rem;
+    }
+
+    .filter-section .filter-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .filter-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .filter-buttons .filter-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .summary-section {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .chart-container {
+        height: 300px;
+    }
+
+    .table-footer {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1.25rem;
+    }
+
+    .report-table th {
+        font-size: 0.7rem;
+        padding: 0.85rem 0.5rem;
+    }
+
+    .report-table td {
+        font-size: 0.85rem;
+        padding: 0.75rem 0.5rem;
+    }
+
+    .export-buttons {
+        width: 100%;
+    }
+
+    .btn-export {
+        flex: 1;
+        justify-content: center;
+        min-width: auto;
+    }
+}
+
 @media print {
-    body { background: #fff !important; }
-    #app-header, .no-print { display: none !important; }
-    main { margin: 0 !important; padding: 0 !important; }
+    body {
+        background: var(--white) !important;
+    }
+
+    #app-header,
+    .no-print {
+        display: none !important;
+    }
+
+    main {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .filter-section,
+    .toggle-charts-btn,
+    .charts-container {
+        display: none !important;
+    }
+
+    .table-wrapper,
+    .summary-section {
+        box-shadow: none !important;
+    }
 }
 </style>
 @endpush
 
 @section('content')
 <div class="main-container w-full">
-    <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 bg-white text-black p-4 rounded-3 shadow-heavy no-print">
+    {{-- HEADER --}}
+    <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3 bg-white p-4 rounded-3 shadow-heavy no-print">
         <div class="header-decoration">
-            <h1 class="fs-title mb-0 text-black">REPORTES</h1>
-            <p class="font-bold small text-black uppercase">Informes de Gestión Operativa y Financiera</p>
+            <h1 class="fs-title mb-2 text-black">REPORTES</h1>
+            <p class="font-bold small text-black uppercase">Informes de gestión operativa y financiera</p>
         </div>
-        <div class="d-flex gap-2">
-            <button class="btn-bento btn-bento-outline border-black py-1 px-2 fs-mid font-bold rounded-3 text-decoration-none hover-scale" style="background:#007400;color:#fff;border:3px solid #000;padding:10px;border-radius:0;" onclick="exportXLS()">
-                    <i class="fas fa-file-excel"></i> XLS
+        <div class="export-buttons">
+            <button class="btn-export btn-export-xls" onclick="exportXLS()" title="Exportar a Excel">
+                <i class="fas fa-file-excel"></i> XLS
             </button>
-            <button class="btn-bento btn-bento-primary border-black py-1 px-2 fs-mid font-bold rounded-3 text-decoration-none hover-scale" onclick="generarPDF()">
-                <i class="fas fa-file-pdf me-1"></i> PDF
+            <button class="btn-export btn-export-pdf" onclick="generarPDF()" title="Generar PDF">
+                <i class="fas fa-file-pdf"></i> PDF
             </button>
-            <button class="btn-bento btn-bento-outline border-black py-1 px-2 fs-mid font-bold rounded-3 text-decoration-none hover-scale" onclick="imprimirReporte()">
-                <i class="fas fa-print me-1"></i> IMPRIMIR
+            <button class="btn-export btn-export-print" onclick="imprimirReporte()" title="Imprimir">
+                <i class="fas fa-print"></i> IMPRIMIR
             </button>
         </div>
     </header>
 
-    <!-- FILTROS -->
-    <div class="filter-card mb-4 no-print">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-2">
-                <label>TIPO REPORTE</label>
+    {{-- FILTROS --}}
+    <div class="filter-section no-print">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-filter"></i> TIPO REPORTE
+                </label>
                 <select class="form-select" id="filterTipo">
                     <option value="TODO">TODO</option>
                     <option value="GASTOS">SOLO GASTOS</option>
@@ -138,8 +705,11 @@
                     <option value="USUARIOS">USUARIOS</option>
                 </select>
             </div>
-            <div class="col-md-2">
-                <label>UNIDAD</label>
+
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-truck"></i> UNIDAD
+                </label>
                 <select class="form-select" id="filterVehiculo">
                     <option value="">TODAS</option>
                     @foreach($vehiculos as $v)
@@ -147,49 +717,67 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-2">
-                <label>FECHA INICIO</label>
+
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-calendar"></i> FECHA INICIO
+                </label>
                 <input type="date" class="form-control" id="filterFechaInicio" value="{{ date('Y-m-01') }}">
             </div>
-            <div class="col-md-2">
-                <label>FECHA FIN</label>
+
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-calendar"></i> FECHA FIN
+                </label>
                 <input type="date" class="form-control" id="filterFechaFin" value="{{ date('Y-m-d') }}">
             </div>
-            <div class="col-md-2">
-                <button class="btn fw-bold w-100 d-flex align-items-center justify-content-center gap-2" style="background:#000;color:#fff;border:3px solid #000;padding:10px;border-radius:0;" onclick="cargarReporte()">
-                    <i class="fas fa-search"></i> GENERAR
-                </button>
-            </div>
-            <div class="col-md-2">
-                <button class="btn fw-bold w-100 d-flex align-items-center justify-content-center gap-2" style="background:#000;color:#fff;border:3px solid #000;padding:10px;border-radius:0;" onclick="exportCSV()">
-                    <i class="fas fa-file-csv"></i> CSV
-                </button>
-            </div>
-            
+        </div>
+
+        <div class="filter-buttons mt-3">
+            <button class="filter-btn" onclick="cargarReporte()">
+                <i class="fas fa-search"></i> GENERAR REPORTE
+            </button>
+            <button class="filter-btn" onclick="exportCSV()">
+                <i class="fas fa-file-csv"></i> EXPORTAR CSV
+            </button>
         </div>
     </div>
 
-    <!-- BOTON TOGGLE GRAFICAS -->
-    <div class="mb-3 no-print">
-        <button class="toggle-charts" onclick="toggleCharts()">
-            <i class="fas fa-chart-pie me-2"></i> <span id="toggleChartsText">OCULTAR GRÁFICAS</span>
+    {{-- INFO PERÍODO --}}
+    <div id="periodoInfo" class="periodo-info" style="display:none;">
+        <div>
+            <i class="fas fa-calendar-alt"></i>
+            PERÍODO: <span id="periodoText"></span>
+        </div>
+        <div class="periodo-badge" id="tipoReporteBadge">TODO</div>
+    </div>
+
+    {{-- TOGGLE CHARTS --}}
+    <div class="no-print">
+        <button class="toggle-charts-btn" onclick="toggleCharts()">
+            <i class="fas fa-chart-pie"></i>
+            <span id="toggleChartsText">OCULTAR GRÁFICAS</span>
         </button>
     </div>
 
-    <!-- GRAFICAS -->
-    <div id="chartsContainer" class="no-print">
+    {{-- GRÁFICAS --}}
+    <div id="chartsContainer" class="charts-container no-print">
         <div class="row g-3 mb-4">
-            <div class="col-md-6">
+            <div class="col-lg-6">
                 <div class="chart-section">
-                    <div class="chart-title"><i class="fas fa-chart-pie me-2"></i> GASTOS POR CATEGORÍA</div>
+                    <div class="chart-title">
+                        <i class="fas fa-chart-pie"></i> GASTOS POR CATEGORÍA
+                    </div>
                     <div class="chart-container">
                         <canvas id="chartGastosCategoria"></canvas>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-lg-6">
                 <div class="chart-section">
-                    <div class="chart-title"><i class="fas fa-chart-bar me-2"></i> INGRESOS POR UNIDAD</div>
+                    <div class="chart-title">
+                        <i class="fas fa-chart-bar"></i> INGRESOS POR UNIDAD
+                    </div>
                     <div class="chart-container">
                         <canvas id="chartIngresosUnidad"></canvas>
                     </div>
@@ -199,7 +787,9 @@
         <div class="row g-3 mb-4">
             <div class="col-12">
                 <div class="chart-section">
-                    <div class="chart-title"><i class="fas fa-chart-line me-2"></i> EVOLUCIÓN MENSUAL</div>
+                    <div class="chart-title">
+                        <i class="fas fa-chart-line"></i> EVOLUCIÓN MENSUAL
+                    </div>
                     <div class="chart-container">
                         <canvas id="chartEvolucionMensual"></canvas>
                     </div>
@@ -208,69 +798,77 @@
         </div>
     </div>
 
-    <!-- RESUMEN -->
-    <div id="summaryContainer" class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="summary-card">
-                <div class="label">TOTAL INGRESOS</div>
-                <div class="value" style="color:#007400;" id="totalIngresos">Bs. 0.00</div>
+    {{-- RESUMEN --}}
+    <div class="summary-section" id="summaryContainer">
+        <div class="summary-card">
+            <div class="summary-icon"><i class="fas fa-arrow-up"></i></div>
+            <div class="summary-content">
+                <div class="summary-label">TOTAL INGRESOS</div>
+                <div class="summary-value currency-positive" id="totalIngresos">Bs. 0.00</div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="summary-card">
-                <div class="label">TOTAL EGRESOS</div>
-                <div class="value" style="color:#dc3545;" id="totalEgresos">Bs. 0.00</div>
+        <div class="summary-card">
+            <div class="summary-icon"><i class="fas fa-arrow-down"></i></div>
+            <div class="summary-content">
+                <div class="summary-label">TOTAL EGRESOS</div>
+                <div class="summary-value currency-negative" id="totalEgresos">Bs. 0.00</div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="summary-card">
-                <div class="label">BALANCE NETO</div>
-                <div class="value" id="balanceValor">Bs. 0.00</div>
+        <div class="summary-card">
+            <div class="summary-icon"><i class="fas fa-balance-scale"></i></div>
+            <div class="summary-content">
+                <div class="summary-label">BALANCE NETO</div>
+                <div class="summary-value" id="balanceValor">Bs. 0.00</div>
             </div>
         </div>
     </div>
 
-    <!-- INFO PERIODO -->
-    <div id="periodoInfo" class="fw-bold mb-3 px-1" style="display:none;">
-        <i class="fas fa-calendar-alt me-2"></i> PERIODO: <span id="periodoText"></span>
-        <span class="ms-4 badge bg-black text-warning px-3 py-2" id="tipoReporteBadge">TODO</span>
+    {{-- TABLA --}}
+    <div id="reportLoading" class="loading-state">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="loading-text">GENERANDO REPORTE...</p>
     </div>
 
-    <!-- TABLA DATOS -->
-    <div id="reportLoading" class="text-center py-5">
-        <div class="spinner-border text-dark" role="status"></div>
-        <p class="mt-3 fw-bold">GENERANDO REPORTE...</p>
+    <div id="reportEmpty" class="empty-state" style="display:none;">
+        <div class="empty-state-icon">
+            <i class="fas fa-chart-bar"></i>
+        </div>
+        <div class="empty-state-title">NO HAY DATOS PARA EL PERÍODO SELECCIONADO</div>
     </div>
-    <div id="reportEmpty" class="text-center py-5" style="display:none;border:4px solid #000;">
-        <i class="fas fa-chart-bar" style="font-size:64px;opacity:.2;"></i>
-        <h3 class="mt-3 fw-bold">NO HAY DATOS PARA EL PERÍODO SELECCIONADO</h3>
-    </div>
+
     <div id="reportContainer" style="display:none;">
-        <div style="border:4px solid #000;overflow:hidden;">
-            <table class="report-table w-100 mb-0" id="reportTable">
+        <div class="table-wrapper">
+            <table class="report-table" id="reportTable">
                 <thead>
                     <tr>
-                        <th>N° DOC</th>
-                        <th>FECHA</th>
-                        <th>TIPO</th>
-                        <th>RECORRIDO</th>
-                        <th>UNIDAD</th>
-                        <th>CATEGORÍA</th>
-                        <th>TONELADAS</th>
-                        <th>INGRESO</th>
-                        <th>EGRESO</th>
-                        <th style="width:40px;"></th>
+                        <th style="width: 10%;">N° DOC</th>
+                        <th style="width: 10%;">FECHA</th>
+                        <th style="width: 12%;">TIPO</th>
+                        <th style="width: 18%;">RECORRIDO</th>
+                        <th style="width: 12%;">UNIDAD</th>
+                        <th style="width: 12%;">CATEGORÍA</th>
+                        <th style="width: 10%;">TN</th>
+                        <th style="width: 12%;">INGRESO</th>
+                        <th style="width: 12%;">EGRESO</th>
+                        <th style="width: 6%;">+</th>
                     </tr>
                 </thead>
                 <tbody id="reportBody"></tbody>
             </table>
         </div>
-        <div class="fw-bold p-3 text-end" style="background:#000;color:#fff;border:4px solid #000;border-top:none;font-size:1.1rem;">
-            TOTAL INGRESOS: <span id="footerIngresos">Bs. 0.00</span>
-            &nbsp;&nbsp;|&nbsp;&nbsp;
-            TOTAL EGRESOS: <span id="footerEgresos">Bs. 0.00</span>
-            &nbsp;&nbsp;|&nbsp;&nbsp;
-            BALANCE: <span id="footerBalance">Bs. 0.00</span>
+        <div class="table-footer">
+            <div class="table-footer-item">
+                <span class="table-footer-label">TOTAL INGRESOS:</span>
+                <span class="table-footer-value" id="footerIngresos">Bs. 0.00</span>
+            </div>
+            <div class="table-footer-item">
+                <span class="table-footer-label">TOTAL EGRESOS:</span>
+                <span class="table-footer-value" id="footerEgresos">Bs. 0.00</span>
+            </div>
+            <div class="table-footer-item">
+                <span class="table-footer-label">BALANCE:</span>
+                <span class="table-footer-value" id="footerBalance">Bs. 0.00</span>
+            </div>
         </div>
     </div>
 </div>
@@ -309,7 +907,8 @@ function cargarEstadisticas() {
         renderGastosCategoria(res.data.gastos_por_categoria);
         renderIngresosUnidad(res.data.ingresos_por_vehiculo);
         renderEvolucionMensual(res.data.por_mes);
-    });
+    })
+    .catch(err => console.error('Error:', err));
 }
 
 function renderGastosCategoria(data) {
@@ -321,7 +920,7 @@ function renderGastosCategoria(data) {
     const colors = ['#2f2c79', '#dc3545', '#ffc107', '#198754', '#0dcaf0', '#6f42c1', '#fd7e14', '#20c997'];
 
     charts.gastosCategoria = new Chart(ctx, {
-        type: 'pie',
+        type: 'doughnut',
         data: {
             labels: labels,
             datasets: [{
@@ -339,7 +938,8 @@ function renderGastosCategoria(data) {
                     position: 'bottom',
                     labels: {
                         font: { weight: 'bold', size: 12 },
-                        padding: 15
+                        padding: 15,
+                        boxPadding: 10
                     }
                 },
                 tooltip: {
@@ -347,7 +947,10 @@ function renderGastosCategoria(data) {
                         label: function(context) {
                             return context.label + ': Bs. ' + context.parsed.toFixed(2);
                         }
-                    }
+                    },
+                    titleFont: { weight: 'bold', size: 12 },
+                    bodyFont: { weight: 'bold' },
+                    padding: 12
                 }
             }
         }
@@ -370,7 +973,8 @@ function renderIngresosUnidad(data) {
                 data: values,
                 backgroundColor: '#2f2c79',
                 borderColor: '#000',
-                borderWidth: 3
+                borderWidth: 3,
+                borderRadius: 4
             }]
         },
         options: {
@@ -383,17 +987,25 @@ function renderIngresosUnidad(data) {
                         label: function(context) {
                             return 'Bs. ' + context.parsed.y.toFixed(2);
                         }
-                    }
+                    },
+                    titleFont: { weight: 'bold', size: 12 },
+                    bodyFont: { weight: 'bold' },
+                    padding: 12
                 }
             },
             scales: {
                 y: {
                     beginAtZero: true,
                     ticks: {
+                        font: { weight: 'bold' },
                         callback: function(value) {
                             return 'Bs. ' + value.toLocaleString();
                         }
-                    }
+                    },
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                },
+                x: {
+                    ticks: { font: { weight: 'bold' } }
                 }
             }
         }
@@ -418,14 +1030,16 @@ function renderEvolucionMensual(data) {
                     data: ingresos,
                     backgroundColor: '#198754',
                     borderColor: '#000',
-                    borderWidth: 3
+                    borderWidth: 3,
+                    borderRadius: 4
                 },
                 {
                     label: 'Gastos',
                     data: gastos,
                     backgroundColor: '#dc3545',
                     borderColor: '#000',
-                    borderWidth: 3
+                    borderWidth: 3,
+                    borderRadius: 4
                 }
             ]
         },
@@ -435,24 +1049,32 @@ function renderEvolucionMensual(data) {
             plugins: {
                 legend: {
                     position: 'top',
-                    labels: { font: { weight: 'bold' } }
+                    labels: { font: { weight: 'bold' }, padding: 15 }
                 },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
                             return context.dataset.label + ': Bs. ' + context.parsed.y.toFixed(2);
                         }
-                    }
+                    },
+                    titleFont: { weight: 'bold', size: 12 },
+                    bodyFont: { weight: 'bold' },
+                    padding: 12
                 }
             },
             scales: {
                 y: {
                     beginAtZero: true,
                     ticks: {
+                        font: { weight: 'bold' },
                         callback: function(value) {
                             return 'Bs. ' + value.toLocaleString();
                         }
-                    }
+                    },
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                },
+                x: {
+                    ticks: { font: { weight: 'bold' } }
                 }
             }
         }
@@ -481,12 +1103,10 @@ function cargarReporte() {
         document.getElementById('reportLoading').style.display = 'none';
         if (!res.success) return;
 
-        // Periodo
-        document.getElementById('periodoInfo').style.display = 'block';
+        document.getElementById('periodoInfo').style.display = 'flex';
         document.getElementById('periodoText').textContent = res.resumen.periodo;
         document.getElementById('tipoReporteBadge').textContent = res.resumen.tipo_reporte;
 
-        // Summary
         const ti = parseFloat(res.resumen.total_ingresos || 0);
         const te = parseFloat(res.resumen.total_egresos || 0);
         const balance = ti - te;
@@ -494,9 +1114,8 @@ function cargarReporte() {
         document.getElementById('totalEgresos').textContent = formatCurrency(te);
         const balEl = document.getElementById('balanceValor');
         balEl.textContent = formatCurrency(balance);
-        balEl.style.color = balance >= 0 ? '#007400' : '#dc3545';
+        balEl.className = balance >= 0 ? 'summary-value currency-positive' : 'summary-value currency-negative';
 
-        // Data
         if (!res.data || res.data.length === 0) {
             document.getElementById('reportEmpty').style.display = 'block';
             return;
@@ -505,42 +1124,47 @@ function cargarReporte() {
 
         const tbody = document.getElementById('reportBody');
         tbody.innerHTML = res.data.map((r, i) => {
-            const bg = r.tipo_registro === 'INGRESO' ? '#e2ffd6' : '#ffdcd6';
+            const tipoClass = r.tipo_registro === 'INGRESO' ? 'badge-ingreso' : 'badge-egreso';
+            const tipoIcon = r.tipo_registro === 'INGRESO' ? '↑' : '↓';
             const recorrido = r.tipo_registro === 'INGRESO'
                 ? ((r.origen || '') + (r.destino ? ' → ' + r.destino : ''))
                 : (r.concepto || '—');
-            const ingresoHtml = r.tipo_registro === 'INGRESO' ? `<span style="color:#007400;font-weight:700;">${formatCurrency(r.ingreso)}</span>` : '—';
-            const egresoHtml = r.tipo_registro === 'GASTO' ? `<span style="color:#cc0000;font-weight:700;">${formatCurrency(r.egreso)}</span>` : '—';
+            const ingresoHtml = r.tipo_registro === 'INGRESO' ? `<span class="currency-positive">${formatCurrency(r.ingreso)}</span>` : '—';
+            const egresoHtml = r.tipo_registro === 'GASTO' ? `<span class="currency-negative">${formatCurrency(r.egreso)}</span>` : '—';
             const cat = r.tipo_registro === 'INGRESO' ? 'FLETE' : (r.tipo_gasto || '—');
-            return `<tr class="tr-principal tr-principal-${i}" style="cursor:pointer;" onclick="toggleDetalle(${i})">
-                <td class="fw-bold font-monospace" style="white-space:nowrap;">${r.nro_documento || '—'}</td>
-                <td style="white-space:nowrap;">${r.fecha || '—'}</td>
-                <td><span class="badge fw-bold px-3 py-2" style="background:${bg};color:#000;border:2px solid #000;">${r.tipo_registro === 'INGRESO' ? '↑ INGRESO' : '↓ EGRESO'}</span></td>
+            return `<tr class="tr-principal tr-principal-${i}" onclick="toggleDetalle(${i})">
+                <td class="fw-bold font-monospace">${r.nro_documento || '—'}</td>
+                <td>${r.fecha || '—'}</td>
+                <td class="text-center">
+                    <span class="badge ${tipoClass}">
+                        ${tipoIcon} ${r.tipo_registro === 'INGRESO' ? 'ING' : 'EGR'}
+                    </span>
+                </td>
                 <td class="fw-bold">${recorrido || '—'}</td>
                 <td>${r.placa_vehiculo || '—'}</td>
                 <td>${cat}</td>
-                <td>${r.tipo_registro === 'INGRESO' ? (r.toneladas || '—') : '—'}</td>
-                <td class="fw-bold">${ingresoHtml}</td>
-                <td class="fw-bold">${egresoHtml}</td>
-                <td class="text-center fw-bold" style="font-size:0.8rem;">▼</td>
+                <td class="text-center">${r.tipo_registro === 'INGRESO' ? (r.toneladas || '—') : '—'}</td>
+                <td class="text-end">${ingresoHtml}</td>
+                <td class="text-end">${egresoHtml}</td>
+                <td class="text-center"><span class="table-expand-icon">▼</span></td>
             </tr>
             <tr id="detalle-${i}" class="detalle-row" style="display:none;">
-                <td colspan="10" style="padding:0;border:2px solid #000;border-top:none;background:#f9f9f9;">
-                    <div style="padding:14px 18px;font-size:0.9rem;">
+                <td colspan="10">
+                    <div class="detalle-content">
                         ${r.tipo_registro === 'INGRESO' ? `
                             <div class="row">
-                                <div class="col-md-3 mb-2"><strong>CLIENTE:</strong> ${r.cliente_nombre || '—'}</div>
-                                <div class="col-md-3 mb-2"><strong>CONDUCTOR:</strong> ${r.conductor_asignado || '—'}</div>
-                                <div class="col-md-2 mb-2"><strong>TN:</strong> ${r.toneladas || '0'}</div>
-                                <div class="col-md-2 mb-2"><strong>PAGO:</strong> ${r.tipo_pago || '—'}</div>
-                                <div class="col-md-2 mb-2"><strong>OBS:</strong> ${r.observaciones || '—'}</div>
+                                <div class="col-md-3"><strong>CLIENTE:</strong> ${r.cliente_nombre || '—'}</div>
+                                <div class="col-md-3"><strong>CONDUCTOR:</strong> ${r.conductor_asignado || '—'}</div>
+                                <div class="col-md-2"><strong>TN:</strong> ${r.toneladas || '0'}</div>
+                                <div class="col-md-2"><strong>PAGO:</strong> ${r.tipo_pago || '—'}</div>
+                                <div class="col-md-2"><strong>OBS:</strong> ${r.observaciones || '—'}</div>
                             </div>
                         ` : `
                             <div class="row">
-                                <div class="col-md-3 mb-2"><strong>TIPO:</strong> ${r.tipo_gasto || '—'}</div>
-                                <div class="col-md-3 mb-2"><strong>PROVEEDOR:</strong> ${r.proveedor || '—'}</div>
-                                <div class="col-md-2 mb-2"><strong>KM:</strong> ${r.kilometraje || '—'}</div>
-                                <div class="col-md-4 mb-2"><strong>OBS:</strong> ${r.observaciones || '—'}</div>
+                                <div class="col-md-3"><strong>TIPO:</strong> ${r.tipo_gasto || '—'}</div>
+                                <div class="col-md-3"><strong>PROVEEDOR:</strong> ${r.proveedor || '—'}</div>
+                                <div class="col-md-2"><strong>KM:</strong> ${r.kilometraje || '—'}</div>
+                                <div class="col-md-4"><strong>OBS:</strong> ${r.observaciones || '—'}</div>
                             </div>
                         `}
                     </div>
@@ -549,13 +1173,12 @@ function cargarReporte() {
         }).join('');
         window._reportData = res.data;
 
-        // Footer
         document.getElementById('footerIngresos').textContent = formatCurrency(ti);
         document.getElementById('footerEgresos').textContent = formatCurrency(te);
         const fb = document.getElementById('footerBalance');
         fb.textContent = formatCurrency(balance);
-        fb.style.color = balance >= 0 ? '#2f2c79' : '#ff6b6b';
-    });
+    })
+    .catch(err => console.error('Error:', err));
 }
 
 function toggleDetalle(index) {
@@ -574,9 +1197,7 @@ function generarPDF() {
     params.append('fecha_fin', document.getElementById('filterFechaFin').value);
     const vid = document.getElementById('filterVehiculo').value;
     if (vid) params.append('id_vehiculo', vid);
-
-    const url = '{{ url("reportes/pdf") }}?' + params.toString();
-    window.open(url, '_blank');
+    window.open('{{ url("reportes/pdf") }}?' + params.toString(), '_blank');
 }
 
 function imprimirReporte() {
@@ -586,26 +1207,22 @@ function imprimirReporte() {
     params.append('fecha_fin', document.getElementById('filterFechaFin').value);
     const vid = document.getElementById('filterVehiculo').value;
     if (vid) params.append('id_vehiculo', vid);
-
-    const url = '{{ url("reportes/imprimir") }}?' + params.toString();
-    window.open(url, '_blank');
+    window.open('{{ url("reportes/imprimir") }}?' + params.toString(), '_blank');
 }
 
 function exportCSV() {
     const tbody = document.getElementById('reportBody');
     if (!tbody) return;
     let csv = '\uFEFF';
-    csv += '"N° DOC","FECHA","TIPO","RECORRIDO","UNIDAD","CATEGORÍA","PROVEEDOR","INGRESO","EGRESO"\n';
+    csv += '"N° DOC","FECHA","TIPO","RECORRIDO","UNIDAD","CATEGORÍA","TONELADAS","INGRESO","EGRESO"\n';
     tbody.querySelectorAll('tr.tr-principal').forEach(row => {
         const cols = row.querySelectorAll('td');
         const rowData = [];
-        for (let i = 0; i < Math.min(cols.length, 10); i++) {
+        for (let i = 0; i < Math.min(cols.length, 9); i++) {
             let txt = cols[i].textContent.trim().replace(/,/g, '');
-            if (i === 8) txt = txt.replace('—', '');
-            if (i === 7) txt = txt.replace('—', '');
             rowData.push('"' + txt + '"');
         }
-        csv += rowData.slice(0, 9).join(',') + '\n';
+        csv += rowData.join(',') + '\n';
     });
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -618,13 +1235,13 @@ function exportXLS() {
     const tbody = document.getElementById('reportBody');
     if (!tbody) return;
     let html = '<table border="1"><thead><tr>';
-    html += '<th>N° DOC</th><th>FECHA</th><th>TIPO</th><th>RECORRIDO</th><th>UNIDAD</th><th>CATEGORÍA</th><th>PROVEEDOR</th><th>INGRESO</th><th>EGRESO</th>';
+    html += '<th>N° DOC</th><th>FECHA</th><th>TIPO</th><th>RECORRIDO</th><th>UNIDAD</th><th>CATEGORÍA</th><th>TONELADAS</th><th>INGRESO</th><th>EGRESO</th>';
     html += '</tr></thead><tbody>';
     tbody.querySelectorAll('tr.tr-principal').forEach(row => {
         const cols = row.querySelectorAll('td');
         html += '<tr>';
-        for (let i = 0; i < Math.min(cols.length, 10); i++) {
-            let txt = cols[i].textContent.trim().replace(/[^\w\sáéíóúÁÉÍÓÚñÑ.,Bs()\-/]/g, '');
+        for (let i = 0; i < Math.min(cols.length, 9); i++) {
+            let txt = cols[i].textContent.trim().replace(/[^\w\sáéíóúÁÉÍÓÚñÑ.,Bs()\-→/]/g, '');
             html += '<td>' + txt + '</td>';
         }
         html += '</tr>';

@@ -71,6 +71,19 @@ class StoreFleteRequest extends FormRequest
      */
     public function datosNormalizados(): array
     {
+        // El formulario rellena origen, destino y kilometraje con JavaScript,
+        // pero esos campos son `readonly` y no viajan si el navegador va lento
+        // o bloquea el script. Si hay ruta elegida, la base manda: se toma del
+        // tramo y no de lo que envio el formulario. Asi el flete nunca queda
+        // con la ruta seleccionada a medio Poblar.
+        $tramo = null;
+
+        if ($this->filled('id_tramo')) {
+            $tramo = \Illuminate\Support\Facades\DB::table('tramos')
+                ->where('id_tramo', $this->integer('id_tramo'))
+                ->first(['origen', 'destino', 'kilometros']);
+        }
+
         return [
             'id_vehiculo' => $this->integer('id_vehiculo'),
             'id_personal' => $this->integer('id_personal') ?: null,
@@ -85,10 +98,10 @@ class StoreFleteRequest extends FormRequest
             'cliente_nombre' => $this->input('cliente_nombre'),
             'cliente_nit' => $this->input('cliente_nit'),
             'cliente_telefono' => $this->input('cliente_telefono'),
-            'origen' => $this->input('origen'),
-            'destino' => $this->input('destino'),
+            'origen' => $tramo?->origen ?? $this->input('origen'),
+            'destino' => $tramo?->destino ?? $this->input('destino'),
             'toneladas' => $this->input('toneladas') ?? 0,
-            'kilometraje_conducido' => $this->input('kilometraje_conducido') ?? 0,
+            'kilometraje_conducido' => $tramo?->kilometros ?? $this->input('kilometraje_conducido') ?? 0,
             'tipo_pago' => $this->input('tipo_pago', 'EFECTIVO'),
             'estado_factura' => $this->input('estado_factura', EstadoFactura::Pendiente->value),
         ];

@@ -67,12 +67,40 @@
                 <div class="col-12">
                     <div class="form-group mb-0">
                         <label>RUTA</label>
-                        <select id="form_id_tramo" onchange="seleccionarRutaForm(this)">
+
+                        {{-- El `name` es lo que hace que el tramo viaje al
+                             servidor. Sin el, el select se ve y funciona pero
+                             no envia nada: por eso origen/destino no
+                             reaparecian al registrar el siguiente flete. --}}
+                        <select name="id_tramo" id="form_id_tramo" onchange="seleccionarRutaForm(this)">
                             <option value="">SELECCIONE RUTA...</option>
+
                             @foreach($tramos as $t)
-                                <option value="{{ $t->id_tramo }}" data-origen="{{ $t->origen }}" data-destino="{{ $t->destino }}" data-km="{{ $t->kilometros }}" data-precio-ton="{{ $t->precio_dolar_tonelada }}">{{ $t->origen }} → {{ $t->destino }} (Bs. {{ $t->precio_total }})</option>
+                                <option value="{{ $t->id_tramo }}"
+                                        data-origen="{{ $t->origen }}"
+                                        data-destino="{{ $t->destino }}"
+                                        data-km="{{ $t->kilometros }}"
+                                        data-precio-ton="{{ $t->precio_dolar_tonelada }}"
+                                        {{ (string) old('id_tramo', $ingreso->id_tramo ?? '') === (string) $t->id_tramo ? 'selected' : '' }}>
+                                    {{ $t->origen }} → {{ $t->destino }} (Bs. {{ $t->precio_total }})
+                                </option>
                             @endforeach
                         </select>
+
+                        {{-- `onchange` solo dispara cuando el valor cambia, asi
+                             que volver a elegir la MISMA ruta no recarga nada.
+                             Este botón fuerza la recarga. --}}
+                        <button type="button"
+                                class="btn btn-sm fw-bold mt-2"
+                                style="background:#2f2c79;color:#fff;border:3px solid #000;padding:8px 14px;"
+                                onclick="seleccionarRutaForm(document.getElementById('form_id_tramo'))">
+                            <i class="fas fa-rotate-right me-1"></i> APLICAR RUTA
+                        </button>
+
+                        <small class="d-block mt-2 fw-bold" style="color:#666;">
+                            Al elegir la ruta se completan origen, destino, kilómetros y Bs/TON.
+                            El monto siempre es toneladas &times; Bs/TON.
+                        </small>
                     </div>
                 </div>
             </div>
@@ -189,30 +217,91 @@
 
 @push('scripts')
 <script>
+/**
+ * Aplica la ruta seleccionada a los campos que dependen de ella.
+ *
+ * Se invoca desde el `onchange` del select y desde el boton APLICAR RUTA,
+ * porque `onchange` no dispara cuando se elige la MISMA opcion: si el
+ * operador se equivoco de ruta y vuelve a marcar la misma, no habria forma
+ * de recargar los datos sin tocar otro campo.
+ */
 function seleccionarRutaForm(select) {
     const opt = select.options[select.selectedIndex];
-    if (opt && opt.value) {
-        document.getElementById('form_origen').value = opt.dataset.origen || '';
-        document.getElementById('form_destino').value = opt.dataset.destino || '';
-        document.getElementById('form_kilometraje').value = opt.dataset.km || '0';
-        const precioTon = parseFloat(opt.dataset.precioTon) || 0;
-        document.getElementById('form_precio_ton').value = precioTon ? precioTon.toFixed(2) : '';
+    const origen = document.getElementById('form_origen');
+    const destino = document.getElementById('form_destino');
+    const kilometros = document.getElementById('form_kilometraje');
+    const precioTon = document.getElementById('form_precio_ton');
+    const toneladas = document.getElementById('form_toneladas');
+
+    // Volver a "SELECCIONE RUTA..." limpia los campos: si no, el operador
+    // ve una ruta en el select y los datos de otra en los campos de abajo.
+    if (!opt || !opt.value) {
+        origen.value = '';
+        destino.value = '';
+        kilometros.value = '0';
+        precioTon.value = '';
+
         recalcularMonto();
+
+        return;
+    }
+
+    origen.value = opt.dataset.origen || '';
+    destino.value = opt.dataset.destino || '';
+    kilometros.value = opt.dataset.km || '0';
+
+    const precio = parseFloat(opt.dataset.precioTon) || 0;
+    precioTon.value = precio ? precio.toFixed(2) : '';
+
+    // Las toneladas NO se tocan: son dato del flete, no de la ruta. Se
+    // recalcula el monto para que el operador vea el efecto del nuevo
+    // Bs/TON sobre las toneladas que ya habia escrito.
+    recalcularMonto();
+
+    if (toneladas) {
+        toneladas.focus();
     }
 }
 
+/**
+ * Calcula MONTO = TONELADAS x BS/TON.
+ *
+ * Antes solo recalculaba si ambas eran mayores a cero. Con las toneladas en
+ * blanco el monto se quedaba con el valor de la carga anterior, que es lo
+ * que hacia que el Bs/TON "no se calculara" y el total quedara desfasado.
+ */
 function recalcularMonto() {
-    const ton = parseFloat(document.getElementById('form_toneladas').value) || 0;
+    const toneladas = parseFloat(document.getElementById('form_toneladas').value) || 0;
     const precioTon = parseFloat(document.getElementById('form_precio_ton').value) || 0;
-    if (ton > 0 && precioTon > 0) {
-        document.getElementById('form_monto').value = (ton * precioTon).toFixed(2);
+    const monto = document.getElementById('form_monto');
+
+    if (toneladas > 0 && precioTon > 0) {
+        monto.value = (toneladas * precioTon).toFixed(2);
+
+        return;
     }
+
+    // Sin datos suficientes el monto se pone en cero en vez de conservar un
+    // valor que ya no corresponde a lo que hay en pantalla.
+    monto.value = '0.00';
 }
 
-document.addEventListener('input', function(e) {
+document.addEventListener('input', function (e) {
     if (e.target.id === 'form_toneladas' || e.target.id === 'form_precio_ton') {
         recalcularMonto();
     }
+});
+
+// Al editar un flete, la ruta ya viene seleccionada desde el servidor: hay
+// que aplicar sus datos para que origen, destino y Bs/TON no queden vacios.
+document.addEventListener('DOMContentLoaded', function () {
+    const select = document.getElementById('form_id_tramo');
+
+    if (!select || !select.value) {
+        return;
+    }
+
+    seleccionarRutaForm(select);
 });
 </script>
 @endpush

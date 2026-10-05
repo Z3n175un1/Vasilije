@@ -7,7 +7,9 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use App\Http\Controllers\ReporteController;
 use Tests\TestCase;
+use Throwable;
 
 /**
  * VERIFICACION END-TO-END
@@ -461,6 +463,183 @@ class SmokeTest extends TestCase
         $this->assertArrayHasKey('total_gastos', $json[0]);
     }
 
+    /**
+     * ESQUEMA QUE LA APP ESCRIBE vs EL QUE EXISTE
+     *
+     * Divergencia real entre el historial de migraciones y la base: la
+     * migracion `create_ingresos_table` declara `ingresos.id_tramo` y figura
+     * aplicada, pero la columna no existia en produccion. Como el
+     * StoreFleteRequest la envia siempre, registrar un flete fallaba con
+     *
+     *     42703 column "id_tramo" of relation "ingresos" does not exist
+     *
+     * Estos tests recorren el esquema y comparan contra lo que el codigo
+     * escribe, para que una divergencia like esa salte en el pipeline y no
+     * la descubra el operador al primer alta.
+     *
+     * @return list<array{0:string,1:list<string>}>
+     */
+    public static function columnasQueEscribeElCodigo(): array
+    {
+        return [
+            ['global.ingresos', [
+                // Solo lo que StoreFleteRequest devuelve en
+                // datosNormalizados() mas lo que agrega el controller
+                // (nro_documento, fecha_registro). `conductor_asignado` y
+                // `id_tramo` los acepta la base pero no los manda el
+                // formulario: se documentan, no se escriben en el alta.
+                'id_vehiculo', 'id_personal', 'nro_documento', 'concepto',
+                'monto', 'fecha_ingreso', 'fecha_vencimiento', 'observaciones',
+                'cliente_nombre', 'cliente_nit', 'cliente_telefono', 'origen', 'destino',
+                'toneladas', 'kilometraje_conducido', 'tipo_pago',
+                'estado_factura', 'numero_factura', 'fecha_factura', 'fecha_registro',
+            ]],
+
+            ['global.gastos', [
+                'id_vehiculo', 'id_clasificador', 'monto', 'fecha_gasto', 'concepto',
+                'condicion_pago', 'id_banco', 'es_devolucion', 'nro_documento',
+                'creado_por', 'fecha_registro',
+            ]],
+
+            ['global.gastos_generales', [
+                'id_clasificador', 'concepto', 'monto', 'fecha_gasto',
+                'condicion_pago', 'id_banco', 'es_devolucion', 'nro_documento',
+            ]],
+
+            ['global.movimientos_inventario', [
+                'id_inventario', 'id_lote', 'tipo_movimiento', 'cantidad',
+                'costo_unitario', 'costo_total', 'id_vehiculo', 'id_personal',
+                'id_proveedor', 'id_banco', 'documento_numero', 'fecha_movimiento',
+                'condicion_pago', 'registrado_por',
+            ]],
+
+            ['global.lotes', [
+                'id_inventario', 'codigo_lote', 'cantidad_inicial',
+                'cantidad_actual', 'precio_compra', 'estado', 'created_at',
+            ]],
+        ];
+    }
+
+    #[Test]
+    #[\PHPUnit\Framework\Attributes\DataProvider('columnasQueEscribeElCodigo')]
+    public function toda_columna_que_el_codigo_escribe_existe(string $tabla, array $columnas): void
+    {
+        $existentes = array_map(
+            static fn ($r) => $r->column_name,
+            \Illuminate\Support\Facades\DB::select(
+                'SELECT column_name FROM information_schema.columns
+                 WHERE table_schema = ? AND table_name = ?',
+                ['global', explode('.', $tabla)[1]]
+            )
+        );
+
+        $faltantes = array_values(array_diff($columnas, $existentes));
+
+        $this->assertSame(
+            [],
+            $faltantes,
+            "En {$tabla} faltan columnas que la app escribe: " . implode(', ', $faltantes)
+            . ". Registrar desde el formulario daria 42703."
+        );
+    }
+
+    #[Test]
+    public function el_indice_y_la_clave_foranea_de_id_tramo_existen(): void
+    {
+        // `indices_e_integridad` los creo solo si la columna existia, asi que
+        // se saltaron sin avisar cuando faltaba. `id_tramo` no la escribe el
+        // alta de fletes, pero si la leen reportes y filtros.
+        $indice = \Illuminate\Support\Facades\DB::selectOne("
+            SELECT 1 FROM pg_indexes
+            WHERE schemaname = 'global' AND tablename = 'ingresos'
+              AND indexname = 'ingresos_tramo_idx'
+        ");
+
+        $this->assertNotNull($indice, 'Falta el indice ingresos_tramo_idx.');
+
+        $fk = \Illuminate\Support\Facades\DB::selectOne("
+            SELECT 1 FROM information_schema.table_constraints
+            WHERE constraint_schema = 'global' AND table_name = 'ingresos'
+              AND constraint_name = 'fk_ingreso_tramo'
+        ");
+
+        $this->assertNotNull($fk, 'Falta la clave foranea fk_ingreso_tramo.');
+    }
+
+    #[Test]
+    public function la_regla_de_alcance_del_clasificador_se_respeta(): void
+    {
+        // `RefreshDatabase` vacia la base entre tests, asi que sin esto no habria
+        // nada que comprobar.
+        $this->seedMinimo();
+
+        // El seed no garantiza un clasificador de alcance general puro: el helper
+        // los crea con `afecta_unidad`, asi que aqui se aseguran dos.
+        $soloGeneralId = $this->clasificador([
+            'tipo_gasto' => 'CajaChica',
+            'afecta_unidad' => false,
+            'afecta_general' => true,
+        ]);
+
+        $soloUnidadId = $this->clasificador([
+            'tipo_gasto' => 'Peaje',
+            'afecta_unidad' => true,
+            'afecta_general' => false,
+        ]);
+
+        $svc = app(\App\Services\ClasificadorGastoService::class);
+
+        $soloGeneral = \Illuminate\Support\Facades\DB::table('global.clasificador_gastos')
+            ->where('id_clasificador', $soloGeneralId)->first();
+
+        $soloUnidad = \Illuminate\Support\Facades\DB::table('global.clasificador_gastos')
+            ->where('id_clasificador', $soloUnidadId)->first();
+
+        $this->assertNotNull($soloGeneral, 'Se creo un clasificador de alcance general.');
+        $this->assertNotNull($soloUnidad, 'Se creo un clasificador de alcance unidad.');
+
+        // Un clasificador de alcance general NO puede usarse en un gasto de
+        // unidad: es la regla funcional del modulo.
+        $rechazado = false;
+
+        try {
+            $svc->validarAlcance($soloGeneral->id_clasificador, 'unidad');
+        } catch (Throwable) {
+            $rechazado = true;
+        }
+
+        $this->assertTrue(
+            $rechazado,
+            'Un clasificador de alcance general deberia rechazarse en gastos de unidad.'
+        );
+
+        // Y uno de unidad tampoco en gastos generales.
+        $rechazado = false;
+
+        try {
+            $svc->validarAlcance($soloUnidad->id_clasificador, 'general');
+        } catch (Throwable) {
+            $rechazado = true;
+        }
+
+        $this->assertTrue(
+            $rechazado,
+            'Un clasificador de alcance unidad deberia rechazarse en gastos generales.'
+        );
+
+        // En su propio alcance, si: `validarAlcance` devuelve la fila o
+        // lanza, no devuelve null.
+        $this->assertSame(
+            'CajaChica',
+            $svc->validarAlcance($soloGeneral->id_clasificador, 'general')->tipo_gasto
+        );
+
+        $this->assertSame(
+            $soloUnidad->tipo_gasto,
+            $svc->validarAlcance($soloUnidad->id_clasificador, 'unidad')->tipo_gasto
+        );
+    }
+
     #[Test]
     public function el_endpoint_de_next_code_exige_un_grupo_valido(): void
     {
@@ -620,6 +799,476 @@ class SmokeTest extends TestCase
             ->getJson('/proveedores/' . $proveedorId . '/estado')
             ->assertOk()
             ->assertJsonPath('success', true);
+    }
+
+    #[Test]
+    public function el_select_de_ruta_del_flete_tiene_name_y_preselecciona_al_editar(): void
+    {
+        $this->seedMinimo();
+
+        $tramoId = \Illuminate\Support\Facades\DB::table('global.tramos')->value('id_tramo');
+
+        $this->actingAs($this->usuarioConRol('admin'))->post('/facturacion', [
+            'id_vehiculo' => $this->vehiculo(['id_personal' => $this->personal(), 'estado' => 1]),
+            'id_tramo' => $tramoId,
+            'monto' => 1000,
+            'fecha_ingreso' => now()->format('Y-m-d'),
+            'concepto' => 'TRANSPORTE DE SOYA',
+            'toneladas' => 10,
+        ]);
+
+        $alta = $this->actingAs($this->usuarioConRol('admin'))->get('/facturacion/nuevo');
+        $alta->assertOk();
+        $this->assertStringContainsString('name="id_tramo"', $alta->getContent());
+        $this->assertStringContainsString('id="form_id_tramo"', $alta->getContent());
+
+        // Editar debe devolver el tramo ya elegido, si no el operador ve
+        // "SELECCIONE RUTA" con origen y destino de la ruta correcta.
+        $ingresoId = \Illuminate\Support\Facades\DB::table('global.ingresos')
+            ->where('id_tramo', $tramoId)
+            ->value('id_ingreso');
+
+        $editar = $this->actingAs($this->usuarioConRol('admin'))->get("/facturacion/{$ingresoId}/editar");
+        $editar->assertOk();
+        $this->assertMatchesRegularExpression(
+            '/<option value="' . preg_quote((string) $tramoId, '/') . '".*selected/s',
+            $editar->getContent()
+        );
+    }
+
+    #[Test]
+    public function la_ruta_elegida_en_el_flete_se_guarda_al_crear_y_al_editar(): void
+    {
+        $this->seedMinimo();
+
+        $tramos = \Illuminate\Support\Facades\DB::table('global.tramos')
+            ->orderBy('id_tramo')
+            ->get(['id_tramo', 'origen', 'destino']);
+
+        $vehiculo = $this->vehiculo(['id_personal' => $this->personal(), 'estado' => 1]);
+
+        $this->actingAs($this->usuarioConRol('admin'))->post('/facturacion', [
+            'id_vehiculo' => $vehiculo,
+            'id_tramo' => $tramos[0]->id_tramo,
+            'monto' => 1000,
+            'fecha_ingreso' => now()->format('Y-m-d'),
+            'toneladas' => 10,
+        ]);
+
+        $ingresos = \Illuminate\Support\Facades\DB::table('global.ingresos')->get();
+        $guardado = $ingresos->firstWhere('id_tramo', $tramos[0]->id_tramo);
+
+        // Sin `name` en el select, la ruta nunca llegaba al servidor.
+        $this->assertNotNull($guardado, 'El tramo debe persistirse al registrar.');
+        $this->assertSame($tramos[0]->origen, $guardado->origen);
+        $this->assertSame($tramos[0]->destino, $guardado->destino);
+
+        // Cambiar la ruta de un flete debe actualizarse, no descartarse.
+        if (isset($tramos[1])) {
+            $this->actingAs($this->usuarioConRol('admin'))->put("/facturacion/{$guardado->id_ingreso}", [
+                'id_vehiculo' => $vehiculo,
+                'id_tramo' => $tramos[1]->id_tramo,
+                'monto' => 2000,
+                'fecha_ingreso' => now()->format('Y-m-d'),
+                'toneladas' => 20,
+            ]);
+
+            $actual = \Illuminate\Support\Facades\DB::table('global.ingresos')
+                ->where('id_ingreso', $guardado->id_ingreso)
+                ->first();
+
+            $this->assertEquals($tramos[1]->id_tramo, $actual->id_tramo);
+            $this->assertSame($tramos[1]->origen, $actual->origen);
+            $this->assertSame($tramos[1]->destino, $actual->destino);
+        }
+    }
+
+    #[Test]
+    public function el_calculo_del_flete_recalcula_al_volver_a_elegir_la_misma_ruta(): void
+    {
+        $this->seedMinimo();
+
+        $js = file_get_contents(base_path('resources/views/facturacion/form.blade.php'));
+
+        // Volver a marcar la MISMA opcion no dispara `onchange`: sin este
+        // boton el operador no puede recargar una ruta ya seleccionada.
+        $this->assertStringContainsString('APLICAR RUTA', $js);
+
+        // Antes el monto solo se recalculaba con toneladas > 0, dejando el
+        // total de la carga anterior cuando el campo quedaba vacio. La
+        // guarda sigue, pero ahora tiene salida.
+        $this->assertMatchesRegularExpression(
+            '/if \(toneladas > 0 && precioTon > 0\) \{.*?return;.*?\}/s',
+            $js
+        );
+        $this->assertStringContainsString("monto.value = '0.00'", $js);
+
+        // Volver a "SELECCIONE RUTA..." debe limpiar, no dejar datos viejos.
+        $this->assertStringContainsString("if (!opt || !opt.value)", $js);
+    }
+
+    #[Test]
+    public function el_modal_de_nuevo_flete_expone_los_datos_de_la_ruta(): void
+    {
+        $this->seedMinimo();
+
+        $html = $this->actingAs($this->usuarioConRol('admin'))->get('/facturacion')->assertOk()->getContent();
+
+        // El modal construye sus <option> por JS. Sin `data-origen` y
+        // `data-destino` el select mostraba la ruta pero los campos de abajo
+        // se quedaban en su placeholder.
+        $this->assertStringContainsString('data-origen="${window.esc(t.origen', $html);
+        $this->assertStringContainsString('data-destino="${window.esc(t.destino', $html);
+
+        // El modal arma el envio a mano y se le habia olvidado el tramo:
+        // la ruta se elegia en pantalla pero no se guardaba.
+        $this->assertMatchesRegularExpression(
+            '/id_tramo:\s*document\.getElementById\(.nf_id_tramo.\)/',
+            $html
+        );
+
+        // Boton para recargar la MISMA ruta, que no dispara `onchange`.
+        $this->assertStringContainsString('btnAplicarRutaNF', $html);
+    }
+
+    #[Test]
+    public function el_modal_de_nuevo_flete_recalcula_el_monto_siempre(): void
+    {
+        $this->seedMinimo();
+
+        $html = $this->actingAs($this->usuarioConRol('admin'))->get('/facturacion')->assertOk()->getContent();
+
+        // La guarda `ton > 0 && precioTon > 0` se conserva, pero ahora tiene
+        // salida: antes no habia `else` y el monto se quedaba con el de la
+        // carga anterior cuando las toneladas estaban vacias.
+        $this->assertMatchesRegularExpression(
+            '/if \(ton > 0 && precioTon > 0\) \{.*?return;.*?\}/s',
+            $html
+        );
+
+        // Sin datos suficientes el total va a 0, no un numero viejo.
+        $this->assertStringContainsString("monto.value = '0';", $html);
+
+        // Volver a "SELECCIONE RUTA..." tiene que limpiar los campos.
+        $this->assertStringContainsString('if (!opt || !opt.value)', $html);
+
+        // El boton abre el modal: debe limpiar tambien lo que `reset()` deja.
+        $this->assertStringContainsString("['nf_origen', 'nf_destino', 'nf_precio_ton']", $html);
+    }
+
+    #[Test]
+    public function el_modal_de_flete_del_dashboard_calcula_el_monto_desde_las_toneladas(): void
+    {
+        $this->seedMinimo();
+
+        $html = $this->actingAs($this->usuarioConRol('admin'))->get('/dashboard')->assertOk()->getContent();
+
+        // El bug real: el modal restaurava el monto desde `localStorage` y
+        // jamas recalculaba, asi que abria mostrando el total del flete
+        // anterior y el operador lo enviaba sin tocar nada.
+        $this->assertStringNotContainsString("savedValues.fd_monto", $html);
+
+        // Y ahora el monto se deriva, no se restaura.
+        $this->assertMatchesRegularExpression(
+            '/function recalcularMontoDash\(\).*?ton > 0 && precioTon > 0.*?return;.*?\}/s',
+            $html
+        );
+        $this->assertStringContainsString("monto.value = '0';", $html);
+
+        // Al abrir el modal se aplica la ruta guardada y se recalcula.
+        $this->assertStringContainsString('seleccionarRuta(selTramo)', $html);
+        $this->assertStringContainsString('recalcularMontoDash();', $html);
+
+        // Sin esto la busqueda en `tramos` fallaba en silencio si el fetch
+        // todavia no habia vuelto, y no rellenaba origen ni destino.
+        $this->assertStringContainsString('data-origen="${window.esc(t.origen', $html);
+        $this->assertStringContainsString('data-destino="${window.esc(t.destino', $html);
+
+        // El envio se arma a mano y faltaba el tramo.
+        $this->assertMatchesRegularExpression(
+            '/id_tramo:\s*document\.getElementById\(.fd_id_tramo.\)/',
+            $html
+        );
+
+        // El monto no debe guardarse: es derivado de toneladas x Bs/TON.
+        $this->assertStringContainsString("const derivados = ['fd_monto'", $html);
+    }
+
+    #[Test]
+    public function los_tres_formularios_de_flete_calculan_el_monto_igual(): void
+    {
+        $this->seedMinimo();
+
+        $admin = $this->usuarioConRol('admin');
+
+        // Tres copias del mismo formulario: pagina, modal de facturacion y
+        // modal del dashboard. Las tres Tenian el guard `ton > 0 && precioTon
+        // > 0` sin salida, y por eso el monto se quedaba con el valor viejo.
+        $pantallas = [
+            '/facturacion/nuevo' => 'form_toneladas',
+            '/facturacion' => 'nf_toneladas',
+            '/dashboard' => 'fd_toneladas',
+        ];
+
+        foreach ($pantallas as $ruta => $campo) {
+            $html = $this->actingAs($admin)->get($ruta)->assertOk()->getContent();
+
+            $this->assertStringContainsString($campo, $html, "{$ruta} debe seguir pidiendo las toneladas.");
+
+            // El calculo existe y termina en un `return`, dejando una salida
+            // que pone el monto en cero cuando faltan datos.
+            $this->assertMatchesRegularExpression(
+                '/function recalcularMonto\w*\(\).*?> 0 &&.*?return;.*?\}/s',
+                $html,
+                "{$ruta}: el calculo del monto debe tener salida."
+            );
+        }
+    }
+
+    #[Test]
+    public function borrar_una_ruta_no_borra_los_fletes_que_la_usan(): void
+    {
+        $this->seedMinimo();
+
+        $tramoId = \Illuminate\Support\Facades\DB::table('global.tramos')->value('id_tramo');
+
+        $this->actingAs($this->usuarioConRol('admin'))->post('/facturacion', [
+            'id_vehiculo' => $this->vehiculo(['id_personal' => $this->personal(), 'estado' => 1]),
+            'id_tramo' => $tramoId,
+            'monto' => 1000,
+            'fecha_ingreso' => now()->format('Y-m-d'),
+            'toneladas' => 10,
+        ]);
+
+        $flete = \Illuminate\Support\Facades\DB::table('global.ingresos')
+            ->where('id_tramo', $tramoId)
+            ->first();
+
+        $this->assertNotNull($flete, 'El flete debe quedar apuntando a la ruta.');
+
+        $this->actingAs($this->usuarioConRol('admin'))
+            ->delete('/tramos/' . $tramoId)
+            ->assertRedirect();
+
+        $tras = \Illuminate\Support\Facades\DB::table('global.ingresos')
+            ->where('id_ingreso', $flete->id_ingreso)
+            ->first();
+
+        // El flete es un documento con valor contable: no puede desaparecer
+        // por borrar un dato tarifario de referencia.
+        $this->assertNotNull($tras, 'Borrar una ruta no debe borrar fletes.');
+        $this->assertNull($tras->id_tramo, 'Queda sin referencia a la ruta.');
+
+        // Y conserva su origen/destino historicos, que es justo por eso que
+        // los reportes siguen leyendo el texto y no dependen de la ruta.
+        $this->assertSame('SANTA CRUZ', $tras->origen);
+        $this->assertSame('LA PAZ', $tras->destino);
+    }
+
+    #[Test]
+    public function los_reportes_priorizan_la_ruta_del_catalogo_y_caen_al_texto(): void
+    {
+        $this->seedMinimo();
+
+        $sql = file_get_contents(base_path('app/Http/Controllers/ReporteController.php'));
+
+        // LEFT JOIN: un flete historico sin `id_tramo` tiene que seguir
+        // saliendo, con su propio texto.
+        $this->assertStringContainsString("leftJoin('global.tramos as tr'", $sql);
+
+        // Y el texto del catalogo tiene prioridad sobre el guardado.
+        $this->assertStringContainsString("COALESCE(tr.origen, i.origen, '') as origen", $sql);
+        $this->assertStringContainsString("COALESCE(tr.destino, i.destino, '') as destino", $sql);
+    }
+
+    /**
+ * Corre la migracion de enlace aunque `RefreshDatabase` ya la haya aplicado.
+ *
+ * `artisan migrate` no serviria: `RefreshDatabase` migra la base antes de
+ * cada test y deja el registro de migraciones al dia, asi que el comando
+ * responderia "Nothing to migrate" sin ejecutar el `up()`.
+ */
+private function ejecutarEnlaceDeRutas(): void
+{
+    $archivo = database_path('migrations/2026_10_05_000001_enlazar_fletes_con_ruta.php');
+
+    $this->assertFileExists($archivo, 'La migracion de enlace debe existir.');
+
+    $migracion = require $archivo;
+    $migracion->up();
+}
+
+#[Test]
+    public function el_backfill_enlaza_solo_las_rutas_que_coinciden_exactamente(): void
+    {
+        $this->seedMinimo();
+
+        // SANTA CRUZ -> LA PAZ esta en el catalogo como 'SANTA CRUZ'/'LA PAZ'.
+        $coincide = \Illuminate\Support\Facades\DB::table('global.ingresos')->insertGetId([
+            'id_vehiculo' => $this->vehiculo(['id_personal' => $this->personal(), 'estado' => 1]),
+            'concepto' => 'TRANSPORTE DE SOYA',
+            'monto' => 1000,
+            'fecha_ingreso' => now()->format('Y-m-d'),
+            'origen' => 'SANTA CRUZ',
+            'destino' => 'LA PAZ',
+            'toneladas' => 10,
+            'estado_factura' => 'PENDIENTE',
+        ], 'id_ingreso');
+
+        // Mismo origen, destino que NO existe en el catalogo.
+        $noCoincide = \Illuminate\Support\Facades\DB::table('global.ingresos')->insertGetId([
+            'id_vehiculo' => $this->vehiculo(['id_personal' => $this->personal(), 'estado' => 1]),
+            'concepto' => 'TRANSPORTE DE SOYA',
+            'monto' => 1000,
+            'fecha_ingreso' => now()->format('Y-m-d'),
+            'origen' => 'SANTA CRUZ',
+            'destino' => 'BUENA VISTA',
+            'toneladas' => 10,
+            'estado_factura' => 'PENDIENTE',
+        ], 'id_ingreso');
+
+        // Sin origen ni destino: no hay informacion para deducir la ruta.
+        $sinTexto = \Illuminate\Support\Facades\DB::table('global.ingresos')->insertGetId([
+            'id_vehiculo' => $this->vehiculo(['id_personal' => $this->personal(), 'estado' => 1]),
+            'concepto' => 'TRANSPORTE DE SOYA',
+            'monto' => 1000,
+            'fecha_ingreso' => now()->format('Y-m-d'),
+            'toneladas' => 10,
+            'estado_factura' => 'PENDIENTE',
+        ], 'id_ingreso');
+
+        // Diferencia solo en mayusculas: NO debe enlazarse. Enlazar por
+        // resemblance seria adivinar la ruta, y una ruta mal puesta mueve el
+        // flete de reporte.
+        $distintoCase = \Illuminate\Support\Facades\DB::table('global.ingresos')->insertGetId([
+            'id_vehiculo' => $this->vehiculo(['id_personal' => $this->personal(), 'estado' => 1]),
+            'concepto' => 'TRANSPORTE DE SOYA',
+            'monto' => 1000,
+            'fecha_ingreso' => now()->format('Y-m-d'),
+            'origen' => 'santa cruz',
+            'destino' => 'la paz',
+            'toneladas' => 10,
+            'estado_factura' => 'PENDIENTE',
+        ], 'id_ingreso');
+
+        $this->ejecutarEnlaceDeRutas();
+
+        $tramo = \Illuminate\Support\Facades\DB::table('global.tramos')->value('id_tramo');
+
+        $leido = static fn ($id) => \Illuminate\Support\Facades\DB::table('global.ingresos')
+            ->where('id_ingreso', $id)
+            ->first();
+
+        $this->assertEquals($tramo, $leido($coincide)->id_tramo, 'Debe enlazar la coincidencia exacta.');
+
+        foreach ([$noCoincide, $sinTexto, $distintoCase] as $id) {
+            $this->assertNull(
+                $leido($id)->id_tramo,
+                'No debe enlazar un flete cuyo texto no coincide exacto con el catalogo.'
+            );
+        }
+    }
+
+    #[Test]
+    public function el_backfill_no_pisa_un_flete_que_ya_tenia_ruta(): void
+    {
+        $this->seedMinimo();
+
+        $vehiculo = $this->vehiculo(['id_personal' => $this->personal(), 'estado' => 1]);
+
+        // Dos rutas con distinto par origen/destino.
+        $rutaBuena = \Illuminate\Support\Facades\DB::table('global.tramos')->insertGetId([
+            'origen' => 'COCHABAMBA', 'destino' => 'SUCRE',
+            'kilometros' => 200, 'precio_total' => 100,
+            'precio_dolar_tonelada' => 50, 'created_at' => now(),
+        ], 'id_tramo');
+
+        // Flete ya enlazado a mano por el operador.
+        $yaEnlazado = \Illuminate\Support\Facades\DB::table('global.ingresos')->insertGetId([
+            'id_vehiculo' => $vehiculo,
+            'concepto' => 'TRANSPORTE DE SOYA',
+            'monto' => 1000,
+            'fecha_ingreso' => now()->format('Y-m-d'),
+            'origen' => 'SANTA CRUZ', 'destino' => 'LA PAZ',
+            'id_tramo' => $rutaBuena,
+            'toneladas' => 10,
+            'estado_factura' => 'PENDIENTE',
+        ], 'id_ingreso');
+
+        $this->ejecutarEnlaceDeRutas();
+
+        $actual = \Illuminate\Support\Facades\DB::table('global.ingresos')
+            ->where('id_ingreso', $yaEnlazado)
+            ->first();
+
+        // Su texto dice SANTA CRUZ -> LA PAZ, que si existe en el catalogo,
+        // pero el operador lo asocio a mano a COCHABAMBA -> SUCRE. La
+        // migracion no debe sobreescribir esa decision.
+        $this->assertEquals($rutaBuena, $actual->id_tramo, 'No debe pisar una ruta ya asignada.');
+    }
+
+    #[Test]
+    public function el_reporte_muestra_la_ruta_del_catalogo_y_tambien_la_de_los_huerfanos(): void
+    {
+        $this->seedMinimo();
+
+        $vehiculo = $this->vehiculo(['id_personal' => $this->personal(), 'estado' => 1]);
+        $tramo = \Illuminate\Support\Facades\DB::table('global.tramos')->value('id_tramo');
+
+        // Flete enlazado: el reporte debe mostrar el texto de la ruta.
+        $enlazado = \Illuminate\Support\Facades\DB::table('global.ingresos')->insertGetId([
+            'id_vehiculo' => $vehiculo, 'concepto' => 'TRANSPORTE DE SOYA',
+            'monto' => 1000, 'fecha_ingreso' => now()->format('Y-m-d'),
+            'id_tramo' => $tramo, 'origen' => '', 'destino' => '',
+            'toneladas' => 10, 'estado_factura' => 'PENDIENTE',
+        ], 'id_ingreso');
+
+        // Flete huerfano, sin ruta pero con su texto propio.
+        $huerfano = \Illuminate\Support\Facades\DB::table('global.ingresos')->insertGetId([
+            'id_vehiculo' => $vehiculo, 'concepto' => 'TRANSPORTE DE SOYA',
+            'monto' => 1000, 'fecha_ingreso' => now()->format('Y-m-d'),
+            'origen' => 'SANTA CRUZ', 'destino' => 'BUENA VISTA',
+            'toneladas' => 10, 'estado_factura' => 'PENDIENTE',
+        ], 'id_ingreso');
+
+        $this->actingAs($this->usuarioConRol('admin'))->get(
+            '/reportes/pdf?fecha_inicio=' . now()->format('Y-m-01') . '&fecha_fin=' . now()->format('Y-m-d')
+        )->assertOk();
+
+        $filas = $this->filasDelReporte();
+
+        $delEnlazado = $filas->firstWhere('id', $enlazado);
+        $this->assertNotNull($delEnlazado, 'El flete enlazado debe estar en el reporte.');
+        $this->assertSame('SANTA CRUZ', $delEnlazado->origen, 'Debe tomar la ruta del catalogo.');
+        $this->assertSame('LA PAZ', $delEnlazado->destino);
+
+        $delHuerfano = $filas->firstWhere('id', $huerfano);
+        $this->assertNotNull($delHuerfano, 'Un flete sin ruta no puede desaparecer del reporte.');
+        $this->assertSame('SANTA CRUZ', $delHuerfano->origen, 'Debe conservar su propio texto.');
+        $this->assertSame('BUENA VISTA', $delHuerfano->destino);
+    }
+
+    /**
+     * Filas que el reporte entrega, tal como las lee la vista.
+     *
+     * @return \Illuminate\Support\Collection<int, object>
+     */
+    private function filasDelReporte(): \Illuminate\Support\Collection
+    {
+        $reflexion = new \ReflectionMethod(ReporteController::class, 'getIngresos');
+        $reflexion->setAccessible(true);
+
+        // El controller tiene dependencias: se pide al contenedor en vez de
+        // instanciarlo a mano.
+        $controller = app(ReporteController::class);
+
+        return $reflexion->invoke(
+            $controller,
+            now()->format('Y-m-01'),
+            now()->format('Y-m-d'),
+            'TODOS',
+            null
+        );
     }
 
     #[Test]
