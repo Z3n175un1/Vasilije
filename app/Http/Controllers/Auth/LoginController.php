@@ -63,7 +63,11 @@ class LoginController extends Controller
             'rol' => $usuario->rol,
         ]);
 
-        return redirect()->intended(route('documentos.index'));
+        // Siempre /documentos tras entrar, sin importar la pagina que el
+        // usuario intentaba abrir antes del login: mientras estaba de
+        // visitante no adopto ninguna decision, y su PRIMERA vista debe
+        // ser su perfil, nunca el dashboard.
+        return redirect()->route('documentos.index');
     }
 
     public function logout(Request $request): RedirectResponse

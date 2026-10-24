@@ -108,6 +108,32 @@ class AutorizacionTest extends TestCase
     }
 
     #[Test]
+    public function tras_iniciar_sesion_la_primera_vista_es_documentos_y_no_otra(): void
+    {
+        DB::table('global.usuarios')->insertGetId([
+            'usuario' => 'login_destino',
+            'email' => 'login_destino@test.local',
+            'contrasenha' => bcrypt('secreto123'),
+            'nombres' => 'Login',
+            'apellidos' => 'Destino',
+            'rol' => 'operador',
+            'estado' => 1,
+            'fecha_creacion' => now(),
+        ], 'id_usuario');
+
+        // El visitante antes del login quiso ver /dashboard (url.intended
+        // queda en la sesion); aun asi el login SIEMPRE manda a
+        // /documentos: la primera vista de la sesion es su perfil.
+        $this->get('/dashboard');
+        session(['url.intended' => route('dashboard.index')]);
+
+        $this->post('/login', [
+            'username' => 'login_destino',
+            'password' => 'secreto123',
+        ])->assertRedirect(route('documentos.index'));
+    }
+
+    #[Test]
     public function un_nombre_de_usuario_inexistente_no_produce_error_de_servidor(): void
     {
         // Con `username` hardcodeado, este caso reventaba con 500 y el
