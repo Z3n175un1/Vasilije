@@ -9,7 +9,12 @@
 # eso deja las paginas sin CSS y en HTML crudo.
 # =========================================================
 
-FROM node:22-alpine AS frontend
+# Version fija, no flotante: el tag rama (node:22-alpine) entrega la
+# version que toque en el build y, si el cache del host tiene una base
+# vieja, sirve la imagen vulnerable sin avisar (CVE-2026-111497,
+# decoder Brotli, corregido en 22.23.4). Al proximo aviso cambia estos
+# dos FROM junto con el de php.
+FROM node:22.23.4-alpine AS frontend
 
 WORKDIR /app
 
@@ -63,7 +68,12 @@ RUN composer dump-autoload --optimize --no-dev
 # ETAPA 3: RUNTIME (PHP)
 # =========================================================
 
-FROM php:8.3-fpm-alpine AS app
+# Version fija, no flotante: PHP2Shell (CVE-2026-109618 y
+# CVE-2026-109619) requiere 8.3.36 como minimo, y el host que construye
+# esta imagen no usa --pull: solo el tag exacto garantiza que la
+# imagen no se arme sobre una base vieja en cache. Al proximo aviso
+# cambiar los FROM (node y este).
+FROM php:8.3.36-fpm-alpine AS app
 
 # Dos grupos a proposito:
 #
