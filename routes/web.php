@@ -10,6 +10,7 @@ use App\Http\Controllers\FacturacionController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\GastoGeneralController;
 use App\Http\Controllers\GrupoController;
+use App\Http\Controllers\InicioController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\MantenimientoController;
 use App\Http\Controllers\PersonalController;
@@ -56,7 +57,7 @@ Route::middleware('auth')->group(function (): void {
         // Panel
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-        Route::view('/documentos', 'documentos.index')->name('documentos.index');
+        Route::get('/documentos', [InicioController::class, 'index'])->name('documentos.index');
         Route::get('/mantenimiento', [MantenimientoController::class, 'index'])->name('mantenimiento.index');
 
         // Unidades
