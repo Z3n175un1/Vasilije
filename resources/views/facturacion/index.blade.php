@@ -136,6 +136,7 @@
     <th>CONCEPTO</th>
     <th>MONTO</th>
     <th>TONELADAS</th>
+    <th>TIPO CAMBIO</th>
     <th>ESTADO</th>
     <th>ACCIONES</th>
 </tr>
@@ -271,6 +272,12 @@
                     <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">MONTO (Bs) <span class="text-danger">*</span></label>
                         <input type="number" step="0.01" class="form-control fw-bold" id="nf_monto" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0!important;cursor:not-allowed;" required min="0" placeholder="0.00" readonly>
+                    </div>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">TIPO DE CAMBIO (Bs/USD)</label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_tipo_cambio" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0!important;cursor:not-allowed;" min="0" placeholder="6.96" readonly value="{{ $tipoCambioVigente ?? old('tipo_cambio', '') }}">
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
@@ -482,6 +489,7 @@ function cargarFletes() {
                 <td>${f.concepto || '—'}</td>
                 <td class="fw-bold" style="color:#007400;">${formatCurrency(f.monto)}</td>
                 <td>${f.toneladas || '—'}</td>
+                <td class="fw-bold font-monospace">${f.tipo_cambio ? 'Bs ' + parseFloat(f.tipo_cambio).toFixed(2) : '—'}</td>
                 <td><span class="badge fw-bold px-2 py-1" style="border:2px solid #000;background:${estadoBg};color:${estadoColor};">${f.estado_factura || '—'}</span></td>
                 <td>
                     <div class="d-flex gap-1 justify-content-center">
@@ -635,6 +643,7 @@ function guardarFlete(event) {
         id_tramo: document.getElementById('nf_id_tramo').value || null,
         cliente_nombre: document.getElementById('nf_cliente_nombre').value,
         monto: document.getElementById('nf_monto').value,
+        tipo_cambio: document.getElementById('nf_tipo_cambio').value || null,
         origen: document.getElementById('nf_origen').value,
         destino: document.getElementById('nf_destino').value,
         toneladas: document.getElementById('nf_toneladas').value || 0,
@@ -718,6 +727,14 @@ function renderFacturaCard(f) {
     const badgeBg = esCobrado ? '#d4edda' : '#fff3cd';
     const badgeColor = esCobrado ? '#155724' : '#856404';
     const badgeLabel = esCobrado ? 'COBRADO' : 'POR COBRAR';
+    // Tipo de cambio con el que se emitieron los fletes de la factura: si
+    // agrupa dias con cambio distinto se muestra el rango.
+    let tcTexto = '—';
+    if (f.tipo_cambio_min != null && f.tipo_cambio_max != null) {
+        tcTexto = parseFloat(f.tipo_cambio_min).toFixed(2) === parseFloat(f.tipo_cambio_max).toFixed(2)
+            ? 'Bs ' + parseFloat(f.tipo_cambio_min).toFixed(2)
+            : 'Bs ' + parseFloat(f.tipo_cambio_min).toFixed(2) + ' - ' + parseFloat(f.tipo_cambio_max).toFixed(2);
+    }
     return `<div class="factura-card">
         <div class="factura-header p-3 d-flex flex-wrap justify-content-between align-items-center" onclick="toggleDetalle('${f.numero_factura}')">
             <div class="d-flex flex-wrap gap-4 align-items-center">
@@ -725,6 +742,7 @@ function renderFacturaCard(f) {
                 <div><small class="fw-bold">N° FACTURA</small><p class="mb-0 fw-bold font-monospace">${f.numero_factura}</p></div>
                 <div><small class="fw-bold">CLIENTE</small><p class="mb-0 fw-bold">${f.cliente_nombre || '—'}</p></div>
                 <div><small class="fw-bold">MONTO FACTURADO</small><p class="mb-0 fw-bold fs-5" style="color:#007400;">${formatCurrency(f.total_monto)}</p></div>
+                <div><small class="fw-bold">TIPO CAMBIO</small><p class="mb-0 fw-bold font-monospace">${tcTexto}</p></div>
                 <div><small class="fw-bold">ESTADO</small><p class="mb-0"><span class="badge fw-bold px-3 py-2" style="border:2px solid #000;font-size:.9rem;background:${badgeBg};color:${badgeColor};">${badgeLabel}</span></p></div>
                 <div><small class="fw-bold">FLETES</small><p class="mb-0 fw-bold">${f.cantidad_fletes} flete(s)</p></div>
             </div>
@@ -761,8 +779,8 @@ function toggleDetalle(numeroFactura) {
         if (res.data.length === 0) { tabla.innerHTML = '<div class="text-center py-3">No se encontraron fletes</div>'; }
         else {
             tabla.innerHTML = `<table class="table mb-0" style="font-size:.95rem;">
-                <thead><tr><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">FECHA</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">N° DOC</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">UNIDAD</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">RUTA</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">MONTO</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">CHOFER</th></tr></thead>
-                <tbody>${res.data.map(fl => `<tr><td style="padding:10px;">${fl.fecha_ingreso}</td><td style="padding:10px;"><span class="font-monospace fw-bold">${fl.nro_documento || '—'}</span></td><td style="padding:10px;">${fl.placa_vehiculo || '—'}</td><td style="padding:10px;">${getRuta(fl)}</td><td style="padding:10px;" class="fw-bold">${formatCurrency(fl.monto)}</td><td style="padding:10px;">${fl.conductor_asignado || '—'}</td></tr>`).join('')}</tbody>
+                <thead><tr><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">FECHA</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">N° DOC</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">UNIDAD</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">RUTA</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">MONTO</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">TIPO CAMBIO</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">TONELADAS</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">CHOFER</th></tr></thead>
+                <tbody>${res.data.map(fl => `<tr><td style="padding:10px;">${fl.fecha_ingreso}</td><td style="padding:10px;"><span class="font-monospace fw-bold">${fl.nro_documento || '—'}</span></td><td style="padding:10px;">${fl.placa_vehiculo || '—'}</td><td style="padding:10px;">${getRuta(fl)}</td><td style="padding:10px;" class="fw-bold">${formatCurrency(fl.monto)}</td><td style="padding:10px;" class="fw-bold font-monospace">${fl.tipo_cambio ? 'Bs ' + parseFloat(fl.tipo_cambio).toFixed(2) : '—'}</td><td style="padding:10px;">${fl.toneladas || '—'}</td><td style="padding:10px;">${fl.conductor_asignado || '—'}</td></tr>`).join('')}</tbody>
             </table>`;
         }
         tabla.style.display = 'block';

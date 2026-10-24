@@ -253,7 +253,7 @@ tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'COMPRA').map(m => 
                   const total = parseFloat(m.cantidad || 0) * parseFloat(m.costo_unitario || 0);
                   const cond = m.condicion_pago || 'CONTADO';
                   const condColor = cond === 'CREDITO' ? '#ffdcd6' : '#d4edda';
-                  return `<tr><td class="fw-bold">${esc(m.fecha_movimiento)}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${esc(m.codigo_barras || m.codigo)}</span></td><td class="fw-bold">${txt(m.nombre_producto)}</td><td class="fw-bold">${bs(m.cantidad || 0)}</td><td class="fw-bold">Bs. ${bs(m.costo_unitario || 0)}</td><td class="fw-bold">Bs. ${bs(total)}</td><td class="fw-bold">${txt(m.proveedor)}</td><td><span class="badge fw-bold px-2 py-1" style="background:${condColor};color:#000;border:2px solid #000;">${esc(cond)}</span></td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${esc(m.codigo_lote)}</span></td><td><a href="{{ url('almacen/movimiento/COMPRA') }}/${Number(m.id_movimiento)}" class="btn btn-sm btn-outline-dark btn-editar-mov" style="border:2px solid #000;padding:4px 8px;" title="EDITAR"><i class="fas fa-edit"></i></a></td></tr>`;
+                  return `<tr><td class="fw-bold">${esc(m.fecha_movimiento)}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${esc(m.codigo_barras || m.codigo)}</span></td><td class="fw-bold">${txt(m.nombre_producto)}</td><td class="fw-bold">${bs(m.cantidad || 0)}</td><td class="fw-bold">Bs. ${bs(m.costo_unitario || 0)}</td><td class="fw-bold">Bs. ${bs(total)}</td><td class="fw-bold">${txt(m.proveedor)}</td><td><span class="badge fw-bold px-2 py-1" style="background:${condColor};color:#000;border:2px solid #000;">${esc(cond)}</span></td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${esc(m.codigo_lote)}</span></td><td><a href="{{ url('almacen/movimiento/COMPRA') }}/${Number(m.id_movimiento)}" class="btn btn-sm btn-outline-dark btn-editar-mov" style="border:2px solid #000;padding:4px 8px;" title="EDITAR"><i class="fas fa-edit"></i></a> <button onclick="eliminarMovimiento(${Number(m.id_movimiento)}, 'COMPRA')" class="btn btn-sm btn-danger" style="border:2px solid #000;padding:4px 8px;" title="ELIMINAR"><i class="fas fa-trash"></i></button></td></tr>`;
               }).join('') || '<tr><td colspan="10" class="text-center py-5 opacity-50">SIN COMPRAS REGISTRADAS</td></tr>';
         });
 }
@@ -266,7 +266,7 @@ function loadEntregas() {
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>'; return;
             }
 tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'SALIDA').map(m =>
-                  `<tr><td class="fw-bold">${esc(m.fecha_movimiento)}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${esc(m.codigo_barras || m.codigo)}</span></td><td class="fw-bold">${txt(m.nombre_producto)}</td><td class="fw-bold">${bs(m.cantidad || 0)}</td><td class="fw-bold">Bs. ${bs(m.costo_unitario || 0)}</td><td class="fw-bold">${txt(m.placa_vehiculo)}</td><td class="fw-bold">${txt(m.conductor)}</td><td><a href="{{ url('almacen/movimiento/ENTREGA') }}/${Number(m.id_movimiento)}" class="btn btn-sm btn-outline-dark btn-editar-mov" style="border:2px solid #000;padding:4px 8px;" title="EDITAR"><i class="fas fa-edit"></i></a></td></tr>`
+                  `<tr><td class="fw-bold">${esc(m.fecha_movimiento)}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${esc(m.codigo_barras || m.codigo)}</span></td><td class="fw-bold">${txt(m.nombre_producto)}</td><td class="fw-bold">${bs(m.cantidad || 0)}</td><td class="fw-bold">Bs. ${bs(m.costo_unitario || 0)}</td><td class="fw-bold">${txt(m.placa_vehiculo)}</td><td class="fw-bold">${txt(m.conductor)}</td><td><a href="{{ url('almacen/movimiento/ENTREGA') }}/${Number(m.id_movimiento)}" class="btn btn-sm btn-outline-dark btn-editar-mov" style="border:2px solid #000;padding:4px 8px;" title="EDITAR"><i class="fas fa-edit"></i></a> <button onclick="eliminarMovimiento(${Number(m.id_movimiento)}, 'SALIDA')" class="btn btn-sm btn-danger" style="border:2px solid #000;padding:4px 8px;" title="ELIMINAR"><i class="fas fa-trash"></i></button></td></tr>`
               ).join('') || '<tr><td colspan="8" class="text-center py-5 opacity-50">SIN ENTREGAS REGISTRADAS</td></tr>';
         });
 }
@@ -364,6 +364,32 @@ function eliminarProducto(id) {
                 body: new URLSearchParams({ '_method': 'DELETE' })
             }).then(r => { if (r.redirected) window.location.href = r.url; else loadProductos(); });
         }
+    });
+}
+
+/** Elimina una compra o entrega equivocada y revierte su stock. */
+function eliminarMovimiento(id, tipo) {
+    Swal.fire({
+        title: tipo === 'COMPRA' ? 'ELIMINAR COMPRA' : 'ELIMINAR ENTREGA',
+        text: 'Se revertirá el stock y el dinero movido. ¿Eliminar?',
+        icon: 'warning',
+        showCancelButton: true, confirmButtonText: 'SÍ, ELIMINAR', cancelButtonText: 'CANCELAR',
+        confirmButtonColor: '#dc3545',
+    }).then(result => {
+        if (!result.isConfirmed) return;
+        fetch(`{{ url("api/almacen/movimientos") }}/${id}`, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+        }).then(r => r.json()).then(res => {
+            if (res.success) {
+                Swal.fire('Eliminado', res.message || 'Movimiento eliminado', 'success');
+                loadCompras();
+                loadEntregas();
+                loadSaldos();
+            } else {
+                Swal.fire('Error', res.message || 'No se pudo eliminar el movimiento.', 'error');
+            }
+        }).catch(() => Swal.fire('Error', 'No se pudo eliminar el movimiento.', 'error'));
     });
 }
 </script>

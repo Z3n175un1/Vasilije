@@ -363,7 +363,7 @@ class GastoDevolucionTest extends TestCase
     }
 
     #[Test]
-    public function el_boton_registrar_gasto_sigue_being_el_que_confirma(): void
+    public function el_boton_registrar_gasto_sigue_siendo_el_que_confirma(): void
     {
         $admin = $this->usuarioConRol('admin');
 

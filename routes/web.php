@@ -292,6 +292,8 @@ Route::middleware('auth')->group(function (): void {
             return response()->json(['success' => true, 'data' => $config->todo()]);
         });
 
+        Route::get('/tipo-cambio-bcb', [ConfiguracionController::class, 'apiTipoCambioBcb']);
+
         // --- Escritura ---
         Route::middleware('escritura')->group(function (): void {
             Route::post('/almacen/movimientos', [AlmacenController::class, 'apiGuardarMovimiento']);

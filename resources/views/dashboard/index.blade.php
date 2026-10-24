@@ -162,6 +162,19 @@
                 <button class="btn btn-sm fw-bold" style="background:transparent;color:#2f2c79;border:2px solid #2f2c79;padding:6px 14px;" onclick="cerrarReporte()">✕ CERRAR</button>
             </div>
         </div>
+        <div class="no-print d-flex flex-wrap gap-2 align-items-center" style="padding:12px 24px;border-bottom:3px solid #000;background:#f6f6f6;">
+            <span class="fw-bold small text-uppercase" style="color:#555;">FILTROS:</span>
+            <select id="rfDashTipo" class="form-select form-select-sm border-black" style="width:auto;">
+                <option value="TODO">TODOS</option>
+                <option value="INGRESOS">SOLO INGRESOS</option>
+                <option value="GASTOS">SOLO GASTOS</option>
+            </select>
+            <input type="date" id="rfDashDesde" class="form-control form-control-sm border-black" style="width:auto;">
+            <span class="fw-bold small text-uppercase" style="color:#555;">AL</span>
+            <input type="date" id="rfDashHasta" class="form-control form-control-sm border-black" style="width:auto;">
+            <button class="btn btn-sm btn-dark border-black fw-bold" onclick="aplicarFiltrosDash()">APLICAR</button>
+            <button class="btn btn-sm border-black fw-bold" style="background:#fff;color:#000;" onclick="limpiarFiltrosDash()">LIMPIAR</button>
+        </div>
         <div class="detail-scroll" id="reporteContent" style="padding:20px 24px;">
         </div>
     </div>
@@ -220,7 +233,7 @@
                 <div class="row g-3 mb-3">
                     <div class="col-md-12">
                         <label class="fw-bold small text-uppercase">BS X TON</label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_precio_ton" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" placeholder="Bs por tonelada">
+                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_precio_ton" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0!important;cursor:not-allowed;" min="0" placeholder="Bs por tonelada" readonly>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
@@ -231,6 +244,12 @@
                     <div class="col-md-6">
                         <label class="fw-bold small text-uppercase" style="font-size:0.9rem;">MONTO (Bs) <span class="text-danger">*</span></label>
                         <input type="number" step="0.01" class="form-control fw-bold" id="fd_monto" style="border-radius:0;border:3px solid #000;padding:12px;background:#f0f0f0!important;cursor:not-allowed;font-size:1.1rem;" required min="0" placeholder="0.00" readonly>
+                    </div>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-12">
+                        <label class="fw-bold small text-uppercase" style="font-size:0.9rem;">TIPO DE CAMBIO (Bs/USD)</label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_tipo_cambio" style="border-radius:0;border:3px solid #000;padding:12px;background:#f0f0f0!important;cursor:not-allowed;font-size:1.1rem;" min="0" placeholder="6.96" readonly value="{{ $tipoCambioVigente ?? '' }}">
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
@@ -693,6 +712,7 @@ function guardarFleteDash(event) {
         id_tramo: document.getElementById('fd_id_tramo').value || null,
         cliente_nombre: document.getElementById('fd_cliente_nombre').value,
         monto: document.getElementById('fd_monto').value,
+        tipo_cambio: document.getElementById('fd_tipo_cambio').value || null,
         origen: document.getElementById('fd_origen').value,
         destino: document.getElementById('fd_destino').value,
         toneladas: document.getElementById('fd_toneladas').value || 0,
@@ -731,11 +751,76 @@ function editarVehiculo(id) {
     window.location.href = `{{ url('vehiculos/${id}/editar') }}`;
 }
 
+let _reportVehiculoId = null;
+let _reportPlacaTexto = '';
+
+function fIsolocal(d) {
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 function abrirReporte(id, placa) {
+    _reportVehiculoId = id;
+    _reportPlacaTexto = placa;
     document.getElementById('reportePlaca').textContent = placa;
     document.getElementById('reporteModal').style.display = 'flex';
 
-    fetch(`{{ url('api/reportes/filtro') }}?id_vehiculo=${id}`, {
+    const hoy = new Date();
+    document.getElementById('rfDashTipo').value = 'TODO';
+    document.getElementById('rfDashDesde').value = fIsolocal(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
+    document.getElementById('rfDashHasta').value = fIsolocal(hoy);
+
+    cargarReporteDash();
+}
+
+function aplicarFiltrosDash() {
+    if (_reportVehiculoId === null) return;
+    cargarReporteDash();
+}
+
+function limpiarFiltrosDash() {
+    if (_reportVehiculoId === null) return;
+    const hoy = new Date();
+    document.getElementById('rfDashTipo').value = 'TODO';
+    document.getElementById('rfDashDesde').value = fIsolocal(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
+    document.getElementById('rfDashHasta').value = fIsolocal(hoy);
+    cargarReporteDash();
+}
+
+async function borrarMovimientoDash(index) {
+    const item = (window._reportDataDash || [])[index];
+    if (!item) return;
+    const esIngreso = item.tipo_registro === 'INGRESO';
+    const url = esIngreso ? `{{ url('facturacion') }}/${item.id}` : `{{ url('gastos') }}/${item.id}`;
+    const accion = esIngreso ? 'ANULAR este flete' : 'ELIMINAR este gasto';
+    if (!confirm(`¿Seguro que deseas ${accion}?\n\n${item.concepto || item.recorrido || ''}\n\nBs. ${esIngreso ? parseFloat(item.ingreso || 0).toFixed(2) : parseFloat(item.egreso || 0).toFixed(2)}`)) return;
+    try {
+        const r = await fetch(url, {
+            method: 'DELETE',
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        });
+        const datos = await r.clone().json().catch(() => ({}));
+        if (r.ok && datos.success) {
+            abrirReporte(_reportVehiculoId, _reportPlacaTexto);
+        } else {
+            alert(datos.message || 'No se pudo borrar el registro.');
+        }
+    } catch {
+        alert('ERROR de red al intentar borrar el registro.');
+    }
+}
+
+function cargarReporteDash() {
+    const desde = document.getElementById('rfDashDesde').value;
+    const hasta = document.getElementById('rfDashHasta').value;
+    const tipo = document.getElementById('rfDashTipo').value;
+
+    const extra = [];
+    if (desde) extra.push(`fecha_inicio=${desde}`);
+    if (hasta) extra.push(`fecha_fin=${hasta}`);
+    if (tipo && tipo !== 'TODO') extra.push(`tipo=${tipo}`);
+
+    fetch(`{{ url('api/reportes/filtro') }}?id_vehiculo=${_reportVehiculoId}${extra.length ? '&' + extra.join('&') : ''}`, {
         headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
     })
     .then(r => r.json())
@@ -782,9 +867,9 @@ function abrirReporte(id, placa) {
                                 <th style="padding:10px 12px;border:1px solid #333;">FECHA</th>
                                 <th style="padding:10px 12px;border:1px solid #333;">TIPO</th>
                                 <th style="padding:10px 12px;border:1px solid #333;">RECORRIDO</th>
-                                 <th style="padding:10px 12px;border:1px solid #333;text-align:right;">MONTO</th>
+                                <th style="padding:10px 12px;border:1px solid #333;text-align:right;">TONELADAS</th>
                                 <th style="padding:10px 12px;border:1px solid #333;text-align:center;width:40px;">ED</th>
-                                <th style="padding:10px 12px;border:1px solid #333;text-align:center;width:40px;"></th>
+                                <th style="padding:10px 12px;border:1px solid #333;text-align:center;width:40px;">DEL</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -795,14 +880,21 @@ function abrirReporte(id, placa) {
                                 const monto = item.tipo_registro === 'INGRESO'
                                     ? parseFloat(item.ingreso || 0).toFixed(2)
                                     : parseFloat(item.egreso || 0).toFixed(2);
+                                const ton = parseFloat(item.toneladas || 0).toFixed(2);
+                                const celdaToneladas = item.tipo_registro === 'INGRESO'
+                                    ? `${ton} tn`
+                                    : '—';
                                 const bg = item.tipo_registro === 'INGRESO' ? '#e2ffd6' : '#ffdcd6';
                                 const color = item.tipo_registro === 'INGRESO' ? '#007400' : '#cc0000';
                                 const detalle = item.tipo_registro === 'INGRESO'
-                                    ? '<span class="fw-bold">CLIENTE:</span> ' + (item.cliente_nombre || '—') + ' | <span class="fw-bold">COND:</span> ' + (item.conductor_asignado || '—') + ' | <span class="fw-bold">TN:</span> ' + (parseFloat(item.toneladas || 0)) + ' | <span class="fw-bold">PAGO:</span> ' + (item.tipo_pago || '—')
-                                    : '<span class="fw-bold">TIPO:</span> ' + (item.tipo_gasto || '—') + ' | <span class="fw-bold">PROV:</span> ' + (item.proveedor || '—') + ' | <span class="fw-bold">KM:</span> ' + (item.kilometraje || '—');
+                                    ? '<span class="fw-bold">BS:</span> ' + monto + ' | <span class="fw-bold">CLIENTE:</span> ' + (item.cliente_nombre || '—') + ' | <span class="fw-bold">COND:</span> ' + (item.conductor_asignado || '—') + ' | <span class="fw-bold">TN:</span> ' + (parseFloat(item.toneladas || 0)) + ' | <span class="fw-bold">PAGO:</span> ' + (item.tipo_pago || '—')
+                                    : '<span class="fw-bold">TIPO:</span> ' + (item.tipo_gasto || '—') + ' | <span class="fw-bold">PROV:</span> ' + (item.proveedor || '—') + ' | <span class="fw-bold">KM:</span> ' + (item.kilometraje || '—') + ' | <span class="fw-bold">BS:</span> ' + monto;
                                 const editUrl = item.tipo_registro === 'INGRESO'
                                     ? `{{ url('facturacion') }}/${item.id}/editar`
                                     : `{{ url('gastos') }}/${item.id}/editar`;
+                                const botonBorrar = item.tipo_registro === 'CONSUMO'
+                                    ? '<span style="opacity:.25;">✖</span>'
+                                    : `<button class="btn btn-sm border-black fw-bold" style="padding:2px 8px;font-size:.75rem;background:#ff4d4d;color:#fff;" onclick="event.stopPropagation();borrarMovimientoDash(${i});" title="BORRAR"><i class="fas fa-trash"></i></button>`;
                                 return `
                                 <tr class="dash-tr-${i}" style="cursor:pointer;border-left:4px solid ${color};" onclick="toggleDetalleDash(${i})">
                                     <td style="padding:8px 12px;border:1px solid #ddd;white-space:nowrap;font-weight:600;">${item.fecha ? item.fecha.split(' ')[0] : '—'}</td>
@@ -810,11 +902,11 @@ function abrirReporte(id, placa) {
                                         <span class="badge fw-bold px-3 py-1" style="border:2px solid #000;background:${bg};color:#000;">${item.tipo_registro === 'INGRESO' ? '↑ INGRESO' : '↓ EGRESO'}</span>
                                     </td>
                                     <td style="padding:8px 12px;border:1px solid #ddd;font-weight:600;">${recorrido || '—'}</td>
-                                    <td style="padding:8px 12px;border:1px solid #ddd;text-align:right;font-weight:700;color:${color};">Bs. ${monto}</td>
+                                    <td style="padding:8px 12px;border:1px solid #ddd;text-align:right;font-weight:700;color:${color};">${celdaToneladas}</td>
                                     <td style="padding:8px 12px;border:1px solid #ddd;text-align:center;">
                                         <a href="${editUrl}" class="btn btn-sm btn-warning border-black fw-bold" style="padding:2px 8px;font-size:.75rem;" onclick="event.stopPropagation();" title="EDITAR"><i class="fas fa-edit"></i></a>
                                     </td>
-                                    <td style="padding:8px 12px;border:1px solid #ddd;text-align:center;font-weight:700;font-size:0.85rem;">▼</td>
+                                    <td style="padding:8px 12px;border:1px solid #ddd;text-align:center;font-weight:700;font-size:0.85rem;">${botonBorrar}</td>
                                 </tr>
                                 <tr id="dash-detalle-${i}" style="display:none;">
                                     <td colspan="6" style="padding:0;border:3px solid #000;border-top:none;background:#f9f9f9;">

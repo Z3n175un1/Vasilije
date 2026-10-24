@@ -458,7 +458,7 @@ class InventarioTest extends TestCase
     }
 
     #[Test]
-    public function la_numeracion_no_retrcede_al_crear_un_gasto_mayor(): void
+    public function la_numeracion_no_retrocede_al_crear_un_gasto_mayor(): void
     {
         $admin = $this->usuarioConRol('admin');
         $vehiculo = $this->vehiculo();
@@ -522,5 +522,91 @@ class InventarioTest extends TestCase
         foreach ($numeros as $n) {
             $this->assertStringStartsWith('I_', $n);
         }
+    }
+
+    // =================================================================
+    // FECHAS AUTOMATICAS EN COMPRAS/ENTREGAS
+    // =================================================================
+
+    #[Test]
+    public function la_fecha_del_movimiento_es_siempre_el_dia_de_digitacion(): void
+    {
+        // El usuario pide fechas automaticas: aunque el cliente mande una
+        // fecha atrasada, el registro queda con el dia actual para no
+        // distorsionar el kardex ni los saldos.
+        $producto = $this->producto(5);
+
+        $this->actingAs($this->usuarioConRol('operador'))
+            ->postJson('/api/almacen/movimientos', $this->compra($producto, 2, [
+                'fecha_movimiento' => '2020-01-01',
+            ]))
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $fecha = DB::table('global.movimientos_inventario')
+            ->where('id_inventario', $producto)
+            ->orderByDesc('id_movimiento')
+            ->value('fecha_movimiento');
+
+        $this->assertSame(now()->format('Y-m-d'), $fecha);
+    }
+
+    #[Test]
+    public function editar_un_movimiento_conserva_su_fecha_original(): void
+    {
+        $producto = $this->producto(5);
+
+        $id = $this->actingAs($this->usuarioConRol('operador'))
+            ->postJson('/api/almacen/movimientos', $this->compra($producto, 2))
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->json('id_movimiento');
+
+        DB::table('global.movimientos_inventario')
+            ->where('id_movimiento', $id)
+            ->update(['fecha_movimiento' => '2026-01-01']);
+
+        $this->actingAs($this->usuarioConRol('operador'))
+            // El formulario reenvia la fecha pre-llenada del movimiento.
+            ->putJson('/api/almacen/movimientos/' . $id, $this->compra($producto, 3, ['fecha_movimiento' => '2026-01-01']))
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $fecha = DB::table('global.movimientos_inventario')
+            ->where('id_movimiento', $id)
+            ->value('fecha_movimiento');
+
+        $this->assertSame('2026-01-01', $fecha, 'La edicion no debe pisar la fecha original.');
+    }
+
+    // =================================================================
+    // ELIMINAR COMPRAS/ENTREGAS DESDE LA UI
+    // =================================================================
+
+    #[Test]
+    public function la_vista_de_almacen_ofrece_eliminar_compras_y_entregas(): void
+    {
+        // El backend ya tenia DELETE /api/almacen/movimientos/{id}; ahora la
+        // pantalla de almacén muestra el boton por fila.
+        $html = $this->actingAs($this->usuarioConRol('admin'))->get('/almacen')->assertOk()->getContent();
+
+        $this->assertStringContainsString('function eliminarMovimiento', $html);
+        $this->assertStringContainsString("eliminarMovimiento(\${Number(m.id_movimiento)}, 'COMPRA')", $html);
+        $this->assertStringContainsString("eliminarMovimiento(\${Number(m.id_movimiento)}, 'SALIDA')", $html);
+        $this->assertStringContainsString('Se revertirá el stock', $html);
+    }
+
+    #[Test]
+    public function el_formulario_de_movimiento_muestra_la_fecha_automatica(): void
+    {
+        $html = $this->actingAs($this->usuarioConRol('admin'))
+            ->get('/almacen/movimiento/COMPRA')
+            ->assertOk()
+            ->getContent();
+
+        // El input de fecha es de solo lectura y lleva el dia de hoy.
+        $this->assertMatchesRegularExpression('/<input[^>]*name="fecha_movimiento"[^>]*readonly/', $html);
+        $this->assertStringContainsString(now()->format('Y-m-d'), $html);
+        $this->assertStringContainsString('Se registra con el día de hoy', $html);
     }
 }

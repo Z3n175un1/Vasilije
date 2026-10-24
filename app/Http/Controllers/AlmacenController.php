@@ -350,6 +350,11 @@ class AlmacenController extends Controller
         try {
             $datos = $request->datosNormalizados();
 
+            // La fecha del movimiento es siempre el dia en que se digita:
+            // los registros atrasados distorsionan el kardex y los saldos.
+            // Al EDITAR un movimiento la fecha original se respeta.
+            $datos['fecha_movimiento'] = date('Y-m-d');
+
             if (empty($datos['codigo_lote']) && $datos['tipo_movimiento'] === 'COMPRA') {
                 $datos['codigo_lote'] = $this->inventario->siguienteCodigoLote();
             }

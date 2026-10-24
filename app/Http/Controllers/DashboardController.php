@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\EstadoFactura;
 use App\Enums\EstadoVehiculo;
+use App\Services\ConfiguracionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -18,10 +19,13 @@ use Illuminate\View\View;
  */
 class DashboardController extends Controller
 {
-    public function index(): View
+    public function index(ConfiguracionService $config): View
     {
         return view('dashboard.index', [
             'estados' => EstadoVehiculo::cases(),
+            // Tipo de cambio que se mostrara (solo lectura) en el modal de
+            // ingreso del dashboard: cada flete guarda con cuanto se facturo.
+            'tipoCambioVigente' => $config->tipoCambioVigente(),
         ]);
     }
 

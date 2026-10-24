@@ -153,7 +153,21 @@
                 </div>
             </div>
 
-            <!-- ROW 6: CLIENTE -->
+            <!-- ROW 6: TIPO DE CAMBIO -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="form-group mb-0">
+                        <label>TIPO DE CAMBIO (Bs/USD)</label>
+                        <input type="number" step="0.01" name="tipo_cambio" id="form_tipo_cambio"
+                               value="{{ old('tipo_cambio', $ingreso->tipo_cambio ?? $tipo_cambio_vigente) }}"
+                               min="0" placeholder="6.96" readonly
+                               style="background:#f0f0f0!important;cursor:not-allowed;">
+                        <small class="d-block mt-1 fw-bold text-muted">Se guarda el cambio con el que se facturó el flete</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 7: CLIENTE -->
             <div class="row g-4 mb-4">
                 <div class="col-md-6">
                     <div class="form-group mb-0">

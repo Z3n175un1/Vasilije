@@ -69,8 +69,12 @@
                                name="fecha_movimiento"
                                id="movFecha"
                                required
+                               readonly
                                value="{{ old('fecha_movimiento', $movimiento->fecha_movimiento ?? now()->format('Y-m-d')) }}"
-                               style="font-size:1.3rem;padding:12px;border:4px solid #000;font-weight:700;">
+                               style="font-size:1.3rem;padding:12px;border:4px solid #000;font-weight:700;background:#f0f0f0;cursor:not-allowed;">
+                        <small class="d-block mt-1 fw-bold" style="color:var(--gray-mid,#888);font-size:1rem;">
+                            Se registra con el día de hoy para evitar errores
+                        </small>
                     </div>
                 </div>
 

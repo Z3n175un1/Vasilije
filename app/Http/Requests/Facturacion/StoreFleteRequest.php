@@ -30,6 +30,7 @@ class StoreFleteRequest extends FormRequest
             'id_tramo' => ['nullable', 'integer', Rule::exists('tramos', 'id_tramo')],
             'concepto' => ['nullable', 'string', 'max:200'],
             'monto' => ['required', 'numeric', 'gt:0'],
+            'tipo_cambio' => ['nullable', 'numeric', 'min:0', 'max:1000'],
             'fecha_ingreso' => ['required', 'date'],
             'fecha_vencimiento' => ['nullable', 'date', 'after_or_equal:fecha_ingreso'],
             'observaciones' => ['nullable', 'string', 'max:2000'],
@@ -92,6 +93,11 @@ class StoreFleteRequest extends FormRequest
                 ? $this->string('concepto')->trim()->value()
                 : 'TRANSPORTE DE SOYA',
             'monto' => round((float) $this->input('monto'), 2),
+            // El tipo de cambio con el que se factura. Si el formulario no
+            // lo manda, el controlador usa el vigente de configuracion.
+            'tipo_cambio' => $this->filled('tipo_cambio')
+                ? round((float) $this->input('tipo_cambio'), 2)
+                : null,
             'fecha_ingreso' => $this->date('fecha_ingreso')->format('Y-m-d'),
             'fecha_vencimiento' => $this->input('fecha_vencimiento'),
             'observaciones' => $this->input('observaciones'),

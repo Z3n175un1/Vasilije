@@ -8,6 +8,7 @@ use App\Enums\EstadoFactura;
 use App\Enums\EstadoVehiculo;
 use App\Http\Requests\Facturacion\StoreFleteRequest;
 use App\Services\AuditoriaService;
+use App\Services\ConfiguracionService;
 use App\Services\DocumentoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -35,11 +36,14 @@ class FacturacionController extends Controller
     public function __construct(
         private readonly DocumentoService $documentos,
         private readonly AuditoriaService $auditoria,
+        private readonly ConfiguracionService $config,
     ) {}
 
     public function index(): View
     {
-        return view('facturacion.index');
+        // El valor aparece en el modal de alta de flete (solo lectura) como
+        // información del cambio con el que se van a registrar.
+        return view('facturacion.index', ['tipoCambioVigente' => $this->config->tipoCambioVigente()]);
     }
 
     public function create(): View
@@ -62,6 +66,11 @@ class FacturacionController extends Controller
     {
         try {
             $datos = $request->datosNormalizados();
+
+            // Cada flete guarda el tipo de cambio con el que se registro:
+            // sin esto el reporte no puede reproducir el monto en USD del
+            // dia. Si el formulario no lo manda, manda el vigente.
+            $datos['tipo_cambio'] ??= $this->config->tipoCambioVigente();
 
             $datos['nro_documento'] = $this->documentos->siguiente('I');
             $datos['fecha_registro'] = now();
@@ -105,6 +114,10 @@ class FacturacionController extends Controller
         }
 
         $datos = $request->datosNormalizados();
+
+        // Misma regla que el alta: si el formulario no manda tipo de cambio,
+        // se queda el vigente de configuracion.
+        $datos['tipo_cambio'] ??= $this->config->tipoCambioVigente();
 
 // Inmutables: identidad del documento y estado de facturacion.
 // `id_tramo` NO va aqui: cambiar la ruta de un flete es una correccion
@@ -154,7 +167,12 @@ unset($datos['estado_factura'], $datos['nro_documento']);
                 DB::raw('COUNT(*) as cantidad_fletes'),
                 DB::raw('SUM(monto) as total_monto'),
                 'estado_factura',
-                DB::raw('SUM(toneladas) as toneladas')
+                DB::raw('SUM(toneladas) as toneladas'),
+                // Tipo de cambio con el que se emitieron los fletes. Si la
+                // factura agrupa fletes de dias distintos pueden diferir:
+                // la vista muestra "min - max" en ese caso.
+                DB::raw('MIN(tipo_cambio) as tipo_cambio_min'),
+                DB::raw('MAX(tipo_cambio) as tipo_cambio_max')
             )
             ->whereNotNull('numero_factura')
             ->where('estado_factura', '!=', EstadoFactura::Anulada->value)
@@ -366,6 +384,7 @@ unset($datos['estado_factura'], $datos['nro_documento']);
                 ->get(),
             'tramos' => DB::table('global.tramos')->orderBy('origen')->get(),
             'config' => DB::table('global.configuracion')->pluck('valor', 'llave'),
+            'tipo_cambio_vigente' => $this->config->tipoCambioVigente(),
         ];
     }
 }

@@ -1,5 +1,7 @@
 *.log
 .DS_Store
+# Python: cache de bytecode de app/Http/Api (API de referencia del BCB)
+__pycache__/
 # =========================================================
 # CREDENCIALES
 #
