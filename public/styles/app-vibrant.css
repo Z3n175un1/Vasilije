@@ -1,0 +1,52 @@
+/* =========================================================
+   app-vibrant.css — Paleta vibrante (fuente de verdad)
+   Solo tokens de :root. Se carga despues de app.css para que
+   los valores de la paleta vivan aqui y no se toque app.css.
+   ========================================================= */
+
+:root {
+    /* ---------------- Identidad ---------------- */
+    --primary: #2f2c79;            /* marca, iconos, enlaces activos */
+    --primary-dark: #1d1a50;       /* hover de primarios */
+    --primary-light: #4b47b8;      /* hover suave, bordes al pasar */
+    --primary-soft: #eceefe;       /* bloques informativos, hover secundarios */
+    --grad-brand: linear-gradient(135deg, #2f2c79 0%, #19b0c4 100%);
+
+    /* ---------------- Acentos ---------------- */
+    --accent: #9ce0db;             /* seleccion, foco, menu activo */
+    --accent-strong: #2bb3a8;      /* bordes de acento, iconos positivos */
+    --accent-soft: #e4f8f6;        /* hover de filas y opciones */
+    --accent-ink: #0c5e57;         /* texto sobre --accent-soft */
+    --sun: #ffc857;
+    --sun-soft: #fff4d6;
+    --coral: #ff7a6b;
+    --coral-soft: #ffe8e4;
+    --lilac: #b7a7ff;
+    --lilac-soft: #efeaff;
+    --mint: #bdf3e1;
+    --pink: #ff9ec7;               /* solo decorativo */
+
+    /* ------- Gamificacion ampliada (texto siempre --ink) ------- */
+    --sky: #8ec5ff;                /* informacion */
+    --sky-soft: #e8f3ff;
+    --rose: #ff8fb1;               /* alerta no critica */
+    --rose-soft: #ffe9f1;
+    --leaf: #7bd389;               /* completado o aprobado */
+    --leaf-soft: #e9f9ee;
+    --tangerine: #ffa95c;          /* pendiente */
+    --tangerine-soft: #fff0e3;
+
+    /* ------------ Texto y neutros ------------ */
+    --ink: #1d1f3b;                /* texto principal (reemplaza #000) */
+    --muted: #5a5f7d;              /* texto secundario */
+    --line: #dcdff0;               /* bordes de tarjetas, separadores */
+    --line-strong: #a3a9c9;        /* bordes de campos */
+    --surface: #f6f7ff;            /* fondo de pagina */
+
+    /* ---------------- Estados ---------------- */
+    --success: #1f9d55;
+    --danger: #d6336c;
+    --soft-danger: #c62828;
+    --soft-danger-bg: #fff0f3;
+    --info: #0ea5b7;
+}

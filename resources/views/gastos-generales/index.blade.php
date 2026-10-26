@@ -1,31 +1,31 @@
 @extends('layouts.master')
 
-@section('title', 'Gastos Generales')
+@section('title', 'Gastos')
 
 @push('styles')
 <style>
 .gastos-table th {
-    background: #000 !important;
+    background: var(--primary) !important;
     color: #fff !important;
     font-weight: 800;
     padding: 12px 10px;
-    border: 2px solid #000;
+    border:2px solid var(--line-strong);
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 .gastos-table td {
     padding: 10px;
-    border: 1px solid #000;
+    border:1px solid var(--line);
     font-weight: 600;
     vertical-align: middle;
 }
 .gastos-table tbody tr:hover {
-    background: #fff8e1;
+    background: var(--sun-soft);
 }
 .filter-card {
-    background: #2f2c79;
-    border: 4px solid #000;
+    background: var(--primary);
+    border:4px solid var(--line);
     padding: 20px;
 }
 .filter-card label {
@@ -37,7 +37,7 @@
 }
 .filter-card .form-control, .filter-card .form-select {
     border-radius: 0;
-    border: 3px solid #000;
+    border:3px solid var(--line-strong);
     padding: 10px 12px;
     font-weight: 700;
 }
@@ -48,7 +48,7 @@
 <div class="main-container w-full">
     <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 bg-white text-black p-4 rounded-3 shadow-heavy">
         <div class="header-decoration">
-            <h1 class="fs-title mb-0 text-black">REGISTRAR GASTOS GENERALES</h1>
+            <h1 class="fs-title mb-0 text-black">REGISTRAR GASTOS</h1>
             <p class="font-bold small text-black uppercase">
                 Clasificación mediante el <a href="{{ route('clasificadores.index') }}" class="text-decoration-underline">Clasificador de Gastos</a>
             </p>
@@ -56,7 +56,7 @@
         @can('crear', 'gastos_generales')
             <a href="{{ route('gastos-generales.create') }}"
                class="btn-bento btn-bento-primary py-1 px-3 fs-mid font-bold rounded-3 text-decoration-none"
-               style="border:3px solid #000;">
+               style="border:3px solid var(--line-strong);">
                 <i class="fas fa-plus me-1"></i> REGISTRAR GASTO
             </a>
         @endcan
@@ -80,7 +80,7 @@
                 <input type="date" class="form-control" id="filterFechaFin" value="{{ date('Y-m-d') }}">
             </div>
             <div class="col-md-2">
-                <button class="btn fw-bold w-100" style="background:#000;color:#fff;border:3px solid #000;padding:10px;border-radius:0;" onclick="cargarGastos()">
+                <button class="btn fw-bold w-100" style="background: var(--primary);color:#fff;border:3px solid var(--line-strong);padding:10px;border-radius:999px;" onclick="cargarGastos()">
                     <i class="fas fa-search me-1"></i> BUSCAR
                 </button>
             </div>
@@ -91,7 +91,7 @@
         <div class="row mt-2">
             <div class="col-md-12">
                 <span class="badge px-3 py-2 fw-bold" id="resumenDevoluciones"
-                      style="display:none; background:#d4edda;color:#155724;border:2px solid #000;">
+                      style="display:none; background:var(--mint);color:var(--success);border:2px solid var(--line-strong);">
                     DEVOLUCIONES: Bs. 0.00
                 </span>
             </div>
@@ -103,12 +103,12 @@
         <div class="spinner-border text-dark" role="status"></div>
         <p class="mt-3 fw-bold">CARGANDO...</p>
     </div>
-    <div id="emptyGastos" class="text-center py-5" style="display:none;border:4px solid #000;">
+    <div id="emptyGastos" class="text-center py-5" style="display:none;border:4px solid var(--line);">
         <i class="fas fa-receipt" style="font-size:64px;opacity:.2;"></i>
         <h3 class="mt-3 fw-bold">NO HAY GASTOS REGISTRADOS</h3>
     </div>
     <div id="tableContainer" style="display:none;">
-        <div style="border:4px solid #000;overflow-x:auto;">
+        <div style="border:4px solid var(--line);overflow-x:auto;">
             <table class="gastos-table w-100 mb-0">
                 <thead>
                     <tr>
@@ -226,14 +226,14 @@ function renderizar(filas) {
         const esDevolucion = !!Number(g.es_devolucion);
         const monto = parseFloat(g.monto || 0);
 
-        const colorMonto = esDevolucion ? '#007400' : '#dc3545';
+        const colorMonto = esDevolucion ? 'var(--success)' : 'var(--danger)';
 
         const badgeClasificador = g.clasificador_codigo
-            ? `<span class="badge" style="background:#000;color:#fff;border:2px solid #000;font-family:monospace;">${esc(g.clasificador_codigo)}</span>`
+            ? `<span class="badge" style="background: var(--primary);color:#fff;border:2px solid var(--line-strong);font-family:monospace;">${esc(g.clasificador_codigo)}</span>`
             : '<span class="badge scope-no">LEGACY</span>';
 
         const marcaDevolucion = esDevolucion
-            ? `<span class="badge" style="background:#d4edda;color:#155724;border:2px solid #000;font-weight:800;">DEVOLUCION</span>`
+            ? `<span class="badge" style="background:var(--mint);color:var(--success);border:2px solid var(--line-strong);font-weight:800;">DEVOLUCION</span>`
             : '';
 
         @php
@@ -252,13 +252,13 @@ $puedeAnularGasto  = auth()->user()?->can('eliminar', 'gastos_generales') ?? fal
 
         if (puedeEditar) {
             acciones += `<a href="{{ url("gastos-generales") }}/${Number(g.id_gasto_general)}/editar"
-                         class="btn btn-sm" style="background:#ffc107;border:2px solid #000;" title="EDITAR">
+                         class="btn btn-sm" style="background:var(--sun);border:2px solid var(--line-strong);" title="EDITAR">
                             <i class="fas fa-edit"></i>
                         </a>`;
         }
 
         if (puedeAnular) {
-            acciones += `<button class="btn btn-sm" style="background:#dc3545;border:2px solid #000;color:#fff;"
+            acciones += `<button class="btn btn-sm" style="background:var(--danger);border:2px solid var(--line-strong);color:#fff;"
                                 title="ANULAR" onclick="anularGasto(${Number(g.id_gasto_general)})">
                             <i class="fas fa-trash"></i>
                         </button>`;
@@ -269,7 +269,7 @@ $puedeAnularGasto  = auth()->user()?->can('eliminar', 'gastos_generales') ?? fal
             <td style="white-space:nowrap;">${esc(g.fecha_gasto || '—')}</td>
             <td style="text-align:center;">${badgeClasificador}</td>
             <td style="text-align:center;">
-                <span class="badge" style="background:#2f2c79;color:#fff;border:2px solid #000;">${esc(g.categoria || '—')}</span>
+                <span class="badge" style="background:var(--primary);color:#fff;border:2px solid var(--line-strong);">${esc(g.categoria || '—')}</span>
             </td>
             <td class="fw-bold">
                 ${esc(g.concepto || '—')}
@@ -295,8 +295,8 @@ function anularGasto(id) {
         </div>`,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
+        confirmButtonColor: '#d6336c',
+        cancelButtonColor: 'var(--muted)',
         confirmButtonText: 'SÍ, ANULAR',
         cancelButtonText: 'CANCELAR'
     }).then((resultado) => {

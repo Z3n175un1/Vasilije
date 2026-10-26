@@ -19,7 +19,7 @@
     </header>
 
     @if($errors->any())
-        <div class="bento-card mb-4" style="border:4px solid #dc3545;background:#fff5f5;">
+        <div class="bento-card mb-4" style="border:4px solid var(--danger);background:var(--soft-danger-bg);">
             <div class="fw-bold text-danger text-uppercase mb-2">
                 <i class="fas fa-exclamation-triangle me-2"></i>Revise los siguientes errores
             </div>
@@ -31,7 +31,7 @@
         </div>
     @endif
 
-    <div class="bento-card" style="border:6px solid #000;">
+    <div class="bento-card" style="border:6px solid var(--line);">
         <form method="POST"
               action="{{ $gasto ? route('gastos-generales.update', $gasto->id_gasto_general) : route('gastos-generales.store') }}"
               class="form-bento">
@@ -46,13 +46,22 @@
                         <select name="id_clasificador" id="idClasificador" required
                                 onchange="aplicarClasificador()">
                             <option value="">SELECCIONE...</option>
-                            @foreach($clasificadores as $c)
-                                <option value="{{ $c->id_clasificador }}"
-                                        data-tipo="{{ $c->tipo_gasto }}"
-                                        data-codigo="{{ $c->codigo }}"
-                                        {{ old('id_clasificador', $gasto->id_clasificador ?? '') == $c->id_clasificador ? 'selected' : '' }}>
-                                    {{ $c->codigo }} — {{ $c->descripcion }} [{{ $c->tipo_gasto }}]
-                                </option>
+                            @php
+                                $clasificadoresGrupados = $clasificadores->groupBy(
+                                    fn ($c) => $c->grupo_gasto ?? 'SIN GRUPO',
+                                );
+                            @endphp
+                            @foreach($clasificadoresGrupados as $grupoNombre => $porGrupo)
+                                <optgroup label="{{ $grupoNombre }}">
+                                @foreach($porGrupo as $c)
+                                    <option value="{{ $c->id_clasificador }}"
+                                            data-tipo="{{ $c->tipo_gasto }}"
+                                            data-codigo="{{ $c->codigo }}"
+                                            {{ old('id_clasificador', $gasto->id_clasificador ?? '') == $c->id_clasificador ? 'selected' : '' }}>
+                                        {{ $c->codigo }} — {{ $c->descripcion }} [{{ $c->tipo_gasto }}]
+                                    </option>
+                                @endforeach
+                                </optgroup>
                             @endforeach
                         </select>
                         <small class="d-block mt-2 text-black-50">
@@ -83,7 +92,7 @@
             </div>
 
             <div id="avisoTipo" class="mb-4 p-2 fw-bold text-uppercase"
-                 style="display:none; background:#eef2ff; border:3px solid #2f2c79;">
+                 style="display:none; background:var(--primary-soft); border:3px solid var(--primary);">
                 Tipo de gasto: <span id="avisoTipoTexto"></span>
             </div>
 
@@ -110,11 +119,11 @@
 
             {{-- Aviso de devolución --}}
             <div id="avisoDevolucion" class="mb-4 p-3"
-                 style="display:none; background:#fff3cd; border:4px solid #dc3545;">
-                <div class="fw-bold text-uppercase" style="color:#740000;">
+                 style="display:none; background:var(--sun-soft); border:4px solid var(--danger);">
+                <div class="fw-bold text-uppercase" style="color:var(--soft-danger);">
                     <i class="fas fa-undo me-2"></i> DEVOLUCIÓN DETECTADA
                 </div>
-                <div class="small mt-1" style="color:#740000;">
+                <div class="small mt-1" style="color:var(--soft-danger);">
                     El monto es negativo. Se registrará como devolución y no se descontará del total.
                 </div>
             </div>
@@ -254,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 html: `
                     <div class="text-start" style="font-size:.95rem;">
                         <p class="mb-2">
-                            El monto es <strong style="color:#dc3545;">Bs. ${bs(monto)}</strong>.
+                            El monto es <strong style="color:var(--danger);">Bs. ${bs(monto)}</strong>.
                         </p>
                         <p class="mb-1"><strong>Concepto:</strong> ${esc(concepto)}</p>
                         <p class="mb-0 small">
@@ -263,8 +272,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     </div>`,
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
+                confirmButtonColor: '#d6336c',
+                cancelButtonColor: 'var(--muted)',
                 confirmButtonText: 'SÍ, REGISTRAR DEVOLUCIÓN',
                 cancelButtonText: 'CANCELAR',
                 reverseButtons: true

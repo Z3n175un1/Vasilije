@@ -186,19 +186,7 @@
 /* ============================================================
    VARIABLES CSS - SISTEMA BENTO
    ============================================================ */
-:root {
-    --primary: #2f2c79;
-    --primary-dark: #1d1a50;
-    --primary-light: #403c91;
-    --accent: #9ce0db;
-    --danger: #dc3545;
-    --success: #28a745;
-    --gray-dark: #333333;
-    --gray-mid: #666666;
-    --gray-light: #cccccc;
-    --white: #ffffff;
-    --black: #000000;
-}
+/* Tokens desde la hoja global (app-vibrant.css) */
 
 /* ============================================================
    RESET
@@ -223,7 +211,7 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f5f5f5;
+    background: var(--surface);
     font-family: 'Uncut Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
@@ -246,7 +234,7 @@ html, body {
     left: 0;
     right: 0;
     height: 50vh;
-    background: #f5f5f5;
+    background: var(--surface);
     z-index: 0;
 }
 
@@ -338,10 +326,10 @@ html, body {
     width: 95%;
     height: min(85vh, 700px);
     background: var(--white);
-    border: 6px solid var(--black);
+    border:6px solid var(--line);
     box-shadow:
-        20px 20px 0 var(--black),
-        0 0 0 1px var(--black);
+        20px 20px 0 var(--sun),
+        0 0 0 1px var(--line);
     animation: cardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     opacity: 0;
 }
@@ -369,7 +357,7 @@ html, body {
     padding: 3rem;
     position: relative;
     overflow: hidden;
-    border-right: 6px solid var(--black);
+    border-right:6px solid var(--line);
 }
 
 .login-brand::before {
@@ -561,7 +549,7 @@ html, body {
     color: var(--white);
     font-size: 1.6rem;
     margin: 0 auto 1.25rem;
-    border: 4px solid var(--black);
+    border:4px solid var(--line);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -576,7 +564,7 @@ html, body {
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    color: var(--black);
+    color: var(--ink);
     margin-bottom: 0.5rem;
 }
 
@@ -595,7 +583,7 @@ html, body {
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
-    background: #fff5f5;
+    background: var(--soft-danger-bg);
     border: 3px solid var(--danger);
     border-left: 6px solid var(--danger);
     padding: 1rem 1.15rem;
@@ -654,7 +642,7 @@ html, body {
     font-size: 0.75rem;
     font-weight: 900;
     letter-spacing: 1px;
-    color: var(--black);
+    color: var(--ink);
     margin-bottom: 0.75rem;
     text-transform: uppercase;
 }
@@ -676,16 +664,16 @@ html, body {
     font-size: 1rem;
     font-weight: 700;
     font-family: inherit;
-    color: var(--black);
+    color: var(--ink);
     background: var(--white);
-    border: 3px solid var(--black);
+    border:3px solid var(--line-strong);
     border-radius: 4px;
     outline: none;
     transition: all 0.25s ease;
 }
 
 .field-input::placeholder {
-    color: #bbb;
+    color: var(--line-strong);
     font-weight: 600;
 }
 
@@ -740,9 +728,9 @@ html, body {
     width: 100%;
     padding: 1.2rem;
     margin-top: 1.5rem;
-    background: var(--black);
+    background: var(--primary);
     color: var(--white);
-    border: 4px solid var(--black);
+    border:4px solid var(--line);
     font-family: inherit;
     font-size: 0.9rem;
     font-weight: 900;
@@ -861,10 +849,10 @@ html, body {
     gap: 0.6rem;
     margin-top: 2rem;
     padding-top: 1.5rem;
-    border-top: 2px solid #eee;
+    border-top: 2px solid var(--line);
     font-size: 0.65rem;
     font-weight: 700;
-    color: #ccc;
+    color: var(--line);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     animation: fadeInUp 0.5s ease 0.6s both;
@@ -889,8 +877,8 @@ html, body {
         grid-template-columns: 1fr;
         max-height: 95vh;
         box-shadow:
-            12px 12px 0 var(--black),
-            0 0 0 1px var(--black);
+            12px 12px 0 var(--sun),
+            0 0 0 1px var(--line);
         border-width: 4px;
     }
 
@@ -922,8 +910,8 @@ html, body {
         height: auto;
         max-height: 98vh;
         box-shadow:
-            8px 8px 0 var(--black),
-            0 0 0 1px var(--black);
+            8px 8px 0 var(--sun),
+            0 0 0 1px var(--line);
         border-width: 3px;
     }
 

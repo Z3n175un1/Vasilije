@@ -1,0 +1,43 @@
+/* =========================================================
+   bento-shape.css — forma (seccion 0.4 del brief)
+   Botones píldora, campos>=10px y tarjetas 14px.
+   Tipografia y app.css intactos.
+   ========================================================= */
+
+.btn-bento,
+.btn-bento-primary,
+.btn-bento-outline,
+.btn-bento:disabled {
+    border-radius: 999px;
+}
+
+.btn-action-mini,
+.btn-sm.rounded-icons,
+.bento-icon-btn {
+    border-radius: 50%;
+}
+
+.form-bento input,
+.form-bento select,
+.form-bento textarea,
+.form-bento .form-control,
+.form-bento .form-select {
+    border-radius: 10px;
+}
+
+.filter-card input,
+.filter-card select,
+.filter-card .form-control,
+.filter-card .form-select {
+    border-radius: 10px;
+}
+
+.bento-card,
+.filter-card,
+.kpi,
+.summary-card,
+.chart-section,
+.table-wrapper,
+.factura-card {
+    border-radius: 14px;
+}

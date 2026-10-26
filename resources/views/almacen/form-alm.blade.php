@@ -32,7 +32,7 @@
              ===================================================== --}}
 
         <div class="mb-4 p-3 rounded-3 fw-bold"
-             style="background:{{ $esEntrega ? '#fff4e5' : '#e8f5e9' }};border:3px solid #000;">
+             style="background:{{ $esEntrega ? 'var(--sun-soft)' : 'var(--leaf-soft)' }};border:3px solid var(--line-strong);">
 
             <i class="fas fa-circle-info me-1"></i>
 
@@ -62,7 +62,7 @@
 
                 <div class="col-md-4">
                     <div class="form-group mb-0">
-                        <label style="font-size:1.3rem;font-weight:900;color:#000;">
+                        <label style="font-size:1.3rem;font-weight:900;color: var(--ink);">
                             FECHA <span class="text-danger">*</span>
                         </label>
                         <input type="date"
@@ -71,8 +71,8 @@
                                required
                                readonly
                                value="{{ old('fecha_movimiento', $movimiento->fecha_movimiento ?? now()->format('Y-m-d')) }}"
-                               style="font-size:1.3rem;padding:12px;border:4px solid #000;font-weight:700;background:#f0f0f0;cursor:not-allowed;">
-                        <small class="d-block mt-1 fw-bold" style="color:var(--gray-mid,#888);font-size:1rem;">
+                               style="font-size:1.3rem;padding:12px;border:4px solid var(--line);font-weight:700;background:var(--primary-soft);cursor:not-allowed;">
+                        <small class="d-block mt-1 fw-bold" style="color:var(--gray-mid,var(--muted));font-size:1rem;">
                             Se registra con el día de hoy para evitar errores
                         </small>
                     </div>
@@ -80,7 +80,7 @@
 
                 <div class="col-md-8">
 <div class="form-group mb-0">
-                            <label style="font-size:1.3rem;font-weight:900;color:#000;">
+                            <label style="font-size:1.3rem;font-weight:900;color: var(--ink);">
                                 PRODUCTO <span class="text-danger">*</span>
                             </label>
 
@@ -107,7 +107,7 @@
 
                             <div id="movStockInfo"
                                  class="mt-2 p-2 fw-bold text-center"
-                                 style="border:3px solid #000;display:none;background:#f8f9fa;"></div>
+                                 style="border:3px solid var(--line-strong);display:none;background:var(--surface);"></div>
                         </div>
                 </div>
 
@@ -118,7 +118,7 @@
 
                 <div class="col-md-6">
                     <div class="form-group mb-0">
-                        <label style="font-size:1.3rem;font-weight:900;color:#000;">
+                        <label style="font-size:1.3rem;font-weight:900;color: var(--ink);">
                             CANTIDAD <span class="text-danger">*</span>
                         </label>
                         <input type="number"
@@ -130,13 +130,13 @@
                                placeholder="0.00"
                                value="{{ old('cantidad', $movimiento->cantidad ?? '') }}"
                                oninput="calcularTotal()"
-                               style="font-size:1.3rem;padding:12px;border:4px solid #000;font-weight:700;">
+                               style="font-size:1.3rem;padding:12px;border:4px solid var(--line);font-weight:700;">
                     </div>
                 </div>
 
                 <div class="col-md-6">
                     <div class="form-group mb-0">
-                        <label style="font-size:1.3rem;font-weight:900;color:#000;">
+                        <label style="font-size:1.3rem;font-weight:900;color: var(--ink);">
                             CÓDIGO DE LOTE
                         </label>
                         <input type="text"
@@ -145,7 +145,7 @@
                                readonly
                                placeholder="LO-000001"
                                value="{{ old('codigo_lote', $movimiento->codigo_lote ?? '') }}"
-                               style="font-size:1.3rem;padding:12px;border:4px solid #000;background:#f0f0f0;font-family:monospace;letter-spacing:1px;text-align:center;font-weight:700;">
+                               style="font-size:1.3rem;padding:12px;border:4px solid var(--line);background:var(--primary-soft);font-family:monospace;letter-spacing:1px;text-align:center;font-weight:700;">
                         <small class="text-muted fw-bold">
                             @if($movimiento)
                                 El lote no se modifica al editar un movimiento ya registrado.
@@ -169,7 +169,7 @@
 
                     <div class="col-md-4">
                         <div class="form-group mb-0">
-                            <label style="font-size:1.3rem;font-weight:900;color:#000;">
+                            <label style="font-size:1.3rem;font-weight:900;color: var(--ink);">
                                 PRECIO UNITARIO (Bs)
                             </label>
                             <input type="number"
@@ -180,26 +180,26 @@
                                    placeholder="0.00"
                                    value="{{ old('precio_unitario', $movimiento->costo_unitario ?? '') }}"
                                    oninput="calcularTotal()"
-                                   style="font-size:1.3rem;padding:12px;border:4px solid #000;font-weight:700;">
+                                   style="font-size:1.3rem;padding:12px;border:4px solid var(--line);font-weight:700;">
                         </div>
                     </div>
 
                     <div class="col-md-4">
                         <div class="form-group mb-0">
-                            <label style="font-size:1.3rem;font-weight:900;color:#000;">
+                            <label style="font-size:1.3rem;font-weight:900;color: var(--ink);">
                                 TOTAL (Bs)
                             </label>
                             <input type="text"
                                    id="movTotal"
                                    readonly
                                    placeholder="0.00"
-                                   style="font-size:1.3rem;padding:12px;border:4px solid #000;background:#f0f0f0;font-weight:700;">
+                                   style="font-size:1.3rem;padding:12px;border:4px solid var(--line);background:var(--primary-soft);font-weight:700;">
                         </div>
                     </div>
 
                     <div class="col-md-4">
                         <div class="form-group mb-0">
-                            <label style="font-size:1.3rem;font-weight:900;color:#000;">
+                            <label style="font-size:1.3rem;font-weight:900;color: var(--ink);">
                                 CONDICIÓN DE PAGO <span class="text-danger">*</span>
                             </label>
                             <select name="condicion_pago"
@@ -227,7 +227,7 @@
                 <div class="row g-4 mb-4" id="bloqueContado">
                     <div class="col-md-6">
                         <div class="form-group mb-0">
-                            <label style="font-size:1.3rem;font-weight:900;color:#000;">
+                            <label style="font-size:1.3rem;font-weight:900;color: var(--ink);">
                                 CTA. BANCARIA
                             </label>
                             <select name="id_banco" id="movIdBanco" style="font-size:1.3rem;">
@@ -245,14 +245,14 @@
 
                     <div class="col-md-6">
                         <div class="form-group mb-0">
-                            <label style="font-size:1.3rem;font-weight:900;color:#000;">
+                            <label style="font-size:1.3rem;font-weight:900;color: var(--ink);">
                                 FECHA DE PAGO
                             </label>
                             <input type="date"
                                    name="fecha_limite_pago"
                                    id="movFechaLimite"
                                    value="{{ old('fecha_limite_pago', $movimiento->fecha_limite_pago ?? '') }}"
-                                   style="font-size:1.3rem;padding:12px;border:4px solid #000;font-weight:700;">
+                                   style="font-size:1.3rem;padding:12px;border:4px solid var(--line);font-weight:700;">
                         </div>
                     </div>
                 </div>
@@ -261,7 +261,7 @@
                 <div class="row g-4 mb-4">
                     <div class="col-12">
                         <div class="form-group mb-0">
-                            <label style="font-size:1.3rem;font-weight:900;color:#000;">
+                            <label style="font-size:1.3rem;font-weight:900;color: var(--ink);">
                                 PROVEEDOR <span class="text-danger">*</span>
                             </label>
                             <select name="id_proveedor" id="movIdProveedor" style="font-size:1.3rem;">
@@ -293,7 +293,7 @@
                 <div class="row g-4 mb-4">
                     <div class="col-md-6">
                         <div class="form-group mb-0">
-                            <label style="font-size:1.3rem;font-weight:900;color:#000;">
+                            <label style="font-size:1.3rem;font-weight:900;color: var(--ink);">
                                 UNIDAD
                             </label>
                             <select name="id_vehiculo"
@@ -307,7 +307,7 @@
 
                     <div class="col-md-6">
                         <div class="form-group mb-0">
-                            <label style="font-size:1.3rem;font-weight:900;color:#000;">
+                            <label style="font-size:1.3rem;font-weight:900;color: var(--ink);">
                                 CONDUCTOR
                             </label>
                             <select name="id_personal" id="movIdPersonal" style="font-size:1.3rem;">
@@ -326,14 +326,14 @@
             <div class="row g-4 mb-4">
                 <div class="col-12">
                     <div class="form-group mb-0">
-                        <label style="font-size:1.3rem;font-weight:900;color:#000;">
+                        <label style="font-size:1.3rem;font-weight:900;color: var(--ink);">
                             OBSERVACIONES
                         </label>
                         <textarea name="observaciones"
                                   id="movObs"
                                   rows="3"
                                   placeholder="DETALLE DEL MOVIMIENTO..."
-                                  style="font-size:1.3rem;padding:12px;border:4px solid #000;font-weight:700;">{{ old('observaciones', $movimiento->observaciones ?? '') }}</textarea>
+                                  style="font-size:1.3rem;padding:12px;border:4px solid var(--line);font-weight:700;">{{ old('observaciones', $movimiento->observaciones ?? '') }}</textarea>
                     </div>
                 </div>
             </div>
@@ -541,7 +541,7 @@
 
             const stock = parseFloat(producto.stock_actual || 0);
             const minimo = parseFloat(producto.stock_minimo || 0);
-            const color = stock <= minimo ? '#dc3545' : '#007400';
+            const color = stock <= minimo ? 'var(--danger)' : 'var(--success)';
             const etiqueta = ES_ENTREGA ? 'STOCK DISPONIBLE' : 'STOCK ACTUAL';
 
             info.innerHTML =

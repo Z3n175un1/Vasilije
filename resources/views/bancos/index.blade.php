@@ -65,10 +65,10 @@ function loadBancos() {
                 <td class="font-bold">${b.nombre_banco}</td>
                 <td class="font-bold">${b.numero_cuenta}</td>
                 <td class="font-bold">${b.titular}</td>
-                <td><span class="badge font-bold px-3 py-2" style="background:#2f2c79;color:#fff;border:2px solid #000;">${b.tipo_cuenta}</span></td>
+                <td><span class="badge font-bold px-3 py-2" style="background:var(--primary);color:#fff;border:2px solid var(--line-strong);">${b.tipo_cuenta}</span></td>
                 <td class="font-bold">${b.moneda}</td>
-                <td class="font-bold" style="color:#007400;">Bs. ${parseFloat(b.saldo_actual || 0).toFixed(2)}</td>
-                <td><span class="badge font-bold px-3 py-2" style="background:${b.estado === 'ACTIVO' ? '#e2ffd6' : '#ffdcd6'};color:${b.estado === 'ACTIVO' ? '#007400' : '#740000'};border:2px solid #000;">${b.estado}</span></td>
+                <td class="font-bold" style="color:var(--success);">Bs. ${parseFloat(b.saldo_actual || 0).toFixed(2)}</td>
+                <td><span class="badge font-bold px-3 py-2" style="background:${b.estado === 'ACTIVO' ? 'var(--mint)' : 'var(--coral-soft)'};color:${b.estado === 'ACTIVO' ? 'var(--success)' : 'var(--soft-danger)'};border:2px solid var(--line-strong);">${b.estado}</span></td>
                 <td>
                     <div class="d-flex gap-2 justify-content-center">
                         <button class="btn btn-sm btn-info border-black font-bold" onclick="window.location.href='{{ url("bancos") }}/${b.id_banco}/estado'" title="ESTADO DE CUENTA"><i class="fas fa-book"></i></button>
@@ -92,7 +92,7 @@ function eliminarBanco(id) {
         showCancelButton: true,
         confirmButtonText: 'SÍ, DESACTIVAR',
         cancelButtonText: 'CANCELAR',
-        confirmButtonColor: '#dc3545',
+        confirmButtonColor: '#d6336c',
     }).then(result => {
         if (result.isConfirmed) {
             fetch('{{ url("bancos") }}/' + id, {

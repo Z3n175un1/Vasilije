@@ -5,17 +5,17 @@
 @push('styles')
 <style>
 .factura-card {
-    border: 4px solid #000;
+    border:4px solid var(--line);
     margin-bottom: 1rem;
     background: #fff;
 }
 .factura-header {
-    border-bottom: 2px solid #000;
+    border-bottom:2px solid var(--line-strong);
     cursor: pointer;
     transition: background 0.2s;
 }
 .factura-header:hover {
-    background: #fff8e1;
+    background: var(--sun-soft);
 }
 .tab-btn {
     border: none;
@@ -27,13 +27,13 @@
     transition: all 0.2s;
 }
 .tab-btn.active {
-    background: #000 !important;
-    color: #2f2c79 !important;
+    background: var(--primary) !important;
+    color: var(--primary) !important;
 }
 .tab-btn:not(.active) {
     background: #fff;
-    color: #000;
-    border-right: 4px solid #000;
+    color: var(--ink);
+    border-right:4px solid var(--line);
 }
 .tab-btn:not(.active):last-child {
     border-right: none;
@@ -66,7 +66,7 @@
     </header>
 
     <!-- TABS -->
-    <div class="d-flex mb-4" style="border:4px solid #000;">
+    <div class="d-flex mb-4" style="border:4px solid var(--line);">
         <button class="tab-btn active" id="tabFletes" onclick="switchTab('fletes')">
             <i class="fas fa-truck me-2"></i> FLETES
         </button>
@@ -88,19 +88,19 @@
         </div>
 
         <!-- Filtros fletes -->
-        <div class="p-3 mb-3" style="background:#2f2c79;color:#fff;border:4px solid #000;">
+        <div class="p-3 mb-3" style="background:var(--primary);color:#fff;border:4px solid var(--line);">
             <div class="row g-2 align-items-end">
                 <div class="col-md-3">
                     <label class="fw-bold d-block mb-1 small">FECHA INICIO</label>
-                    <input type="date" class="form-control fw-bold" id="filtroFletesInicio" style="border-radius:0;border:3px solid #000;padding:8px;">
+                    <input type="date" class="form-control fw-bold" id="filtroFletesInicio" style="border-radius:10px;border:3px solid var(--line-strong);padding:8px;">
                 </div>
                 <div class="col-md-3">
                     <label class="fw-bold d-block mb-1 small">FECHA FIN</label>
-                    <input type="date" class="form-control fw-bold" id="filtroFletesFin" style="border-radius:0;border:3px solid #000;padding:8px;">
+                    <input type="date" class="form-control fw-bold" id="filtroFletesFin" style="border-radius:10px;border:3px solid var(--line-strong);padding:8px;">
                 </div>
                 <div class="col-md-3">
                     <label class="fw-bold d-block mb-1 small">ESTADO</label>
-                    <select class="form-control fw-bold" id="filtroFletesEstado" style="border-radius:0;border:3px solid #000;padding:8px;">
+                    <select class="form-control fw-bold" id="filtroFletesEstado" style="border-radius:10px;border:3px solid var(--line-strong);padding:8px;">
                         <option value="">TODOS</option>
                         <option value="PENDIENTE">PENDIENTE</option>
                         <option value="FACTURADA">FACTURADA</option>
@@ -109,7 +109,7 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <button class="btn fw-bold w-100" style="border:3px solid #000;background:#000;color:#fff;padding:8px;" onclick="cargarFletes()">
+                    <button class="btn fw-bold w-100" style="border:3px solid var(--line-strong);background: var(--primary);color:#fff;padding:8px;" onclick="cargarFletes()">
                         <i class="fas fa-search"></i> FILTRAR
                     </button>
                 </div>
@@ -119,12 +119,12 @@
         <div id="fletesLoading" class="text-center py-5" style="display:none;">
             <div class="spinner-border text-dark" role="status"></div>
         </div>
-        <div id="fletesEmpty" class="text-center py-5" style="display:none;border:4px solid #000;">
+        <div id="fletesEmpty" class="text-center py-5" style="display:none;border:4px solid var(--line);">
             <i class="fas fa-truck" style="font-size:64px;opacity:.2;"></i>
             <h3 class="mt-3 fw-bold">NO HAY FLETES REGISTRADOS</h3>
         </div>
         <div id="fletesContainer" style="display:none;">
-            <div style="border:4px solid #000;overflow:hidden;">
+            <div style="border:4px solid var(--line);overflow:hidden;">
                 <table class="table-excel mb-0" style="font-size:.9rem;">
                     <thead>
 <tr>
@@ -165,33 +165,33 @@
     <!-- TAB 3: FACTURACIÓN (batch) -->
     <!-- ================================================================ -->
     <div id="tabContentFacturacion" style="display:none;">
-        <div class="p-3 mb-4" style="background:#2f2c79;color:#fff;border:4px solid #000;">
+        <div class="p-3 mb-4" style="background:var(--primary);color:#fff;border:4px solid var(--line);">
             <div class="row g-2 align-items-end">
                 <div class="col-md-3">
                     <label class="fw-bold d-block mb-1 small">FECHA INICIO</label>
-                    <input type="date" class="form-control fw-bold" id="filterFechaInicio" style="border-radius:0;border:3px solid #000;padding:10px;">
+                    <input type="date" class="form-control fw-bold" id="filterFechaInicio" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;">
                 </div>
                 <div class="col-md-3">
                     <label class="fw-bold d-block mb-1 small">FECHA FIN</label>
-                    <input type="date" class="form-control fw-bold" id="filterFechaFin" style="border-radius:0;border:3px solid #000;padding:10px;">
+                    <input type="date" class="form-control fw-bold" id="filterFechaFin" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;">
                 </div>
                 <div class="col-md-3">
                     <label class="fw-bold d-block mb-1 small">CLIENTE</label>
-                    <input type="text" class="form-control fw-bold" id="filterCliente" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="Buscar cliente...">
+                    <input type="text" class="form-control fw-bold" id="filterCliente" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;" placeholder="Buscar cliente...">
                 </div>
                 <div class="col-md-3">
-                    <button class="btn fw-bold w-100" style="border:3px solid #000;background:#000;color:#fff;padding:10px;" onclick="cargarPendientes()">
+                    <button class="btn fw-bold w-100" style="border:3px solid var(--line-strong);background: var(--primary);color:#fff;padding:10px;" onclick="cargarPendientes()">
                         <i class="fas fa-search"></i> FILTRAR
                     </button>
                 </div>
             </div>
         </div>
-        <div id="selectionBar" class="d-flex justify-content-between align-items-center mb-3 p-3" style="background:#fff;border:4px solid #000;display:none;">
+        <div id="selectionBar" class="d-flex justify-content-between align-items-center mb-3 p-3" style="background:#fff;border:4px solid var(--line);display:none;">
             <div class="d-flex align-items-center gap-3">
                 <span class="fw-bold fs-5" id="selectedCount">0 seleccionado(s)</span>
-                <span class="fw-bold fs-5" style="color:#007400;" id="selectedTotal">Total: Bs. 0.00</span>
+                <span class="fw-bold fs-5" style="color:var(--success);" id="selectedTotal">Total: Bs. 0.00</span>
             </div>
-            <button class="btn fw-bold d-flex align-items-center gap-2" style="background:#000;color:#fff;border:4px solid #000;padding:12px 24px;font-size:1rem;" onclick="abrirModalFacturar()">
+            <button class="btn fw-bold d-flex align-items-center gap-2" style="background: var(--primary);color:#fff;border:4px solid var(--line);padding:12px 24px;font-size:1rem;" onclick="abrirModalFacturar()">
                 <i class="fas fa-file-invoice"></i> FACTURAR SELECCIONADOS
             </button>
         </div>
@@ -207,27 +207,27 @@
 <!-- ================================================================ -->
 <div class="modal-overlay-fact" id="modalNuevoFlete" style="display:none;" onclick="if(event.target===this)cerrarModalNuevoFlete()">
     <div class="modal-content-fact" onclick="event.stopPropagation()">
-        <div class="p-3" style="background:#000;color:#fff;display:flex;justify-content:space-between;align-items:center;">
+        <div class="p-3" style="background: var(--primary);color:#fff;display:flex;justify-content:space-between;align-items:center;">
             <h3 class="mb-0 fw-bold fs-5"><i class="fas fa-plus-circle me-2"></i> NUEVO FLETE (INGRESO)</h3>
             <button class="btn btn-sm text-white fw-bold" onclick="cerrarModalNuevoFlete()" style="font-size:1.5rem;line-height:1;">×</button>
         </div>
-        <div class="p-3" style="background:#fff;border:4px solid #000;border-top:none;">
+        <div class="p-3" style="background:#fff;border:4px solid var(--line);border-top:none;">
             <form id="formNuevoFlete" onsubmit="return guardarFlete(event)">
                 @csrf
                 <div class="row g-3 mb-3">
                     <div class="col-md-4">
                         <label class="fw-bold small text-uppercase">FECHA <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control fw-bold" id="nf_fecha_ingreso" style="border-radius:0;border:3px solid #000;padding:10px;" required>
+                        <input type="date" class="form-control fw-bold" id="nf_fecha_ingreso" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;" required>
                     </div>
                     <div class="col-md-4">
                         <label class="fw-bold small text-uppercase">UNIDAD <span class="text-danger">*</span></label>
-                        <select class="form-control fw-bold" id="nf_id_vehiculo" style="border-radius:0;border:3px solid #000;padding:10px;" required>
+                        <select class="form-control fw-bold" id="nf_id_vehiculo" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;" required>
                             <option value="">SELECCIONE...</option>
                         </select>
                     </div>
                     <div class="col-md-4">
                         <label class="fw-bold small text-uppercase">CONDUCTOR</label>
-                        <select class="form-control fw-bold" id="nf_id_personal" style="border-radius:0;border:3px solid #000;padding:10px;">
+                        <select class="form-control fw-bold" id="nf_id_personal" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;">
                             <option value="">SELECCIONE...</option>
                         </select>
                     </div>
@@ -235,10 +235,10 @@
                 <div class="row g-3 mb-3">
                     <div class="col-12">
                         <label class="fw-bold small text-uppercase">RUTA</label>
-                        <select class="form-control fw-bold" id="nf_id_tramo" style="border-radius:0;border:3px solid #000;padding:10px;" onchange="seleccionarRutaNF(this)">
+                        <select class="form-control fw-bold" id="nf_id_tramo" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;" onchange="seleccionarRutaNF(this)">
                             <option value="">SELECCIONE RUTA...</option>
                         </select>
-                        <button type="button" id="btnAplicarRutaNF" class="btn btn-sm fw-bold mt-2 w-100" style="border-radius:0;border:3px solid #000;padding:8px;background:#2f2c79;color:#fff;">
+                        <button type="button" id="btnAplicarRutaNF" class="btn btn-sm fw-bold mt-2 w-100" style="border-radius:999px;border:3px solid var(--line-strong);padding:8px;background:var(--primary);color:#fff;">
                             <i class="fas fa-rotate-right me-1"></i> APLICAR RUTA
                         </button>
                         <small class="d-block mt-2 fw-bold" style="color:#666;">Al elegir la ruta se completan origen, destino, km y Bs/TON.</small>
@@ -247,55 +247,55 @@
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">ORIGEN</label>
-                        <input type="text" class="form-control fw-bold" id="nf_origen" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0!important;cursor:not-allowed;" placeholder="Ciudad origen" readonly>
+                        <input type="text" class="form-control fw-bold" id="nf_origen" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;background:var(--primary-soft)!important;cursor:not-allowed;" placeholder="Ciudad origen" readonly>
                     </div>
                     <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">DESTINO</label>
-                        <input type="text" class="form-control fw-bold" id="nf_destino" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0!important;cursor:not-allowed;" placeholder="Ciudad destino" readonly>
+                        <input type="text" class="form-control fw-bold" id="nf_destino" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;background:var(--primary-soft)!important;cursor:not-allowed;" placeholder="Ciudad destino" readonly>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">KM</label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_kilometraje" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" value="0">
+                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_kilometraje" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;" min="0" value="0">
                     </div>
                     <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">BS X TON</label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_precio_ton" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" placeholder="Bs por tonelada">
+                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_precio_ton" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;" min="0" placeholder="Bs por tonelada">
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">TONELADAS</label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_toneladas" style="border-radius:0;border:3px solid #000;padding:10px;" min="0" value="0">
+                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_toneladas" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;" min="0" value="0">
                     </div>
                     <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">MONTO (Bs) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_monto" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0!important;cursor:not-allowed;" required min="0" placeholder="0.00" readonly>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_monto" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;background:var(--primary-soft)!important;cursor:not-allowed;" required min="0" placeholder="0.00" readonly>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">TIPO DE CAMBIO (Bs/USD)</label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_tipo_cambio" style="border-radius:0;border:3px solid #000;padding:10px;background:#f0f0f0!important;cursor:not-allowed;" min="0" placeholder="6.96" readonly value="{{ $tipoCambioVigente ?? old('tipo_cambio', '') }}">
+                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_tipo_cambio" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;background:var(--primary-soft)!important;cursor:not-allowed;" min="0" placeholder="6.96" readonly value="{{ $tipoCambioVigente ?? old('tipo_cambio', '') }}">
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
                     <div class="col-12">
                         <label class="fw-bold small text-uppercase">CLIENTE / PROVEEDOR</label>
-                        <input type="text" class="form-control fw-bold" id="nf_cliente_nombre" style="border-radius:0;border:3px solid #000;padding:10px;" value="INDUSTRIAS OLEAGINOSAS S.A." placeholder="INDUSTRIAS OLEAGINOSAS S.A.">
+                        <input type="text" class="form-control fw-bold" id="nf_cliente_nombre" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;" value="INDUSTRIAS OLEAGINOSAS S.A." placeholder="INDUSTRIAS OLEAGINOSAS S.A.">
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
                     <div class="col-12">
                         <label class="fw-bold small text-uppercase">CONCEPTO <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control fw-bold" id="nf_concepto" style="border-radius:0;border:3px solid #000;padding:10px;" required value="TRANSPORTE DE SOYA" placeholder="TRANSPORTE DE SOYA">
+                        <input type="text" class="form-control fw-bold" id="nf_concepto" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;" required value="TRANSPORTE DE SOYA" placeholder="TRANSPORTE DE SOYA">
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">TIPO PAGO</label>
-                        <select class="form-control fw-bold" id="nf_tipo_pago" style="border-radius:0;border:3px solid #000;padding:10px;">
+                        <select class="form-control fw-bold" id="nf_tipo_pago" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;">
                             <option value="EFECTIVO">EFECTIVO</option>
                             <option value="TRANSFERENCIA">TRANSFERENCIA</option>
                             <option value="CHEQUE">CHEQUE</option>
@@ -304,18 +304,18 @@
                     </div>
                     <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">FECHA VENCIMIENTO</label>
-                        <input type="date" class="form-control fw-bold" id="nf_fecha_vencimiento" style="border-radius:0;border:3px solid #000;padding:10px;">
+                        <input type="date" class="form-control fw-bold" id="nf_fecha_vencimiento" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;">
                     </div>
                 </div>
                 <div class="form-group mb-3">
                     <label class="fw-bold small text-uppercase">OBSERVACIONES</label>
-                    <textarea class="form-control fw-bold" id="nf_observaciones" rows="2" style="border-radius:0;border:3px solid #000;padding:10px;" placeholder="Observaciones..."></textarea>
+                    <textarea class="form-control fw-bold" id="nf_observaciones" rows="2" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;" placeholder="Observaciones..."></textarea>
                 </div>
                 <div class="d-flex gap-2 mt-4">
-                    <button type="submit" class="btn fw-bold flex-grow-1 d-flex align-items-center justify-content-center gap-2" style="background:#000;color:#fff;border:4px solid #000;padding:12px;font-size:1rem;" id="btnGuardarFlete">
+                    <button type="submit" class="btn fw-bold flex-grow-1 d-flex align-items-center justify-content-center gap-2" style="background: var(--primary);color:#fff;border:4px solid var(--line);padding:12px;font-size:1rem;" id="btnGuardarFlete">
                         <i class="fas fa-save"></i> GUARDAR FLETE
                     </button>
-                    <button type="button" class="btn fw-bold" style="border:4px solid #000;padding:12px;font-size:1rem;" onclick="cerrarModalNuevoFlete()">CANCELAR</button>
+                    <button type="button" class="btn fw-bold" style="border:4px solid var(--line);padding:12px;font-size:1rem;" onclick="cerrarModalNuevoFlete()">CANCELAR</button>
                 </div>
             </form>
         </div>
@@ -327,32 +327,32 @@
 <!-- ================================================================ -->
 <div class="modal-overlay-fact" id="modalFacturar" style="display:none;" onclick="if(event.target===this)cerrarModalFacturar()">
     <div class="modal-content-fact" onclick="event.stopPropagation()">
-        <div class="p-4" style="background:#000;color:#fff;">
+        <div class="p-4" style="background: var(--primary);color:#fff;">
             <h3 class="mb-0 fw-bold fs-4"><i class="fas fa-file-invoice me-2"></i> FACTURAR <span id="modalCount">0</span> FLETE(S)</h3>
         </div>
-        <div class="p-4" style="background:#fff;border:4px solid #000;border-top:none;">
+        <div class="p-4" style="background:#fff;border:4px solid var(--line);border-top:none;">
             <div class="row g-3">
                 <div class="col-12">
                     <label class="fw-bold text-uppercase small">FECHA FACTURA</label>
-                    <input type="date" class="form-control fw-bold" id="modalFechaFactura" style="border-radius:0;border:3px solid #000;padding:12px;font-size:1rem;">
+                    <input type="date" class="form-control fw-bold" id="modalFechaFactura" style="border-radius:10px;border:3px solid var(--line-strong);padding:12px;font-size:1rem;">
                 </div>
                 <div class="col-12">
                     <label class="fw-bold text-uppercase small">NÚMERO DE FACTURA <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control fw-bold" id="modalNumeroFactura" style="border-radius:0;border:3px solid #000;padding:12px;font-size:1rem;" placeholder="Ej: 123">
+                    <input type="text" class="form-control fw-bold" id="modalNumeroFactura" style="border-radius:10px;border:3px solid var(--line-strong);padding:12px;font-size:1rem;" placeholder="Ej: 123">
                 </div>
                 <div class="col-12">
                     <label class="fw-bold text-uppercase small">RAZÓN SOCIAL <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control fw-bold" id="modalClienteNombre" style="border-radius:0;border:3px solid #000;padding:12px;font-size:1rem;" placeholder="Nombre del cliente">
+                    <input type="text" class="form-control fw-bold" id="modalClienteNombre" style="border-radius:10px;border:3px solid var(--line-strong);padding:12px;font-size:1rem;" placeholder="Nombre del cliente">
                 </div>
                 <div class="col-12">
-                    <div class="p-3 fw-bold fs-5 text-center" style="background:#2f2c79;color:#fff;border:3px solid #000;" id="modalTotal">TOTAL: Bs. 0.00</div>
+                    <div class="p-3 fw-bold fs-5 text-center" style="background:var(--primary);color:#fff;border:3px solid var(--line-strong);" id="modalTotal">TOTAL: Bs. 0.00</div>
                 </div>
             </div>
             <div class="d-flex gap-2 mt-4">
-                <button class="btn fw-bold flex-grow-1 d-flex align-items-center justify-content-center gap-2" style="background:#000;color:#fff;border:4px solid #000;padding:14px;font-size:1.1rem;" onclick="confirmarBatchFacturar()" id="btnConfirmarFactura">
+                <button class="btn fw-bold flex-grow-1 d-flex align-items-center justify-content-center gap-2" style="background: var(--primary);color:#fff;border:4px solid var(--line);padding:14px;font-size:1.1rem;" onclick="confirmarBatchFacturar()" id="btnConfirmarFactura">
                     <i class="fas fa-check"></i> CONFIRMAR FACTURA
                 </button>
-                <button class="btn fw-bold" style="border:4px solid #000;padding:14px;font-size:1.1rem;" onclick="cerrarModalFacturar()">CANCELAR</button>
+                <button class="btn fw-bold" style="border:4px solid var(--line);padding:14px;font-size:1.1rem;" onclick="cerrarModalFacturar()">CANCELAR</button>
             </div>
         </div>
     </div>
@@ -473,12 +473,12 @@ function cargarFletes() {
         document.getElementById('fletesContainer').style.display = 'block';
         const tbody = document.getElementById('fletesBody');
         tbody.innerHTML = res.data.map(f => {
-            const estadoColor = f.estado_factura === 'COBRADO' ? '#007400' :
-                f.estado_factura === 'FACTURADA' ? '#856404' :
-                f.estado_factura === 'ANULADA' ? '#740000' : '#000';
-            const estadoBg = f.estado_factura === 'COBRADO' ? '#e2ffd6' :
-                f.estado_factura === 'FACTURADA' ? '#fff3cd' :
-                f.estado_factura === 'ANULADA' ? '#ffdcd6' : '#f0f0f0';
+            const estadoColor = f.estado_factura === 'COBRADO' ? 'var(--success)' :
+                f.estado_factura === 'FACTURADA' ? 'var(--ink)' :
+                f.estado_factura === 'ANULADA' ? 'var(--soft-danger)' : 'var(--ink)';
+            const estadoBg = f.estado_factura === 'COBRADO' ? 'var(--mint)' :
+                f.estado_factura === 'FACTURADA' ? 'var(--sun-soft)' :
+                f.estado_factura === 'ANULADA' ? 'var(--coral-soft)' : 'var(--primary-soft)';
             const ruta = (f.origen || '') + (f.destino ? ' - ' + f.destino : '');
             return `<tr>
                 <td class="fw-bold" style="white-space:nowrap;">${f.fecha_ingreso || '—'}</td>
@@ -487,10 +487,10 @@ function cargarFletes() {
                 <td>${f.cliente_nombre || '—'}</td>
                 <td>${ruta || '—'}</td>
                 <td>${f.concepto || '—'}</td>
-                <td class="fw-bold" style="color:#007400;">${formatCurrency(f.monto)}</td>
+                <td class="fw-bold" style="color:var(--success);">${formatCurrency(f.monto)}</td>
                 <td>${f.toneladas || '—'}</td>
                 <td class="fw-bold font-monospace">${f.tipo_cambio ? 'Bs ' + parseFloat(f.tipo_cambio).toFixed(2) : '—'}</td>
-                <td><span class="badge fw-bold px-2 py-1" style="border:2px solid #000;background:${estadoBg};color:${estadoColor};">${f.estado_factura || '—'}</span></td>
+                <td><span class="badge fw-bold px-2 py-1" style="border:2px solid var(--line-strong);background:${estadoBg};color:${estadoColor};">${f.estado_factura || '—'}</span></td>
                 <td>
                     <div class="d-flex gap-1 justify-content-center">
                         <button class="btn btn-sm btn-warning border-black fw-bold" onclick="editarFlete(${f.id_ingreso})" title="EDITAR"><i class="fas fa-edit"></i></button>
@@ -519,7 +519,7 @@ function anularFlete(id) {
         showCancelButton: true,
         confirmButtonText: 'SÍ, ANULAR',
         cancelButtonText: 'CANCELAR',
-        confirmButtonColor: '#dc3545',
+        confirmButtonColor: '#d6336c',
     }).then(result => {
         if (result.isConfirmed) {
             fetch('{{ url("facturacion") }}/' + id, {
@@ -724,8 +724,8 @@ function cargarListado() {
 
 function renderFacturaCard(f) {
     const esCobrado = f.estado_factura === 'COBRADO';
-    const badgeBg = esCobrado ? '#d4edda' : '#fff3cd';
-    const badgeColor = esCobrado ? '#155724' : '#856404';
+    const badgeBg = esCobrado ? 'var(--mint)' : 'var(--sun-soft)';
+    const badgeColor = esCobrado ? 'var(--success)' : 'var(--ink)';
     const badgeLabel = esCobrado ? 'COBRADO' : 'POR COBRAR';
     // Tipo de cambio con el que se emitieron los fletes de la factura: si
     // agrupa dias con cambio distinto se muestra el rango.
@@ -741,19 +741,19 @@ function renderFacturaCard(f) {
                 <div><small class="fw-bold">FECHA</small><p class="mb-0 fw-bold fs-6">${f.fecha_factura || '—'}</p></div>
                 <div><small class="fw-bold">N° FACTURA</small><p class="mb-0 fw-bold font-monospace">${f.numero_factura}</p></div>
                 <div><small class="fw-bold">CLIENTE</small><p class="mb-0 fw-bold">${f.cliente_nombre || '—'}</p></div>
-                <div><small class="fw-bold">MONTO FACTURADO</small><p class="mb-0 fw-bold fs-5" style="color:#007400;">${formatCurrency(f.total_monto)}</p></div>
+                <div><small class="fw-bold">MONTO FACTURADO</small><p class="mb-0 fw-bold fs-5" style="color:var(--success);">${formatCurrency(f.total_monto)}</p></div>
                 <div><small class="fw-bold">TIPO CAMBIO</small><p class="mb-0 fw-bold font-monospace">${tcTexto}</p></div>
-                <div><small class="fw-bold">ESTADO</small><p class="mb-0"><span class="badge fw-bold px-3 py-2" style="border:2px solid #000;font-size:.9rem;background:${badgeBg};color:${badgeColor};">${badgeLabel}</span></p></div>
+                <div><small class="fw-bold">ESTADO</small><p class="mb-0"><span class="badge fw-bold px-3 py-2" style="border:2px solid var(--line-strong);font-size:.9rem;background:${badgeBg};color:${badgeColor};">${badgeLabel}</span></p></div>
                 <div><small class="fw-bold">FLETES</small><p class="mb-0 fw-bold">${f.cantidad_fletes} flete(s)</p></div>
             </div>
             <div class="d-flex gap-2 mt-2 mt-md-0">
-                <button class="btn btn-sm fw-bold d-flex align-items-center gap-1" style="border:3px solid #000;background:#000;color:#fff;padding:8px 14px;" onclick="event.stopPropagation();toggleDetalle('${f.numero_factura}')"><i class="fas fa-eye"></i> VER FLETES</button>
-                <button class="btn btn-sm fw-bold d-flex align-items-center gap-1" style="border:3px solid #000;padding:8px 14px;background:${esCobrado ? '#fff3cd' : '#d4edda'};color:#000;" onclick="event.stopPropagation();toggleCobrado('${f.numero_factura}','${f.estado_factura}')">
+                <button class="btn btn-sm fw-bold d-flex align-items-center gap-1" style="border:3px solid var(--line-strong);background: var(--primary);color:#fff;padding:8px 14px;" onclick="event.stopPropagation();toggleDetalle('${f.numero_factura}')"><i class="fas fa-eye"></i> VER FLETES</button>
+                <button class="btn btn-sm fw-bold d-flex align-items-center gap-1" style="border:3px solid var(--line-strong);padding:8px 14px;background:${esCobrado ? 'var(--sun-soft)' : 'var(--mint)'};color: var(--ink);" onclick="event.stopPropagation();toggleCobrado('${f.numero_factura}','${f.estado_factura}')">
                     <i class="fas ${esCobrado ? 'fa-undo' : 'fa-check-circle'}"></i> ${esCobrado ? 'MARCAR POR COBRAR' : 'MARCAR COBRADO'}
                 </button>
             </div>
         </div>
-        <div class="detalle-fletes" id="detalle_${f.numero_factura}" style="display:none;background:#f8f9fa;">
+        <div class="detalle-fletes" id="detalle_${f.numero_factura}" style="display:none;background:var(--surface);">
             <div class="text-center py-3" id="loading_${f.numero_factura}"><div class="spinner-border spinner-border-sm text-dark" role="status"></div></div>
             <div class="table-responsive" id="tabla_${f.numero_factura}" style="display:none;"></div>
         </div>
@@ -779,7 +779,7 @@ function toggleDetalle(numeroFactura) {
         if (res.data.length === 0) { tabla.innerHTML = '<div class="text-center py-3">No se encontraron fletes</div>'; }
         else {
             tabla.innerHTML = `<table class="table mb-0" style="font-size:.95rem;">
-                <thead><tr><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">FECHA</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">N° DOC</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">UNIDAD</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">RUTA</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">MONTO</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">TIPO CAMBIO</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">TONELADAS</th><th class="fw-bold" style="background:#e9ecef;border-bottom:2px solid #000;padding:10px;">CHOFER</th></tr></thead>
+                <thead><tr><th class="fw-bold" style="background:var(--line);border-bottom:2px solid var(--line-strong);padding:10px;">FECHA</th><th class="fw-bold" style="background:var(--line);border-bottom:2px solid var(--line-strong);padding:10px;">N° DOC</th><th class="fw-bold" style="background:var(--line);border-bottom:2px solid var(--line-strong);padding:10px;">UNIDAD</th><th class="fw-bold" style="background:var(--line);border-bottom:2px solid var(--line-strong);padding:10px;">RUTA</th><th class="fw-bold" style="background:var(--line);border-bottom:2px solid var(--line-strong);padding:10px;">MONTO</th><th class="fw-bold" style="background:var(--line);border-bottom:2px solid var(--line-strong);padding:10px;">TIPO CAMBIO</th><th class="fw-bold" style="background:var(--line);border-bottom:2px solid var(--line-strong);padding:10px;">TONELADAS</th><th class="fw-bold" style="background:var(--line);border-bottom:2px solid var(--line-strong);padding:10px;">CHOFER</th></tr></thead>
                 <tbody>${res.data.map(fl => `<tr><td style="padding:10px;">${fl.fecha_ingreso}</td><td style="padding:10px;"><span class="font-monospace fw-bold">${fl.nro_documento || '—'}</span></td><td style="padding:10px;">${fl.placa_vehiculo || '—'}</td><td style="padding:10px;">${getRuta(fl)}</td><td style="padding:10px;" class="fw-bold">${formatCurrency(fl.monto)}</td><td style="padding:10px;" class="fw-bold font-monospace">${fl.tipo_cambio ? 'Bs ' + parseFloat(fl.tipo_cambio).toFixed(2) : '—'}</td><td style="padding:10px;">${fl.toneladas || '—'}</td><td style="padding:10px;">${fl.conductor_asignado || '—'}</td></tr>`).join('')}</tbody>
             </table>`;
         }
@@ -824,7 +824,7 @@ function cargarPendientes() {
     .then(res => {
         document.getElementById('pendientesLoading').style.display = 'none';
         if (!res.success || !res.data) {
-            document.getElementById('pendientesContainer').innerHTML = '<div class="text-center py-5 fw-bold fs-5 text-danger" style="border:4px solid #000;">ERROR AL CARGAR PENDIENTES</div>';
+            document.getElementById('pendientesContainer').innerHTML = '<div class="text-center py-5 fw-bold fs-5 text-danger" style="border:4px solid var(--line);">ERROR AL CARGAR PENDIENTES</div>';
             return;
         }
         pendientesData = res.data;
@@ -832,25 +832,25 @@ function cargarPendientes() {
     })
     .catch(() => {
         document.getElementById('pendientesLoading').style.display = 'none';
-        document.getElementById('pendientesContainer').innerHTML = '<div class="text-center py-5 fw-bold fs-5 text-danger" style="border:4px solid #000;">ERROR DE CONEXIÓN</div>';
+        document.getElementById('pendientesContainer').innerHTML = '<div class="text-center py-5 fw-bold fs-5 text-danger" style="border:4px solid var(--line);">ERROR DE CONEXIÓN</div>';
     });
 }
 
 function renderPendientes() {
     const container = document.getElementById('pendientesContainer');
-    if (pendientesData.length === 0) { container.innerHTML = '<div class="text-center py-5 fw-bold fs-5" style="border:4px solid #000;">NO HAY FLETES PENDIENTES DE FACTURACIÓN</div>'; return; }
-    let html = `<div style="border:4px solid #000;"><table class="table-excel mb-0" style="font-size:.95rem;"><thead><tr>
-        <th style="padding:12px 8px;width:50px;"><input type="checkbox" class="form-check-input" style="border:2px solid #000;width:20px;height:20px;cursor:pointer;" onchange="toggleSelectAll(this)"></th>
+    if (pendientesData.length === 0) { container.innerHTML = '<div class="text-center py-5 fw-bold fs-5" style="border:4px solid var(--line);">NO HAY FLETES PENDIENTES DE FACTURACIÓN</div>'; return; }
+    let html = `<div style="border:4px solid var(--line);"><table class="table-excel mb-0" style="font-size:.95rem;"><thead><tr>
+        <th style="padding:12px 8px;width:50px;"><input type="checkbox" class="form-check-input" style="border:2px solid var(--line-strong);width:20px;height:20px;cursor:pointer;" onchange="toggleSelectAll(this)"></th>
         <th class="text-center" style="padding:12px 8px;">FECHA</th><th class="text-center" style="padding:12px 8px;">N° DOC</th><th class="text-center" style="padding:12px 8px;">UNIDAD</th>
         <th style="padding:12px 8px;">RUTA / CONCEPTO</th><th class="text-center" style="padding:12px 8px;">MONTO</th><th class="text-center" style="padding:12px 8px;">CHOFER</th>
     </tr></thead><tbody>`;
-    html += pendientesData.map(p => `<tr style="background:${seleccionadas.has(p.id_ingreso) ? '#fffde7' : '#fff'};">
-        <td style="padding:10px 8px;text-align:center;"><input type="checkbox" class="form-check-input row-checkbox" style="border:2px solid #000;width:20px;height:20px;cursor:pointer;" data-id="${p.id_ingreso}" ${seleccionadas.has(p.id_ingreso) ? 'checked' : ''} onchange="toggleSeleccion(${p.id_ingreso}, this)"></td>
+    html += pendientesData.map(p => `<tr style="background:${seleccionadas.has(p.id_ingreso) ? 'var(--sun-soft)' : '#fff'};">
+        <td style="padding:10px 8px;text-align:center;"><input type="checkbox" class="form-check-input row-checkbox" style="border:2px solid var(--line-strong);width:20px;height:20px;cursor:pointer;" data-id="${p.id_ingreso}" ${seleccionadas.has(p.id_ingreso) ? 'checked' : ''} onchange="toggleSeleccion(${p.id_ingreso}, this)"></td>
         <td class="text-center fw-bold" style="padding:10px 8px;">${p.fecha_ingreso}</td>
         <td class="text-center fw-bold font-monospace" style="padding:10px 8px;">${p.nro_documento || '—'}</td>
         <td class="text-center fw-bold" style="padding:10px 8px;">${p.placa_vehiculo || '—'}</td>
         <td class="fw-bold" style="padding:10px 8px;max-width:250px;">${getRuta(p)}</td>
-        <td class="text-center fw-bold" style="padding:10px 8px;color:#007400;">${formatCurrency(p.monto)}</td>
+        <td class="text-center fw-bold" style="padding:10px 8px;color:var(--success);">${formatCurrency(p.monto)}</td>
         <td class="text-center" style="padding:10px 8px;">${p.chofer || '—'}</td>
     </tr>`).join('');
     html += `</tbody></table></div>`;

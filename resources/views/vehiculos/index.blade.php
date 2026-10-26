@@ -14,7 +14,7 @@
         </a>
     </header>
 
-    <div class="bento-card" style="padding: 0; overflow: hidden; border: 4px solid #000; box-shadow: 6px 6px 0px #000;">
+    <div class="bento-card" style="padding: 0; overflow: hidden; border:4px solid var(--line); box-shadow: 6px 6px 0px var(--sun);">
         <div class="bg-white text-black font-bold p-3 border-bottom border-black d-flex justify-content-between align-items-center">
             <span class="small uppercase font-bold text-black"><i class="fas fa-truck me-2"></i> Todas las Unidades</span>
         </div>
@@ -65,7 +65,7 @@ function loadVehiculos() {
                 <td class="font-bold">${v.marca || '—'}</td>
                 <td class="font-bold">${v.modelo || '—'}</td>
                 <td class="font-bold">${v.tara_kg ? parseFloat(v.tara_kg).toFixed(0) + ' kg' : '—'}</td>
-                <td><span class="badge font-bold uppercase px-3 py-2" style="background:${v.estado === 1 ? '#e2ffd6' : v.estado === 2 ? '#fffcd4' : '#ffdcd6'};color:${v.estado === 1 ? '#007400' : v.estado === 2 ? '#746700' : '#740000'};border:2px solid #000;">${v.estado === 1 ? 'ACTIVO' : v.estado === 2 ? 'MANTENIMIENTO' : 'VENDIDO'}</span></td>
+                <td><span class="badge font-bold uppercase px-3 py-2" style="background:${v.estado === 1 ? 'var(--mint)' : v.estado === 2 ? 'var(--tangerine-soft)' : 'var(--coral-soft)'};color:${v.estado === 1 ? 'var(--success)' : v.estado === 2 ? 'var(--ink)' : 'var(--soft-danger)'};border:2px solid var(--line-strong);">${v.estado === 1 ? 'ACTIVO' : v.estado === 2 ? 'MANTENIMIENTO' : 'VENDIDO'}</span></td>
                 <td>
                     <div class="d-flex gap-2 justify-content-center">
                         <button class="btn btn-sm btn-warning border-black font-bold" onclick="window.location.href='{{ url("vehiculos") }}/${v.id_vehiculo}/editar'" title="EDITAR"><i class="fas fa-edit"></i></button>
@@ -85,7 +85,7 @@ function eliminarVehiculo(id) {
         showCancelButton: true,
         confirmButtonText: 'SÍ, BAJAR',
         cancelButtonText: 'CANCELAR',
-        confirmButtonColor: '#dc3545',
+        confirmButtonColor: '#d6336c',
     }).then(result => {
         if (result.isConfirmed) {
             fetch('{{ url("vehiculos") }}/' + id, {

@@ -16,12 +16,12 @@
 
     <div class="row g-3 mb-4">
         <div class="col-md-4">
-            <select class="form-control fw-bold" id="filtroVehiculo" style="border-radius:0;border:3px solid #000;padding:10px;">
+            <select class="form-control fw-bold" id="filtroVehiculo" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;">
                 <option value="">TODOS LOS VEHÍCULOS</option>
             </select>
         </div>
         <div class="col-md-4">
-            <select class="form-control fw-bold" id="filtroTipo" style="border-radius:0;border:3px solid #000;padding:10px;">
+            <select class="form-control fw-bold" id="filtroTipo" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;">
                 <option value="">TODOS LOS TIPOS</option>
                 @foreach(['Combustible', 'Mantenimiento', 'Peaje', 'Sueldo', 'Viático', 'Seguro', 'Lubricante', 'Llantas', 'Otro'] as $tipo)
                     <option value="{{ $tipo }}">{{ $tipo }}</option>
@@ -29,13 +29,13 @@
             </select>
         </div>
         <div class="col-md-4">
-            <button class="btn fw-bold w-100" style="border:3px solid #000;background:#000;color:#fff;padding:10px;" onclick="cargarGastos()">
+            <button class="btn fw-bold w-100" style="border:3px solid var(--line-strong);background: var(--primary);color:#fff;padding:10px;" onclick="cargarGastos()">
                 <i class="fas fa-search"></i> FILTRAR
             </button>
         </div>
     </div>
 
-    <div class="bento-card" style="padding: 0; overflow: hidden; border: 4px solid #000; box-shadow: 6px 6px 0px #000;">
+    <div class="bento-card" style="padding: 0; overflow: hidden; border:4px solid var(--line); box-shadow: 6px 6px 0px var(--sun);">
         <div class="bg-white text-black font-bold p-3 border-bottom border-black d-flex justify-content-between align-items-center">
             <span class="small uppercase font-bold text-black"><i class="fas fa-minus-circle me-2"></i> Últimos Gastos</span>
         </div>
@@ -113,9 +113,9 @@ function cargarGastos() {
                 <td class="fw-bold" style="white-space:nowrap;">${g.fecha_gasto || '—'}</td>
                 <td class="fw-bold font-monospace">${g.nro_documento || '—'}</td>
                 <td class="fw-bold">${g.placa || '—'}</td>
-                <td><span class="badge fw-bold px-2 py-1" style="border:2px solid #000;background:#f0f0f0;color:#000;">${g.tipo_gasto || '—'}</span></td>
+                <td><span class="badge fw-bold px-2 py-1" style="border:2px solid var(--line-strong);background:var(--primary-soft);color: var(--ink);">${g.tipo_gasto || '—'}</span></td>
                 <td>${g.concepto || '—'}</td>
-                <td class="fw-bold" style="color:#cc0000;">${formatCurrency(g.monto)}</td>
+                <td class="fw-bold" style="color:var(--danger);">${formatCurrency(g.monto)}</td>
                 <td>${g.proveedor || '—'}</td>
                 <td>
                     <div class="d-flex gap-1 justify-content-center">
@@ -139,7 +139,7 @@ function eliminarGasto(id) {
         showCancelButton: true,
         confirmButtonText: 'SÍ, ELIMINAR',
         cancelButtonText: 'CANCELAR',
-        confirmButtonColor: '#dc3545',
+        confirmButtonColor: '#d6336c',
     }).then(result => {
         if (result.isConfirmed) {
             fetch('{{ url("gastos") }}/' + id, {

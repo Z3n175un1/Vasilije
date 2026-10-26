@@ -23,7 +23,7 @@
 
     {{-- ERRORES DE VALIDACIÓN --}}
     @if($errors->any())
-        <div class="bento-card mb-4" style="border: 4px solid var(--danger); background: #fff5f5; animation-delay: 0s;">
+        <div class="bento-card mb-4" style="border: 4px solid var(--danger); background: var(--soft-danger-bg); animation-delay: 0s;">
             <div class="fw-bold text-danger text-uppercase mb-3" style="font-size: 1.15rem;">
                 <i class="fas fa-exclamation-triangle me-2"></i>Revise los siguientes errores
             </div>
@@ -44,8 +44,8 @@
         @if($clasificador) @method('PUT') @endif
 
         {{-- SECCIÓN 1: INFORMACIÓN BÁSICA --}}
-        <div class="bento-card" style="border: 6px solid #000;">
-            <div class="mb-5 pb-4" style="border-bottom: 3px solid #000;">
+        <div class="bento-card" style="border:6px solid var(--line);">
+            <div class="mb-5 pb-4" style="border-bottom:3px solid var(--line-strong);">
                 <h2 class="fs-mid font-bold text-black uppercase mb-4" style="letter-spacing: -0.01em;">
                     <i class="fas fa-info-circle me-2" style="color: var(--primary);"></i>Información Básica
                 </h2>
@@ -66,7 +66,7 @@
                                        class="form-bento-input"
                                        value="{{ $clasificador->codigo }}"
                                        readonly
-                                       style="text-transform: uppercase;background:#f0f0f0;font-family:monospace;letter-spacing:1px;">
+                                       style="text-transform: uppercase;background:var(--primary-soft);font-family:monospace;letter-spacing:1px;">
 
                                 <small class="d-block mt-2 fw-bold" style="color: var(--gray-mid); font-size: 0.95rem;">
                                     No se modifica: los gastos ya registrados apuntan a este código
@@ -78,7 +78,7 @@
                                        class="form-bento-input"
                                        value="{{ $codigoSugerido ?? '' }}"
                                        readonly
-                                       style="text-transform: uppercase;background:#f0f0f0;font-family:monospace;letter-spacing:1px;">
+                                       style="text-transform: uppercase;background:var(--primary-soft);font-family:monospace;letter-spacing:1px;">
 
                                 <small class="d-block mt-2 fw-bold" style="color: var(--gray-mid); font-size: 0.95rem;">
                                     Asignado automáticamente al guardar
@@ -86,7 +86,7 @@
                             @endif
 
                             @error('descripcion')
-                                <small class="d-block mt-2 fw-bold" style="color:#dc3545;">{{ $message }}</small>
+                                <small class="d-block mt-2 fw-bold" style="color:var(--danger);">{{ $message }}</small>
                             @enderror
                         </div>
                     </div>
@@ -114,7 +114,7 @@
             </div>
 
             {{-- SECCIÓN 2: CLASIFICACIÓN --}}
-            <div class="mb-5 pb-4" style="border-bottom: 3px solid #000;">
+            <div class="mb-5 pb-4" style="border-bottom:3px solid var(--line-strong);">
                 <h2 class="fs-mid font-bold text-black uppercase mb-4" style="letter-spacing: -0.01em;">
                     <i class="fas fa-tag me-2" style="color: var(--primary);"></i>Clasificación
                 </h2>
@@ -139,6 +139,30 @@
                                 Valor canónico para reportes de gastos
                             </small>
                             @error('tipo_gasto')
+                                <small class="d-block mt-2 text-danger fw-bold">{{ $message }}</small>
+                            @enderror
+                        </div>
+                    </div>
+
+                    {{-- GRUPO DE GASTOS --}}
+                    <div class="col-md-6">
+                        <div class="form-group mb-0">
+                            <label class="fw-bold text-uppercase text-black mb-3 d-block" style="font-size: 1.05rem; letter-spacing: 0.02em;">
+                                GRUPO DE GASTOS
+                            </label>
+                            <select name="id_grupo_gasto" class="form-bento-input @error('id_grupo_gasto') is-invalid @enderror">
+                                <option value="">SIN GRUPO</option>
+                                @foreach($grupos as $grupo)
+                                    <option value="{{ $grupo->id_grupo_gasto }}"
+                                        @selected(old('id_grupo_gasto', $clasificador->id_grupo_gasto ?? '') == $grupo->id_grupo_gasto)>
+                                        {{ $grupo->nombre }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="d-block mt-2 fw-bold" style="color: var(--gray-mid); font-size: 0.95rem;">
+                                Agrupa este clasificador en los formularios de gastos
+                            </small>
+                            @error('id_grupo_gasto')
                                 <small class="d-block mt-2 text-danger fw-bold">{{ $message }}</small>
                             @enderror
                         </div>
@@ -169,7 +193,7 @@
             </div>
 
             {{-- SECCIÓN 3: ALCANCE --}}
-            <div class="mb-5 pb-4" style="border-bottom: 3px solid #000;">
+            <div class="mb-5 pb-4" style="border-bottom:3px solid var(--line-strong);">
                 <h2 class="fs-mid font-bold text-black uppercase mb-4" style="letter-spacing: -0.01em;">
                     <i class="fas fa-diagram-project me-2" style="color: var(--primary);"></i>Alcance del Clasificador
                 </h2>
@@ -181,7 +205,7 @@
                 <div class="row g-4">
                     {{-- CHECKBOX: AFECTA UNIDAD --}}
                     <div class="col-md-6">
-                        <div class="bento-checkbox-card" style="border: 4px solid #000; background: #fff; padding: 2rem;">
+                        <div class="bento-checkbox-card" style="border:4px solid var(--line); background: #fff; padding: 2rem;">
                             <div class="form-check mb-0">
                                 <input class="form-check-input scope-checkbox"
                                        type="checkbox"
@@ -189,7 +213,7 @@
                                        name="afecta_unidad"
                                        value="1"
                                        @checked(old('afecta_unidad', $clasificador->afecta_unidad ?? false))
-                                       style="width: 1.8rem; height: 1.8rem; border: 3px solid #000; cursor: pointer;">
+                                       style="width: 1.8rem; height: 1.8rem; border:3px solid var(--line-strong); cursor: pointer;">
                                 <label class="form-check-label fw-bold" for="afecta_unidad" style="font-size: 1.15rem; cursor: pointer; margin-left: 0.75rem;">
                                     AFECTA A UNIDAD
                                     <span class="d-block small fw-normal mt-2" style="color: var(--gray-mid); text-transform: none; font-size: 0.95rem;">
@@ -202,7 +226,7 @@
 
                     {{-- CHECKBOX: AFECTA GENERAL --}}
                     <div class="col-md-6">
-                        <div class="bento-checkbox-card" style="border: 4px solid #000; background: #fff; padding: 2rem;">
+                        <div class="bento-checkbox-card" style="border:4px solid var(--line); background: #fff; padding: 2rem;">
                             <div class="form-check mb-0">
                                 <input class="form-check-input scope-checkbox"
                                        type="checkbox"
@@ -210,7 +234,7 @@
                                        name="afecta_general"
                                        value="1"
                                        @checked(old('afecta_general', $clasificador->afecta_general ?? true))
-                                       style="width: 1.8rem; height: 1.8rem; border: 3px solid #000; cursor: pointer;">
+                                       style="width: 1.8rem; height: 1.8rem; border:3px solid var(--line-strong); cursor: pointer;">
                                 <label class="form-check-label fw-bold" for="afecta_general" style="font-size: 1.15rem; cursor: pointer; margin-left: 0.75rem;">
                                     AFECTA EN FORMA GENERAL
                                     <span class="d-block small fw-normal mt-2" style="color: var(--gray-mid); text-transform: none; font-size: 0.95rem;">
@@ -225,7 +249,7 @@
                 {{-- AVISO DE ALCANCE --}}
                 <div id="avisoAlcance"
                      class="mt-4 p-3 fw-bold"
-                     style="color: var(--danger); background: #fff5f5; border: 4px solid var(--danger); display: none; border-radius: 8px;">
+                     style="color: var(--danger); background: var(--soft-danger-bg); border: 4px solid var(--danger); display: none; border-radius: 8px;">
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     Debe marcar al menos un alcance. Un clasificador sin alcance no se ofrece en ningún formulario.
                 </div>
@@ -249,7 +273,7 @@
             </div>
 
             {{-- ACCIONES --}}
-            <div class="d-flex justify-content-end gap-3 mt-5 pt-4" style="border-top: 3px solid #000;">
+            <div class="d-flex justify-content-end gap-3 mt-5 pt-4" style="border-top:3px solid var(--line-strong);">
                 <a href="{{ route('clasificadores.index') }}"
                    class="btn-bento btn-bento-outline fs-mid font-bold text-decoration-none"
                    style="border-width: 4px !important;">
@@ -270,8 +294,8 @@
     /* INPUTS PERSONALIZADOS BENTO STYLE */
     .form-bento-input {
         background: #fff !important;
-        color: #000 !important;
-        border: 4px solid #000 !important;
+        color: var(--ink) !important;
+        border:4px solid var(--line) !important;
         width: 100%;
         padding: 1.25rem 1.75rem;
         font-size: 1.35rem;
@@ -305,7 +329,7 @@
 
     .form-bento-input option {
         background: #fff;
-        color: #000;
+        color: var(--ink);
         padding: 1rem;
         font-weight: 700;
     }
@@ -318,7 +342,7 @@
 
     .bento-checkbox-card:hover {
         transform: translate(-2px, -2px);
-        box-shadow: 6px 6px 0 #000;
+        box-shadow: 6px 6px 0 var(--sun);
     }
 
     .bento-checkbox-card .form-check-input {

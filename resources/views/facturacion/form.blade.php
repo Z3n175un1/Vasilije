@@ -14,12 +14,12 @@
         </a>
     </header>
 
-    <div class="bento-card" style="border: 6px solid #000;">
+    <div class="bento-card" style="border:6px solid var(--line);">
         <form method="POST" action="{{ $ingreso ? route('facturacion.update', $ingreso->id_ingreso) : route('facturacion.store') }}" class="form-bento">
             @csrf
             @if($ingreso) @method('PUT') @endif
 
-            <div class="d-flex align-items-center gap-3 p-3 mb-4" style="background:#f0f0f0;border:3px solid #000;">
+            <div class="d-flex align-items-center gap-3 p-3 mb-4" style="background:var(--primary-soft);border:3px solid var(--line-strong);">
                 <span class="badge bg-black text-warning px-3 py-2 fw-bold fs-6 font-monospace">{{ $ingreso->nro_documento ?? 'NUEVO' }}</span>
                 <span class="fw-bold small text-uppercase">{{ $ingreso ? 'EDITANDO FLETE' : 'NUEVO REGISTRO' }}</span>
             </div>
@@ -92,7 +92,7 @@
                              Este botón fuerza la recarga. --}}
                         <button type="button"
                                 class="btn btn-sm fw-bold mt-2"
-                                style="background:#2f2c79;color:#fff;border:3px solid #000;padding:8px 14px;"
+                                style="background:var(--primary);color:#fff;border:3px solid var(--line-strong);padding:8px 14px;"
                                 onclick="seleccionarRutaForm(document.getElementById('form_id_tramo'))">
                             <i class="fas fa-rotate-right me-1"></i> APLICAR RUTA
                         </button>
@@ -110,13 +110,13 @@
                 <div class="col-md-6">
                     <div class="form-group mb-0">
                         <label>ORIGEN</label>
-                        <input type="text" name="origen" id="form_origen" value="{{ old('origen', $ingreso->origen ?? '') }}" placeholder="Ciudad de origen" readonly style="background:#f0f0f0!important;cursor:not-allowed;">
+                        <input type="text" name="origen" id="form_origen" value="{{ old('origen', $ingreso->origen ?? '') }}" placeholder="Ciudad de origen" readonly style="background:var(--primary-soft)!important;cursor:not-allowed;">
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group mb-0">
                         <label>DESTINO</label>
-                        <input type="text" name="destino" id="form_destino" value="{{ old('destino', $ingreso->destino ?? '') }}" placeholder="Ciudad de destino" readonly style="background:#f0f0f0!important;cursor:not-allowed;">
+                        <input type="text" name="destino" id="form_destino" value="{{ old('destino', $ingreso->destino ?? '') }}" placeholder="Ciudad de destino" readonly style="background:var(--primary-soft)!important;cursor:not-allowed;">
                     </div>
                 </div>
             </div>
@@ -148,7 +148,7 @@
                 <div class="col-md-6">
                     <div class="form-group mb-0">
                         <label>MONTO (Bs) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="monto" id="form_monto" value="{{ old('monto', $ingreso->monto ?? '0') }}" required min="0" placeholder="0.00" readonly style="background:#f0f0f0!important;cursor:not-allowed;">
+                        <input type="number" step="0.01" name="monto" id="form_monto" value="{{ old('monto', $ingreso->monto ?? '0') }}" required min="0" placeholder="0.00" readonly style="background:var(--primary-soft)!important;cursor:not-allowed;">
                     </div>
                 </div>
             </div>
@@ -161,7 +161,7 @@
                         <input type="number" step="0.01" name="tipo_cambio" id="form_tipo_cambio"
                                value="{{ old('tipo_cambio', $ingreso->tipo_cambio ?? $tipo_cambio_vigente) }}"
                                min="0" placeholder="6.96" readonly
-                               style="background:#f0f0f0!important;cursor:not-allowed;">
+                               style="background:var(--primary-soft)!important;cursor:not-allowed;">
                         <small class="d-block mt-1 fw-bold text-muted">Se guarda el cambio con el que se facturó el flete</small>
                     </div>
                 </div>

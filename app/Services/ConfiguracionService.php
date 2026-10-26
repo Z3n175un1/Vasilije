@@ -60,15 +60,40 @@ final class ConfiguracionService
         return mb_strtoupper($this->obtener(self::FUENTE_TIPO_CAMBIO, 'MANUAL') ?? 'MANUAL');
     }
 
+    private ?HistoricoTipoCambio $historico = null;
+
+    private function historico(): HistoricoTipoCambio
+    {
+        return $this->historico ??= new HistoricoTipoCambio();
+    }
+
     /**
      * Tipo de cambio vigente que se USA en los calculos.
      *
      * Con fuente 'BCB' el valor usado es el oficial al dia del Banco Central;
      * si el BCB no responde se recurre al valor manual como respaldo, para
      * que los reportes nunca queden sin divisor dolares->bolivianos.
+     *
+     * Con fuente 'HISTORICO' se usa el registro oficial guardado para la
+     * fecha dada (tabla tipo_cambio_historico): el valor que rigio cuando
+     * se registro el flete. Sin registro para esa fecha recurre al BCB y
+     * luego al manual.
      */
-    public function tipoCambioVigente(): float
+    public function tipoCambioVigente(?string $fechaIso = null): float
     {
+        if ($this->fuenteTipoCambio() === 'HISTORICO') {
+            $historico = $this->historico()->valorPara($fechaIso);
+
+            if ($historico !== null) {
+                return $historico;
+            }
+
+            $oficial = ($this->bcb ?? new BcbService())->obtener();
+            if ($oficial !== null) {
+                return $oficial['valor'];
+            }
+        }
+
         if ($this->fuenteTipoCambio() === 'BCB') {
             $oficial = ($this->bcb ?? new BcbService())->obtener();
 
@@ -78,6 +103,27 @@ final class ConfiguracionService
         }
 
         return $this->tipoCambio();
+    }
+
+    /**
+     * Valor que el sistema USARIA para registrar un flete de la fecha X.
+     *
+     * Con fuente 'HISTORICO' es el registro oficial guardado para esa
+     * fecha (sabado/domingo resuelven al viernes); sin registro en la
+     * tabla recurre al BCB del dia y luego al manual. Con 'BCB'/'MANUAL'
+     * es el vigente de siempre.
+     */
+    public function tipoCambioParaFecha(?string $fechaIso = null): float
+    {
+        if ($this->fuenteTipoCambio() === 'HISTORICO') {
+            $historico = $this->historico()->valorPara($this->historico()->fechaParam($fechaIso));
+
+            if ($historico !== null) {
+                return $historico;
+            }
+        }
+
+        return $this->tipoCambioVigente($fechaIso);
     }
 
     public function precioTonelada(): float

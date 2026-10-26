@@ -65,7 +65,7 @@ function loadUsuarios() {
                 <td class="font-bold">${u.usuario}</td>
                 <td class="font-bold">${(u.nombres || '') + ' ' + (u.apellidos || '')}</td>
                 <td class="font-bold">${u.email || '—'}</td>
-                <td><span class="badge font-bold px-3 py-2" style="background:${rolColor(u.rol)};color:#000;border:2px solid #000;">${u.rol.toUpperCase()}</span></td>
+                <td><span class="badge font-bold px-3 py-2" style="background:${rolColor(u.rol)};color: var(--ink);border:2px solid var(--line-strong);">${u.rol.toUpperCase()}</span></td>
                 <td>${u.estado == 1 ? '<span class="badge bg-success font-bold px-3 py-2 border-black">ACTIVO</span>' : '<span class="badge bg-secondary font-bold px-3 py-2 border-black">INACTIVO</span>'}</td>
                 <td>
                     <div class="d-flex gap-2 justify-content-center">
@@ -82,8 +82,8 @@ function loadUsuarios() {
 }
 
 function rolColor(rol) {
-    const colors = { admin: '#dc3545', supervisor: '#2f2c79', operador: '#0d6efd', lectura: '#198754' };
-    return colors[rol] || '#6c757d';
+    const colors = { admin: 'var(--danger)', supervisor: 'var(--primary)', operador: '#0d6efd', lectura: 'var(--success)' };
+    return colors[rol] || 'var(--muted)';
 }
 
 function eliminarUsuario(id, usuario) {
@@ -94,7 +94,7 @@ function eliminarUsuario(id, usuario) {
         showCancelButton: true,
         confirmButtonText: 'SÍ, DESACTIVAR',
         cancelButtonText: 'CANCELAR',
-        confirmButtonColor: '#dc3545',
+        confirmButtonColor: '#d6336c',
     }).then(result => {
         if (result.isConfirmed) {
             fetch('{{ url("usuarios") }}/' + id, {

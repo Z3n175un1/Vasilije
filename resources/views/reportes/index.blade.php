@@ -7,24 +7,14 @@
 /* ============================================================
    VARIABLES CSS - SISTEMA BENTO
    ============================================================ */
-:root {
-    --primary: #2f2c79;
-    --primary-dark: #1d1a50;
-    --primary-light: #403c91;
-    --accent: #9ce0db;
-    --success: #28a745;
-    --danger: #dc3545;
-    --warning: #ffc107;
-    --black: #000000;
-    --white: #ffffff;
-}
+/* Tokens desde la hoja global (app-vibrant.css) */
 
 /* ============================================================
    FILTROS - SECCIÓN MEJORADA
    ============================================================ */
 .filter-section {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-    border: 6px solid var(--black);
+    border:6px solid var(--line);
     padding: 2rem;
     margin-bottom: 2rem;
     color: var(--white);
@@ -63,8 +53,8 @@
 .filter-section .form-control,
 .filter-section .form-select {
     background: rgba(255, 255, 255, 0.95) !important;
-    color: var(--black) !important;
-    border: 3px solid var(--black) !important;
+    color: var(--ink) !important;
+    border:3px solid var(--line-strong) !important;
     border-radius: 4px;
     padding: 0.85rem 1rem;
     font-weight: 700;
@@ -90,8 +80,8 @@
 .filter-btn {
     padding: 0.85rem 1.5rem;
     background: var(--white);
-    color: var(--black);
-    border: 3px solid var(--black);
+    color: var(--ink);
+    border:3px solid var(--line-strong);
     font-weight: 900;
     font-size: 0.85rem;
     text-transform: uppercase;
@@ -105,7 +95,7 @@
 }
 
 .filter-btn:hover {
-    background: var(--black);
+    background: var(--primary);
     color: var(--white);
     transform: translate(-2px, -2px);
     box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
@@ -126,7 +116,7 @@
 
 .btn-export {
     padding: 0.85rem 1.25rem;
-    border: 3px solid var(--black);
+    border:3px solid var(--line-strong);
     font-weight: 900;
     font-size: 0.85rem;
     text-transform: uppercase;
@@ -141,13 +131,14 @@
 }
 
 .btn-export-xls {
-    background: #007400;
+    background: var(--success);
     color: var(--white);
 }
 
 .btn-export-xls:hover {
-    background: #005a00;
-    box-shadow: 6px 6px 0 rgba(0, 116, 0, 0.3);
+    background: var(--success);
+    filter: brightness(0.92);
+    box-shadow: 6px 6px 0 var(--sun);
     transform: translate(-2px, -2px);
 }
 
@@ -157,13 +148,13 @@
 }
 
 .btn-export-pdf:hover {
-    background: #bb1d3d;
-    box-shadow: 6px 6px 0 rgba(220, 53, 69, 0.3);
+    filter: brightness(0.92);
+    box-shadow: 6px 6px 0 var(--accent);
     transform: translate(-2px, -2px);
 }
 
 .btn-export-print {
-    background: var(--black);
+    background: var(--primary);
     color: var(--white);
 }
 
@@ -181,9 +172,9 @@
    TOGGLE CHARTS
    ============================================================ */
 .toggle-charts-btn {
-    background: var(--black);
+    background: var(--primary);
     color: var(--white);
-    border: 4px solid var(--black);
+    border:4px solid var(--line);
     padding: 1rem 1.5rem;
     font-weight: 900;
     font-size: 0.9rem;
@@ -213,7 +204,7 @@
    ============================================================ */
 .periodo-info {
     background: linear-gradient(90deg, var(--primary), var(--primary-light));
-    border: 3px solid var(--black);
+    border:3px solid var(--line-strong);
     border-left: 6px solid var(--accent);
     padding: 1rem 1.5rem;
     margin-bottom: 2rem;
@@ -236,7 +227,7 @@
     font-size: 0.8rem;
     font-weight: 900;
     letter-spacing: 0.5px;
-    border: 2px solid var(--black);
+    border:2px solid var(--line-strong);
 }
 
 /* ============================================================
@@ -251,7 +242,7 @@
 
 .summary-card {
     background: var(--white);
-    border: 6px solid var(--black);
+    border:6px solid var(--line);
     padding: 2rem 1.75rem;
     text-align: center;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -270,17 +261,17 @@
 }
 
 .summary-card:nth-child(2)::before {
-    background: linear-gradient(90deg, var(--danger), #ff6b6b);
+    background: linear-gradient(90deg, var(--danger), var(--coral));
 }
 
 .summary-card:nth-child(3)::before {
-    background: linear-gradient(90deg, var(--success), #5fdd84);
+    background: linear-gradient(90deg, var(--success), var(--success));
 }
 
 .summary-card:hover {
     box-shadow:
         12px 12px 0 rgba(0, 0, 0, 0.15),
-        0 0 0 1px var(--black);
+        0 0 0 1px var(--line);
     transform: translate(-4px, -4px);
 }
 
@@ -324,7 +315,7 @@
 
 .chart-section {
     background: var(--white);
-    border: 6px solid var(--black);
+    border:6px solid var(--line);
     padding: 2rem;
     margin-bottom: 2rem;
     border-radius: 4px;
@@ -335,7 +326,7 @@
     font-size: 1rem;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: var(--black);
+    color: var(--ink);
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
     border-bottom: 3px solid var(--primary);
@@ -359,7 +350,7 @@
    ============================================================ */
 .table-wrapper {
     background: var(--white);
-    border: 6px solid var(--black);
+    border:6px solid var(--line);
     overflow: hidden;
     margin-bottom: 0;
     animation: slideUp 0.5s ease-out;
@@ -376,7 +367,7 @@
     color: var(--white);
     font-weight: 900;
     padding: 1.25rem 1rem;
-    border: 2px solid var(--black);
+    border:2px solid var(--line-strong);
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -386,7 +377,7 @@
 
 .report-table td {
     padding: 0.95rem 1rem;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--line);
     font-weight: 700;
     vertical-align: middle;
     font-size: 0.95rem;
@@ -397,11 +388,11 @@
 }
 
 .report-table tbody tr:hover {
-    background: #f8f9fa;
+    background: var(--surface);
 }
 
 .report-table tbody tr.tr-expandido {
-    background: #fffde7 !important;
+    background: var(--sun-soft) !important;
 }
 
 .report-table tbody tr.tr-principal {
@@ -411,17 +402,17 @@
 .report-table .badge {
     font-weight: 900;
     padding: 0.5rem 1rem !important;
-    border: 2px solid var(--black) !important;
+    border:2px solid var(--line-strong) !important;
     border-radius: 4px;
 }
 
 .badge-ingreso {
-    background: #e2ffd6 !important;
+    background: var(--mint) !important;
     color: var(--success) !important;
 }
 
 .badge-egreso {
-    background: #ffdcd6 !important;
+    background: var(--coral-soft) !important;
     color: var(--danger) !important;
 }
 
@@ -447,7 +438,7 @@
 
 /* Detail row */
 .detalle-row {
-    background: #f9f9f9 !important;
+    background: var(--surface) !important;
 }
 
 .detalle-row td {
@@ -480,7 +471,7 @@
     background: linear-gradient(135deg, var(--primary-dark), var(--primary));
     color: var(--white);
     padding: 1.5rem;
-    border: 6px solid var(--black);
+    border:6px solid var(--line);
     border-top: none;
     font-weight: 900;
     text-transform: uppercase;
@@ -511,7 +502,7 @@
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    border: 6px solid var(--black);
+    border:6px solid var(--line);
     background: var(--white);
 }
 
@@ -880,6 +871,21 @@
 let charts = {};
 let chartsVisible = true;
 
+// Colores desde la paleta (Chart.js no acepta var()); variables de app-vibrant.css
+const ROOT_CSS = getComputedStyle(document.documentElement);
+const PALETA_CSS = {
+    primary:       ROOT_CSS.getPropertyValue('--primary').trim()        || '#2f2c79',
+    primaryLight:  ROOT_CSS.getPropertyValue('--primary-light').trim()  || '#4b47b8',
+    sun:           ROOT_CSS.getPropertyValue('--sun').trim()            || '#ffc857',
+    success:       ROOT_CSS.getPropertyValue('--success').trim()        || '#1f9d55',
+    info:          ROOT_CSS.getPropertyValue('--info').trim()           || '#0ea5b7',
+    danger:        ROOT_CSS.getPropertyValue('--danger').trim()         || '#d6336c',
+    coral:         ROOT_CSS.getPropertyValue('--coral').trim()          || '#ff7a6b',
+    lilac:         ROOT_CSS.getPropertyValue('--lilac').trim()          || '#b7a7ff',
+    line:          ROOT_CSS.getPropertyValue('--line-strong').trim()    || '#a3a9c9',
+    surfaceLine:   ROOT_CSS.getPropertyValue('--line').trim()           || '#dcdff0'
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     cargarReporte();
     cargarEstadisticas();
@@ -917,7 +923,7 @@ function renderGastosCategoria(data) {
 
     const labels = Object.keys(data);
     const values = labels.map(k => data[k].total);
-    const colors = ['#2f2c79', '#dc3545', '#ffc107', '#198754', '#0dcaf0', '#6f42c1', '#fd7e14', '#20c997'];
+    const colors = [PALETA_CSS.primary, PALETA_CSS.danger, PALETA_CSS.sun, PALETA_CSS.success, PALETA_CSS.info, PALETA_CSS.lilac, PALETA_CSS.coral, PALETA_CSS.primaryLight];
 
     charts.gastosCategoria = new Chart(ctx, {
         type: 'doughnut',
@@ -926,7 +932,7 @@ function renderGastosCategoria(data) {
             datasets: [{
                 data: values,
                 backgroundColor: colors.slice(0, labels.length),
-                borderColor: '#000',
+                borderColor: PALETA_CSS.line,
                 borderWidth: 3
             }]
         },
@@ -971,8 +977,8 @@ function renderIngresosUnidad(data) {
             datasets: [{
                 label: 'Ingresos (Bs.)',
                 data: values,
-                backgroundColor: '#2f2c79',
-                borderColor: '#000',
+                backgroundColor: PALETA_CSS.primary,
+                borderColor: PALETA_CSS.line,
                 borderWidth: 3,
                 borderRadius: 4
             }]
@@ -1002,7 +1008,7 @@ function renderIngresosUnidad(data) {
                             return 'Bs. ' + value.toLocaleString();
                         }
                     },
-                    grid: { color: 'rgba(0,0,0,0.05)' }
+                    grid: { color: PALETA_CSS.surfaceLine }
                 },
                 x: {
                     ticks: { font: { weight: 'bold' } }
@@ -1028,16 +1034,16 @@ function renderEvolucionMensual(data) {
                 {
                     label: 'Ingresos',
                     data: ingresos,
-                    backgroundColor: '#198754',
-                    borderColor: '#000',
+                    backgroundColor: PALETA_CSS.success,
+                    borderColor: PALETA_CSS.line,
                     borderWidth: 3,
                     borderRadius: 4
                 },
                 {
                     label: 'Gastos',
                     data: gastos,
-                    backgroundColor: '#dc3545',
-                    borderColor: '#000',
+                    backgroundColor: PALETA_CSS.danger,
+                    borderColor: PALETA_CSS.line,
                     borderWidth: 3,
                     borderRadius: 4
                 }
@@ -1071,7 +1077,7 @@ function renderEvolucionMensual(data) {
                             return 'Bs. ' + value.toLocaleString();
                         }
                     },
-                    grid: { color: 'rgba(0,0,0,0.05)' }
+                    grid: { color: PALETA_CSS.surfaceLine }
                 },
                 x: {
                     ticks: { font: { weight: 'bold' } }

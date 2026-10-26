@@ -13,17 +13,17 @@
    solo aparecen si el controlador envia $puedeVerFinanzas = true.
    ============================================================ */
 .db {
-    --db-ink: #1b2a4a;
-    --db-muted: #6b7385;
-    --db-line: #e4e8f0;
-    --db-navy: #1f3a68;
-    --db-blue: #4d74c9;
-    --db-teal: #5ccdc6;
-    --db-red: #ef7f7f;
-    --db-yellow: #f5c242;
-    --db-green: #22b07d;
-    --db-sky: #9fb6e6;
-    --db-track: #e6ebf3;
+    --db-ink: var(--ink, var(--ink));
+    --db-muted: var(--muted, var(--muted));
+    --db-line: var(--line, var(--line));
+    --db-navy: var(--primary, var(--primary));
+    --db-blue: var(--primary-light);
+    --db-teal: var(--accent, var(--accent));
+    --db-red: var(--coral);
+    --db-yellow: var(--sun);
+    --db-green: var(--success);
+    --db-sky: var(--lilac);
+    --db-track: var(--primary-soft, var(--primary-soft));
 
     color: var(--db-ink);
     font-size: 0.95rem;
@@ -127,7 +127,7 @@
 .db-empty i {
     display: block;
     font-size: 1.8rem;
-    color: #b9c1d1;
+    color: var(--line-strong);
     margin-bottom: 0.6rem;
 }
 
@@ -271,7 +271,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 4px solid #e9eef8;
+    border: 4px solid var(--surface);
     margin-bottom: 0.8rem;
 }
 
@@ -286,8 +286,8 @@
     margin-top: 0.4rem;
     padding: 0.2rem 0.7rem;
     border-radius: 999px;
-    background: #e8f6f3;
-    color: #13806a;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
     font-size: 0.78rem;
     font-weight: 700;
 }
@@ -341,17 +341,23 @@
     border-bottom: none;
 }
 
-.db-feed-ico {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: var(--c);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-}
+    .db-feed-ico {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--c);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+    }
+
+    /* Chips de acento claro (--sun/--accent): el blanco no se lee, se usa tinta */
+    .db-feed-ico[style*="--sun"],
+    .db-feed-ico[style*="--accent"] {
+        color: var(--ink);
+    }
 
 .db-feed-title {
     margin: 0;
@@ -407,7 +413,7 @@
 }
 
 .db-btn:hover {
-    background: #2a4d86;
+    background: var(--primary-light);
 }
 
 .db-btn-ghost {
@@ -416,7 +422,7 @@
 }
 
 .db-btn-ghost:hover {
-    background: #eef3fb;
+    background: var(--surface);
 }
 
 .db-btn-sm {
@@ -468,7 +474,7 @@
 }
 
 .db-table th {
-    background: #f3f6fb;
+    background: var(--surface);
     color: var(--db-navy);
     font-size: 0.78rem;
     font-weight: 800;
@@ -490,7 +496,7 @@
 }
 
 .db-table tbody tr:hover td {
-    background: #f9fbfe;
+    background: var(--surface);
 }
 
 .db-table .num,
@@ -500,7 +506,7 @@
 }
 
 .db-table .muted {
-    color: #aab1c2;
+    color: var(--muted);
 }
 
 .db-badge {
@@ -512,13 +518,13 @@
 }
 
 .db-badge-ok {
-    background: #e3f6ee;
-    color: #13806a;
+    background: var(--mint);
+    color: var(--accent-ink);
 }
 
 .db-badge-off {
-    background: #eef0f4;
-    color: #6b7385;
+    background: var(--line);
+    color: var(--muted);
 }
 
 .db-state {
@@ -529,7 +535,7 @@
 }
 
 .db-state-error {
-    color: #c62828;
+    color: var(--soft-danger);
 }
 
 .db-spinner {
@@ -601,7 +607,7 @@
 }
 
 .db-dialog-close:hover {
-    background: #f3f6fb;
+    background: var(--surface);
 }
 
 .db-dialog-options {
@@ -627,7 +633,7 @@
 
 .db-opt:hover {
     border-color: var(--db-blue);
-    background: #f6f9ff;
+    background: var(--surface);
 }
 
 .db-opt-ico {
@@ -728,14 +734,14 @@
 
     // Modulo => [etiqueta, icono, color]
     $modulos = [
-        'auth'          => ['Acceso', 'fa-key', '#1f3a68'],
-        'facturacion'   => ['Fletes', 'fa-file-invoice-dollar', '#22b07d'],
-        'gastos'        => ['Gastos', 'fa-receipt', '#ef7f7f'],
-        'almacen'       => ['Almacén', 'fa-boxes-stacked', '#4d74c9'],
-        'inventario'    => ['Almacén', 'fa-boxes-stacked', '#4d74c9'],
-        'configuracion' => ['Configuración', 'fa-sliders', '#f5c242'],
+        'auth'          => ['Acceso', 'fa-key', 'var(--primary)'],
+        'facturacion'   => ['Fletes', 'fa-file-invoice-dollar', 'var(--success)'],
+        'gastos'        => ['Gastos', 'fa-receipt', 'var(--coral)'],
+        'almacen'       => ['Almacén', 'fa-boxes-stacked', 'var(--primary-light)'],
+        'inventario'    => ['Almacén', 'fa-boxes-stacked', 'var(--primary-light)'],
+        'configuracion' => ['Configuración', 'fa-sliders', 'var(--sun)'],
     ];
-    $otroModulo = ['Otros', 'fa-pen', '#8a94a6'];
+    $otroModulo = ['Otros', 'fa-pen', 'var(--muted)'];
 
     // Conteo por modulo (sobre las acciones recientes que llegan del controlador)
     $conteoModulo = [];
@@ -795,9 +801,9 @@
              ======================================================== --}}
         <header>
             <div class="db-accents" aria-hidden="true">
-                <span style="background:#5ccdc6;"></span>
-                <span style="background:#1f3a68;"></span>
-                <span style="background:#22b07d;"></span>
+                <span style="background:var(--accent);"></span>
+                <span style="background: var(--primary);"></span>
+                <span style="background:var(--success);"></span>
             </div>
 
             <div class="db-header">
@@ -805,47 +811,159 @@
                     <h1 class="db-title">{{ $saludo }}{{ $primerNombre ? ', ' . $primerNombre : '' }}</h1>
                     <p class="db-sub">Resumen de tu actividad de los últimos 7 días.</p>
                 </div>
-                <span class="db-date"><i class="fas fa-calendar-day"></i> {{ now()->format('d/m/Y') }}</span>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="db-date"><i class="fas fa-calendar-day"></i> {{ now()->format('d/m/Y') }}</span>
+                </div>
             </div>
         </header>
+
+        @php
+            $op = array_merge(
+                ['flota' => ['activas' => 0, 'mantenimiento' => 0, 'vendidas' => 0], 'personalActivo' => 0, 'stockBajo' => 0],
+                $operacion ?? [],
+            );
+            $venc = array_merge(
+                ['cobros' => collect(), 'productos' => collect()],
+                $vencimientos ?? [],
+            );
+        @endphp
 
         {{-- ========================================================
              KPIs
              ======================================================== --}}
         <section class="db-kpis" aria-label="Indicadores de la semana">
-            <article class="db-card db-kpi" style="--c:#5ccdc6;">
+            <article class="db-card db-kpi" style="--c:var(--accent);">
                 <div class="db-kpi-band"></div>
                 <div class="db-kpi-icon"><i class="fas fa-layer-group"></i></div>
                 <div class="db-kpi-label">Acciones totales</div>
                 <div class="db-kpi-value">{{ $resumen['total'] }}</div>
             </article>
 
-            <article class="db-card db-kpi" style="--c:#ef7f7f;">
+            <article class="db-card db-kpi" style="--c:var(--coral);">
                 <div class="db-kpi-band"></div>
                 <div class="db-kpi-icon"><i class="fas fa-file-invoice-dollar"></i></div>
                 <div class="db-kpi-label">Fletes registrados</div>
                 <div class="db-kpi-value">{{ $resumen['fletes'] }}</div>
             </article>
 
-            <article class="db-card db-kpi" style="--c:#f5c242;">
+            <article class="db-card db-kpi" style="--c:var(--sun);">
                 <div class="db-kpi-band"></div>
                 <div class="db-kpi-icon"><i class="fas fa-receipt"></i></div>
                 <div class="db-kpi-label">Gastos registrados</div>
                 <div class="db-kpi-value">{{ $resumen['gastos'] }}</div>
             </article>
 
-            <article class="db-card db-kpi" style="--c:#4d74c9;">
+            <article class="db-card db-kpi" style="--c:var(--primary-light);">
                 <div class="db-kpi-band"></div>
                 <div class="db-kpi-icon"><i class="fas fa-warehouse"></i></div>
                 <div class="db-kpi-label">Movimientos de almacén</div>
                 <div class="db-kpi-value">{{ $resumen['almacen'] }}</div>
             </article>
 
-            <article class="db-card db-kpi" style="--c:#22b07d;">
+            <article class="db-card db-kpi" style="--c:var(--success);">
                 <div class="db-kpi-band"></div>
                 <div class="db-kpi-icon"><i class="fas fa-clock"></i></div>
                 <div class="db-kpi-label">Último acceso</div>
                 <div class="db-kpi-value is-text">{{ $fechaUltimo ?? 'Sin registros' }}</div>
+            </article>
+        </section>
+
+        {{-- ========================================================
+             OPERACIÓN (solo conteos, sin montos)
+             ======================================================== --}}
+        <section class="db-kpis" aria-label="Estado operativo de la empresa">
+            <article class="db-card db-kpi" style="--c:var(--success);">
+                <div class="db-kpi-band"></div>
+                <div class="db-kpi-icon"><i class="fas fa-truck"></i></div>
+                <div class="db-kpi-label">Unidades activas</div>
+                <div class="db-kpi-value">{{ $op['flota']['activas'] }}</div>
+            </article>
+
+            <article class="db-card db-kpi" style="--c:var(--sun);">
+                <div class="db-kpi-band"></div>
+                <div class="db-kpi-icon"><i class="fas fa-screwdriver-wrench"></i></div>
+                <div class="db-kpi-label">En mantenimiento</div>
+                <div class="db-kpi-value">{{ $op['flota']['mantenimiento'] }}</div>
+            </article>
+
+            <article class="db-card db-kpi" style="--c:var(--muted);">
+                <div class="db-kpi-band"></div>
+                <div class="db-kpi-icon"><i class="fas fa-tag"></i></div>
+                <div class="db-kpi-label">Vendidas</div>
+                <div class="db-kpi-value">{{ $op['flota']['vendidas'] }}</div>
+            </article>
+
+            <article class="db-card db-kpi" style="--c:var(--primary-light);">
+                <div class="db-kpi-band"></div>
+                <div class="db-kpi-icon"><i class="fas fa-users"></i></div>
+                <div class="db-kpi-label">Personal activo</div>
+                <div class="db-kpi-value">{{ $op['personalActivo'] }}</div>
+            </article>
+
+            <article class="db-card db-kpi" style="--c: {{ $op['stockBajo'] > 0 ? 'var(--coral)' : 'var(--success)' }};">
+                <div class="db-kpi-band"></div>
+                <div class="db-kpi-icon"><i class="fas fa-box-open"></i></div>
+                <div class="db-kpi-label">Stock bajo / mínimo</div>
+                <div class="db-kpi-value">{{ $op['stockBajo'] }}</div>
+            </article>
+        </section>
+
+        {{-- ========================================================
+             VENCIMIENTOS (solo fechas y conceptos, sin montos)
+             ======================================================== --}}
+        <section class="row g-3" aria-label="Vencimientos próximos">
+            <article class="db-card col-md-6" aria-labelledby="ven-cobros">
+                <h2 class="db-card-title" id="ven-cobros">
+                    Cobros a crédito por vencer
+                    <small>Próximos 7 días (solo fecha de pago)</small>
+                </h2>
+                @if($venc['cobros']->isEmpty())
+                    <div class="db-empty"><i class="fas fa-calendar-check"></i>No hay cobros a crédito que venzan esta semana.</div>
+                @else
+                    <div class="db-table-wrap">
+                        <table class="db-table">
+                            <thead>
+                                <tr><th>Fecha</th><th>Concepto</th><th>Cliente</th></tr>
+                            </thead>
+                            <tbody>
+                                @foreach($venc['cobros'] as $c)
+                                    <tr>
+                                        <td class="font-bold">{{ \Illuminate\Support\Carbon::parse($c->fecha_vencimiento)->format('d/m/Y') }}</td>
+                                        <td class="text-start">{{ $c->concepto }}</td>
+                                        <td class="text-start">{{ $c->cliente_nombre ?: '—' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </article>
+
+            <article class="db-card col-md-6" aria-labelledby="ven-productos">
+                <h2 class="db-card-title" id="ven-productos">
+                    Inventario venciendo
+                    <small>Próximos 30 días</small>
+                </h2>
+                @if($venc['productos']->isEmpty())
+                    <div class="db-empty"><i class="fas fa-hourglass-half"></i>Nada del inventario vence en 30 días.</div>
+                @else
+                    <div class="db-table-wrap">
+                        <table class="db-table">
+                            <thead>
+                                <tr><th>Fecha</th><th>Producto</th><th class="num">Stock</th></tr>
+                            </thead>
+                            <tbody>
+                                @foreach($venc['productos'] as $p)
+                                    <tr>
+                                        <td class="font-bold">{{ \Illuminate\Support\Carbon::parse($p->fecha_vencimiento)->format('d/m/Y') }}</td>
+                                        <td class="text-start">{{ $p->nombre_producto }}</td>
+                                        <td class="num">{{ $p->stock_actual }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
             </article>
         </section>
 
@@ -908,17 +1026,17 @@
                     <div class="db-bars">
                         <div class="db-bar">
                             <span>Fletes</span>
-                            <div class="db-bar-track"><div class="db-bar-fill" style="--w: {{ $pct($resumen['fletes']) }}%; background:#ef7f7f;"></div></div>
+                            <div class="db-bar-track"><div class="db-bar-fill" style="--w: {{ $pct($resumen['fletes']) }}%; background:var(--coral);"></div></div>
                             <span class="db-bar-value">{{ $pct($resumen['fletes']) }}%</span>
                         </div>
                         <div class="db-bar">
                             <span>Gastos</span>
-                            <div class="db-bar-track"><div class="db-bar-fill" style="--w: {{ $pct($resumen['gastos']) }}%; background:#f5c242;"></div></div>
+                            <div class="db-bar-track"><div class="db-bar-fill" style="--w: {{ $pct($resumen['gastos']) }}%; background:var(--sun);"></div></div>
                             <span class="db-bar-value">{{ $pct($resumen['gastos']) }}%</span>
                         </div>
                         <div class="db-bar">
                             <span>Almacén</span>
-                            <div class="db-bar-track"><div class="db-bar-fill" style="--w: {{ $pct($resumen['almacen']) }}%; background:#4d74c9;"></div></div>
+                            <div class="db-bar-track"><div class="db-bar-fill" style="--w: {{ $pct($resumen['almacen']) }}%; background:var(--primary-light);"></div></div>
                             <span class="db-bar-value">{{ $pct($resumen['almacen']) }}%</span>
                         </div>
                     </div>
@@ -992,6 +1110,22 @@
     </div>
 </div>
 
+{{-- Panel de resultados del catalogo consultado --}}
+<aside id="nomenPanel" class="db-card db-results" hidden aria-live="polite">
+    <div class="db-results-head">
+        <h3 class="db-results-title" id="nomenTitle">Catálogo</h3>
+        <button type="button" class="db-btn db-btn-ghost db-btn-sm" data-panel-close>
+            <i class="fas fa-xmark"></i> Cerrar
+        </button>
+    </div>
+    <div class="db-table-wrap">
+        <table class="db-table">
+            <thead id="nomenHead"></thead>
+            <tbody id="nomenBody"></tbody>
+        </table>
+    </div>
+</aside>
+
 {{-- Dialogo nativo: foco atrapado, Escape para cerrar, lectura por lectores de pantalla --}}
 <dialog id="nomenDialog" class="db-dialog" aria-labelledby="nomenDialogTitle">
     <div class="db-dialog-inner">
@@ -1048,7 +1182,14 @@
     const FINANZAS  = @json($puedeVerFinanzas);
     const GRAFICOS  = @json($datosGraficos);
 
-    const COLORES = ['#1f3a68', '#5ccdc6', '#ef7f7f', '#f5c242', '#4d74c9', '#22b07d', '#8a94a6'];
+    // Paleta de graficas: leida de las variables del spec via getComputedStyle
+    // (Chart.js no acepta 'var(...)'; se resuelven a hex una vez).
+    const ROOT_CSS = getComputedStyle(document.documentElement);
+    const CSSV = n => (ROOT_CSS.getPropertyValue(n) || '').trim() || 'var(--primary)';
+    const COLORES = [
+        CSSV('--primary'), CSSV('--accent-strong'), CSSV('--coral'), CSSV('--sun'),
+        CSSV('--primary-light'), CSSV('--success'), CSSV('--muted')
+    ];
 
     /* ============================================================
        GRAFICAS (Chart.js). Se carga bajo demanda si el layout no lo incluye.
@@ -1087,7 +1228,7 @@
                 options: Object.assign({}, base, {
                     indexAxis: 'y',
                     scales: {
-                        x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#eef1f6' } },
+                        x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: CSSV('--line') } },
                         y: { grid: { display: false } }
                     }
                 })
@@ -1102,13 +1243,13 @@
                     labels: GRAFICOS.dias.labels,
                     datasets: [{
                         data: GRAFICOS.dias.values,
-                        backgroundColor: '#5ccdc6',
+                        backgroundColor: CSSV('--accent'),
                         borderRadius: 4
                     }]
                 },
                 options: Object.assign({}, base, {
                     scales: {
-                        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#eef1f6' } },
+                        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: CSSV('--line') } },
                         x: { grid: { display: false } }
                     }
                 })
@@ -1123,7 +1264,7 @@
                     labels: GRAFICOS.distribucion.labels,
                     datasets: [{
                         data: GRAFICOS.distribucion.values,
-                        backgroundColor: ['#ef7f7f', '#f5c242', '#4d74c9'],
+                        backgroundColor: [CSSV('--coral'), CSSV('--sun'), CSSV('--primary-light')],
                         borderColor: '#fff',
                         borderWidth: 3
                     }]

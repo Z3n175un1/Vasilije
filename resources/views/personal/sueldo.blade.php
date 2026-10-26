@@ -14,13 +14,13 @@
         </a>
     </header>
 
-    <div class="bento-card" style="border: 6px solid #000;">
+    <div class="bento-card" style="border:6px solid var(--line);">
         <form method="POST" action="{{ route('personal.gasto.store') }}" class="form-bento">
             @csrf
             <input type="hidden" name="id_personal" value="{{ $personal->id_personal }}">
             <input type="hidden" name="tipo_gasto" value="Sueldo">
 
-            <div class="d-flex align-items-center gap-3 p-3 mb-4" style="background:#f0f0f0;border:3px solid #000;">
+            <div class="d-flex align-items-center gap-3 p-3 mb-4" style="background:var(--primary-soft);border:3px solid var(--line-strong);">
                 <span class="badge bg-black text-warning px-3 py-2 fw-bold fs-6 font-monospace">SUELDO</span>
                 <span class="fw-bold small text-uppercase">{{ $personal->nombres }} {{ $personal->apellidos }} ({{ $personal->ci ?? 'SIN CI' }})</span>
             </div>

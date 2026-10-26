@@ -10,6 +10,7 @@ use App\Http\Controllers\FacturacionController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\GastoGeneralController;
 use App\Http\Controllers\GrupoController;
+use App\Http\Controllers\GrupoGastoController;
 use App\Http\Controllers\InicioController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\MantenimientoController;
@@ -141,6 +142,19 @@ Route::middleware('auth')->group(function (): void {
         ->middleware('admin')->name('clasificadores.update');
     Route::delete('/clasificadores/{id}', [ClasificadorController::class, 'destroy'])
         ->middleware('admin')->name('clasificadores.destroy');
+
+    // --- GRUPOS DE GASTOS: pagina propia del clasificador -----------------
+    Route::get('/grupos-gastos', [GrupoGastoController::class, 'index'])->name('grupos-gastos.index');
+    Route::get('/grupos-gastos/nuevo', [GrupoGastoController::class, 'create'])
+        ->middleware('admin')->name('grupos-gastos.create');
+    Route::get('/grupos-gastos/{id}/editar', [GrupoGastoController::class, 'edit'])
+        ->middleware('admin')->name('grupos-gastos.edit');
+    Route::post('/grupos-gastos', [GrupoGastoController::class, 'store'])
+        ->middleware('admin')->name('grupos-gastos.store');
+    Route::put('/grupos-gastos/{id}', [GrupoGastoController::class, 'update'])
+        ->middleware('admin')->name('grupos-gastos.update');
+    Route::delete('/grupos-gastos/{id}', [GrupoGastoController::class, 'destroy'])
+        ->middleware('admin')->name('grupos-gastos.destroy');
 
     // --- Escritura: requiere capacidad de crear/editar ------------------
     Route::middleware('escritura')->group(function (): void {
@@ -294,6 +308,7 @@ Route::middleware('auth')->group(function (): void {
         });
 
         Route::get('/tipo-cambio-bcb', [ConfiguracionController::class, 'apiTipoCambioBcb']);
+Route::get('/tipo-cambio-para-fecha', [ConfiguracionController::class, 'apiTipoCambioPorFecha']);
 
         // --- Escritura ---
         Route::middleware('escritura')->group(function (): void {

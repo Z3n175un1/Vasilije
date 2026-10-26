@@ -14,7 +14,7 @@
         </a>
     </header>
 
-    <div class="bento-card" style="border: 6px solid #000;">
+    <div class="bento-card" style="border:6px solid var(--line);">
         <form method="POST" action="{{ $personal ? route('personal.update', $personal->id_personal) : route('personal.store') }}" class="form-bento">
             @csrf
             @if($personal) @method('PUT') @endif

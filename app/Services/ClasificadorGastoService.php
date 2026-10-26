@@ -42,7 +42,12 @@ final class ClasificadorGastoService
      */
     public function listar(string $alcance = 'todos', bool $soloActivos = true): \Illuminate\Support\Collection
     {
-        $q = DB::table('global.clasificador_gastos');
+        $q = DB::table('global.clasificador_gastos')
+            // El grupo va junto al clasificador: las vistas lo usan para
+            // armar los optgroup de los formularios de gastos.
+            ->select('clasificador_gastos.*')
+            ->leftJoin('global.grupos_gastos', 'grupos_gastos.id_grupo_gasto', '=', 'clasificador_gastos.id_grupo_gasto')
+            ->addSelect('grupos_gastos.nombre as grupo_gasto');
 
         match ($alcance) {
             'unidad' => $q->where('afecta_unidad', true),
@@ -54,7 +59,17 @@ final class ClasificadorGastoService
             $q->where('estado', 'ACTIVO');
         }
 
-        return $q->orderBy('tipo_gasto')->orderBy('descripcion')->get();
+        return $q->orderBy('clasificador_gastos.descripcion')->get();
+    }
+
+    /**
+     * Grupos de gastos disponibles (para el selector del formulario).
+     *
+     * @return \Illuminate\Support\Collection<int, object>
+     */
+    public function grupos(): \Illuminate\Support\Collection
+    {
+        return DB::table('global.grupos_gastos')->orderBy('nombre')->get();
     }
 
     public function buscar(int $id): ?object
@@ -111,6 +126,7 @@ final class ClasificadorGastoService
             'codigo' => $this->siguienteCodigo(),
             'descripcion' => $datos['descripcion'],
             'tipo_gasto' => $datos['tipo_gasto'],
+            'id_grupo_gasto' => $datos['id_grupo_gasto'] ?? null,
             'afecta_unidad' => $datos['afecta_unidad'] ?? false,
             'afecta_general' => $datos['afecta_general'] ?? true,
             'estado' => 'ACTIVO',
@@ -134,6 +150,7 @@ final class ClasificadorGastoService
                 // clasificador distinto del que el operador cree.
                 'descripcion' => $datos['descripcion'],
                 'tipo_gasto' => $datos['tipo_gasto'],
+                'id_grupo_gasto' => $datos['id_grupo_gasto'] ?? null,
                 'afecta_unidad' => $datos['afecta_unidad'] ?? false,
                 'afecta_general' => $datos['afecta_general'] ?? true,
                 'estado' => $datos['estado'] ?? 'ACTIVO',
@@ -186,9 +203,21 @@ final class ClasificadorGastoService
             ]);
         }
 
+        // El grupo (si viene) debe existir.
+        $idGrupo = isset($datos['id_grupo_gasto']) && $datos['id_grupo_gasto'] !== null && $datos['id_grupo_gasto'] !== ''
+            ? (int) $datos['id_grupo_gasto']
+            : null;
+
+        if ($idGrupo !== null && !DB::table('global.grupos_gastos')->where('id_grupo_gasto', $idGrupo)->exists()) {
+            throw ValidationException::withMessages([
+                'id_grupo_gasto' => 'El grupo de gastos seleccionado no existe.',
+            ]);
+        }
+
         return [
             'descripcion' => $datos['descripcion'],
             'tipo_gasto' => $tipo->value,
+            'id_grupo_gasto' => $idGrupo,
             'afecta_unidad' => $afectaUnidad,
             'afecta_general' => $afectaGeneral,
             'estado' => $datos['estado'] ?? 'ACTIVO',

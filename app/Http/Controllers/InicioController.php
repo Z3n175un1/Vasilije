@@ -33,6 +33,11 @@ class InicioController extends Controller
             'ultimoAcceso' => $this->ultimoAcceso((int) $usuario->getKey()),
             'accionesRecientes' => $this->accionesRecientes((int) $usuario->getKey()),
             'resumenSemana' => $this->resumenSemana((int) $usuario->getKey()),
+            // Conteos operativos de toda la empresa: sin montos (los
+            // numeros de dinero no son de esta vista).
+            'operacion' => $this->operacion(),
+            // Solo fechas y conceptos, sin montos.
+            'vencimientos' => $this->vencimientos(),
             // Bancos y Configuracion son catalogos financieros: como el
             // resto del sistema, solo el administrador los ve desde aqui.
             'puedeVerFinanzas' => Rol::normalizar($usuario?->rol)->esAdmin(),
@@ -81,6 +86,59 @@ class InicioController extends Controller
             'gastos' => $porAccion('GASTO_'),
             'almacen' => $porAccion('MOVIMIENTO_') + $porAccion('PRODUCTO_'),
             'total' => (clone $base)->count(),
+        ];
+    }
+
+    /**
+     * Conteo operativo global (sin montos): estado de la flota,
+     * personal activo y stock bajo de almacén.
+     *
+     * @return array<string, mixed>
+     */
+    private function operacion(): array
+    {
+        return [
+            'flota' => [
+                'activas' => DB::table('global.vehiculos')->where('estado', 1)->count(),
+                'mantenimiento' => DB::table('global.vehiculos')->where('estado', 2)->count(),
+                'vendidas' => DB::table('global.vehiculos')->where('estado', 3)->count(),
+            ],
+            'personalActivo' => DB::table('global.personal')->where('estado', 1)->count(),
+            'stockBajo' => DB::table('global.inventario')
+                ->where('estado', 'ACTIVO')
+                ->whereColumn('stock_actual', '<=', 'stock_minimo')
+                ->count(),
+        ];
+    }
+
+    /**
+     * Vencimientos próximos (solo fechas y descripciones):
+     *   - Cobros a credito que vencen (fecha posible pago).
+     *   - Inventario con fecha de vencimiento cercana.
+     *
+     * @return array<string, mixed>
+     */
+    private function vencimientos(): array
+    {
+        $hoy = now()->toDateString();
+        $enUnaSemana = now()->addDays(7)->toDateString();
+
+        return [
+            'cobros' => DB::table('global.ingresos')
+                ->whereNotNull('fecha_vencimiento')
+                ->where('fecha_vencimiento', '>=', $hoy)
+                ->where('fecha_vencimiento', '<=', $enUnaSemana)
+                ->orderBy('fecha_vencimiento')
+                ->limit(5)
+                ->get(['id_ingreso', 'fecha_vencimiento', 'concepto', 'cliente_nombre']),
+            'productos' => DB::table('global.inventario')
+                ->where('estado', 'ACTIVO')
+                ->whereNotNull('fecha_vencimiento')
+                ->where('fecha_vencimiento', '>=', $hoy)
+                ->where('fecha_vencimiento', '<=', now()->addDays(30)->toDateString())
+                ->orderBy('fecha_vencimiento')
+                ->limit(5)
+                ->get(['id_inventario', 'fecha_vencimiento', 'nombre_producto', 'stock_actual']),
         ];
     }
 }

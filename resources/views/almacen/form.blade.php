@@ -5,7 +5,7 @@
 @section('content')
 <div class="main-container w-full">
     @if($errors->any())
-        <div class="alert alert-danger font-bold mb-4" style="border:3px solid #000;border-radius:0;">
+        <div class="alert alert-danger font-bold mb-4" style="border:3px solid var(--line-strong);border-radius:0;">
             <i class="fas fa-exclamation-triangle me-2"></i> CORREGIR LOS ERRORES
             <ul class="mb-0 mt-2">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
         </div>
@@ -20,7 +20,7 @@
         </a>
     </header>
 
-    <div class="bento-card" style="border: 6px solid #000;">
+    <div class="bento-card" style="border:6px solid var(--line);">
         <form method="POST" action="{{ $producto ? route('almacen.update', $producto->id_inventario) : route('almacen.store') }}" class="form-bento">
             @csrf
             @if($producto) @method('PUT') @endif
@@ -28,10 +28,10 @@
             <div class="row g-4 mb-4">
                 <div class="col-md-4">
                     <div class="form-group mb-0">
-                        <label style="font-size:1.3rem;font-weight:900;color:#000;">CÓDIGO DE FÁBRICA <span class="text-danger">*</span></label>
+                        <label style="font-size:1.3rem;font-weight:900;color: var(--ink);">CÓDIGO DE FÁBRICA <span class="text-danger">*</span></label>
                         <input type="text" name="codigo_barras" value="{{ old('codigo_barras', $producto->codigo_barras ?? '') }}" 
                                placeholder="CÓDIGO DEL FABRICANTE" 
-                               style="font-size:1.4rem;padding:12px;border:4px solid #000;font-weight:700;">
+                               style="font-size:1.4rem;padding:12px;border:4px solid var(--line);font-weight:700;">
                         <small class="text-muted fw-bold">Campo principal de identificación del producto</small>
                     </div>
                 </div>

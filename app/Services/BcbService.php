@@ -55,6 +55,10 @@ final class BcbService
 
         cache()->put(self::CACHE_KEY, $datos, now()->addMinutes(self::TTL_MINUTOS));
 
+        // Registro diario del valor oficial (fecha | tipo_de_cambio): es
+        // best-effort y no tumba la consulta si la tabla falla.
+        app(HistoricoTipoCambio::class)->registrar($datos['fecha_iso'], $datos['valor']);
+
         return $datos;
     }
 
@@ -101,7 +105,7 @@ final class BcbService
             return null;
         }
 
-        // Formalito Boliviano usa coma decimal ("11,73") pero se admite punto.
+        // Bolivia usa coma decimal ("11,73") pero se admite punto.
         $valor = (float) str_replace([' ', "\u{00a0}", ','], ['', '', '.'], $texto);
         if ($valor <= 0) {
             return null;
@@ -117,7 +121,7 @@ final class BcbService
         ];
     }
 
-    /** Busca la fecha de vigencia; sinanan un acierto devuelve hoy. */
+    /** Busca la fecha de vigencia; sin acierto devuelve hoy. */
     private function fechaDeValidez(string $html): string
     {
         $meses = implode('|', self::MESES);

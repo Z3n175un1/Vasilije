@@ -56,6 +56,10 @@
         'resources/js/app.js'
     ])
 
+    {{-- Paleta vibrante: tokens de :root (fuente de verdad de la paleta) --}}
+    <link rel="stylesheet" href="{{ asset('styles/app-vibrant.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/bento-shape.css') }}">
+
     {{-- =====================================================
          FAVICON
          ===================================================== --}}
@@ -236,12 +240,13 @@
                                 ['route' => 'grupos.index', 'label' => 'GRUPOS', 'icon' => 'fa-layer-group', 'cap' => 'ver:grupos'],
                                 ['route' => 'items.index', 'label' => 'ÍTEMS', 'icon' => 'fa-box', 'cap' => 'ver:items'],
                                 ['route' => 'proveedores.index', 'label' => 'PROVEEDORES', 'icon' => 'fa-handshake', 'cap' => 'ver:proveedores'],
-                                ['route' => 'almacen.index', 'label' => 'MOV. ALMACÉN', 'icon' => 'fa-warehouse', 'cap' => 'ver:almacen'],
                             ]),
 
                             'TRANSACCIONES' => $seccion('fa-arrow-right-arrow-left', [
                                 ['route' => 'dashboard.index', 'label' => 'UNIDADES', 'icon' => 'fa-truck', 'cap' => 'ver:vehiculos'],
-                                ['route' => 'gastos-generales.index', 'label' => 'GASTOS GENERALES', 'icon' => 'fa-file-invoice-dollar', 'cap' => 'ver:gastos_generales'],
+                                ['route' => 'almacen.index', 'label' => 'MOV. ALMACÉN', 'icon' => 'fa-warehouse', 'cap' => 'ver:almacen'],
+                                ['route' => 'gastos-generales.index', 'label' => 'GASTOS', 'icon' => 'fa-file-invoice-dollar', 'cap' => 'ver:gastos_generales'],
+                                ['route' => 'grupos-gastos.index', 'label' => 'GRUPOS GASTOS', 'icon' => 'fa-sitemap', 'cap' => 'ver:clasificadores'],
                                 ['route' => 'clasificadores.index', 'label' => 'CLASIFICADOR DE GASTOS', 'icon' => 'fa-receipt', 'cap' => 'ver:clasificadores'],
                             ]),
                         ];

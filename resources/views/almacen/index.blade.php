@@ -28,13 +28,13 @@
     transition: all 0.2s;
 }
 .tab-btn-alm.active {
-    background: #000 !important;
+    background: var(--primary) !important;
     color: #fff !important;
 }
 .tab-btn-alm:not(.active) {
     background: #fff;
-    color: #000;
-    border-right: 3px solid #000;
+    color: var(--ink);
+    border-right:3px solid var(--line-strong);
 }
 .tab-btn-alm:not(.active):last-child { border-right: none; }
 </style>
@@ -50,7 +50,7 @@
 
     </header>
 
-    <div class="d-flex mb-4" style="border:3px solid #000;">
+    <div class="d-flex mb-4" style="border:3px solid var(--line-strong);">
         <button class="tab-btn-alm active" onclick="switchTabAlm('inventario',this)"><i class="fas fa-warehouse me-2"></i> INVENTARIO</button>
         <button class="tab-btn-alm" onclick="switchTabAlm('compras',this)"><i class="fas fa-arrow-down me-2"></i> COMPRAS</button>
         <button class="tab-btn-alm" onclick="switchTabAlm('entregas',this)"><i class="fas fa-arrow-up me-2"></i> ENTREGAS</button>
@@ -76,7 +76,7 @@
         <div class="bento-card p-0 border-black" style="border-width:4px;overflow:hidden;">
             <div class="bg-white text-black font-bold p-3 border-bottom border-black d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-arrow-down me-2"></i> Compras (Ingresos a Almacén)</span>
-                <a href="{{ route('almacen.movimiento', 'COMPRA') }}" class="btn btn-sm fw-bold text-decoration-none" style="background:#000;color:white;border:3px solid #000;padding:8px 16px;"><i class="fas fa-plus me-1"></i> NUEVA COMPRA</a>
+                <a href="{{ route('almacen.movimiento', 'COMPRA') }}" class="btn btn-sm fw-bold text-decoration-none" style="background: var(--primary);color:white;border:3px solid var(--line-strong);padding:8px 16px;"><i class="fas fa-plus me-1"></i> NUEVA COMPRA</a>
             </div>
                 <div class="table-responsive-brutalist">
                     <table class="table-excel mb-0" style="font-size:.85rem;">
@@ -91,7 +91,7 @@
         <div class="bento-card p-0 border-black" style="border-width:4px;overflow:hidden;">
             <div class="bg-white text-black font-bold p-3 border-bottom border-black d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-arrow-up me-2"></i> Entregas (Salidas de Almacén)</span>
-                <a href="{{ route('almacen.movimiento', 'ENTREGA') }}" class="btn btn-sm fw-bold text-decoration-none" style="background:#000;color:#fff;border:3px solid #000;padding:8px 16px;"><i class="fas fa-plus me-1"></i> NUEVA ENTREGA</a>
+                <a href="{{ route('almacen.movimiento', 'ENTREGA') }}" class="btn btn-sm fw-bold text-decoration-none" style="background: var(--primary);color:#fff;border:3px solid var(--line-strong);padding:8px 16px;"><i class="fas fa-plus me-1"></i> NUEVA ENTREGA</a>
             </div>
                 <div class="table-responsive-brutalist">
                     <table class="table-excel mb-0" style="font-size:.85rem;">
@@ -108,7 +108,7 @@
                 <span><i class="fas fa-book me-2"></i> Kardex por Producto</span>
             </div>
             <div class="p-3">
-                <select class="form-control fw-bold mb-3" id="kardexProducto" style="border-radius:0;border:3px solid #000;padding:10px;max-width:400px;" onchange="cargarKardex()">
+                <select class="form-control fw-bold mb-3" id="kardexProducto" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;max-width:400px;" onchange="cargarKardex()">
                     <option value="">SELECCIONE PRODUCTO...</option>
                 </select>
             </div>
@@ -124,25 +124,25 @@
     <div id="tabSaldos" style="display:none;">
         <div class="row g-3 mb-3">
             <div class="col-md-3">
-                <div class="p-3 text-center" style="background:#d4edda;border:3px solid #000;">
+                <div class="p-3 text-center" style="background:var(--mint);border:3px solid var(--line-strong);">
                     <div class="small fw-bold">Total Productos</div>
                     <div class="fs-5 fw-bold" id="saldoTotalProductos">0</div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="p-3 text-center" style="background:#fff3cd;border:3px solid #000;">
+                <div class="p-3 text-center" style="background:var(--sun-soft);border:3px solid var(--line-strong);">
                     <div class="small fw-bold">Stock Bajo</div>
-                    <div class="fs-5 fw-bold" style="color:#dc3545;" id="saldoStockBajo">0</div>
+                    <div class="fs-5 fw-bold" style="color:var(--danger);" id="saldoStockBajo">0</div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="p-3 text-center" style="background:#f8d7da;border:3px solid #000;">
+                <div class="p-3 text-center" style="background:var(--coral-soft);border:3px solid var(--line-strong);">
                     <div class="small fw-bold">Stock Cero</div>
-                    <div class="fs-5 fw-bold" style="color:#dc3545;" id="saldoStockCero">0</div>
+                    <div class="fs-5 fw-bold" style="color:var(--danger);" id="saldoStockCero">0</div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="p-3 text-center" style="background:#cce5ff;border:3px solid #000;">
+                <div class="p-3 text-center" style="background:var(--sky-soft);border:3px solid var(--line-strong);">
                     <div class="small fw-bold">Valor Inventario</div>
                     <div class="fs-5 fw-bold" id="saldoValor">Bs. 0</div>
                 </div>
@@ -150,20 +150,20 @@
         </div>
         <div class="row g-3 mb-3">
             <div class="col-md-6">
-                <div class="p-3 text-center" style="background:#e8d5f5;border:3px solid #000;">
+                <div class="p-3 text-center" style="background:var(--lilac-soft);border:3px solid var(--line-strong);">
                     <div class="small fw-bold">Total Inversión</div>
                     <div class="fs-5 fw-bold" id="saldoTotalInversion">Bs. 0</div>
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="p-3 text-center" style="background:#d1ecf1;border:3px solid #000;">
+                <div class="p-3 text-center" style="background:var(--sky-soft);border:3px solid var(--line-strong);">
                     <div class="small fw-bold">Valor Promedio x Producto</div>
                     <div class="fs-5 fw-bold" id="saldoPromedio">Bs. 0</div>
                 </div>
             </div>
         </div>
         <div class="mb-3">
-            <input type="text" class="form-control fw-bold" id="filtroSaldos" style="border-radius:0;border:3px solid #000;padding:12px;" placeholder="FILTRAR POR PRODUCTO O CÓDIGO..." oninput="filtrarSaldos()">
+            <input type="text" class="form-control fw-bold" id="filtroSaldos" style="border-radius:10px;border:3px solid var(--line-strong);padding:12px;" placeholder="FILTRAR POR PRODUCTO O CÓDIGO..." oninput="filtrarSaldos()">
         </div>
         <div class="bento-card p-0 border-black" style="border-width:4px;overflow:hidden;">
             <div class="table-responsive-brutalist">
@@ -226,9 +226,9 @@ function loadProductos() {
                 return `<tr>
                     <td class="font-bold"><span class="badge bg-black text-white px-2">${esc(p.codigo_barras || p.codigo)}</span></td>
                     <td class="font-bold">${esc(p.nombre_producto)}</td>
-                    <td><span class="badge font-bold px-2 py-1" style="background:#2f2c79;color:#fff;border:2px solid #000;">${esc(p.categoria)}</span></td>
+                    <td><span class="badge font-bold px-2 py-1" style="background:var(--primary);color:#fff;border:2px solid var(--line-strong);">${esc(p.categoria)}</span></td>
                     <td class="font-bold">${esc(p.unidad_medida)}</td>
-                    <td class="font-bold" style="color:${sb ? '#dc3545' : '#007400'};">${bs(p.stock_actual || 0)}</td>
+                    <td class="font-bold" style="color:${sb ? 'var(--danger)' : 'var(--success)'};">${bs(p.stock_actual || 0)}</td>
                     <td class="font-bold">${bs(p.stock_minimo || 0)}</td>
                     <td class="font-bold">Bs. ${bs(p.precio_compra || 0)}</td>
                     <td class="font-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${esc(p.codigo_lote)}</span></td>
@@ -252,8 +252,8 @@ function loadCompras() {
 tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'COMPRA').map(m => {
                   const total = parseFloat(m.cantidad || 0) * parseFloat(m.costo_unitario || 0);
                   const cond = m.condicion_pago || 'CONTADO';
-                  const condColor = cond === 'CREDITO' ? '#ffdcd6' : '#d4edda';
-                  return `<tr><td class="fw-bold">${esc(m.fecha_movimiento)}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${esc(m.codigo_barras || m.codigo)}</span></td><td class="fw-bold">${txt(m.nombre_producto)}</td><td class="fw-bold">${bs(m.cantidad || 0)}</td><td class="fw-bold">Bs. ${bs(m.costo_unitario || 0)}</td><td class="fw-bold">Bs. ${bs(total)}</td><td class="fw-bold">${txt(m.proveedor)}</td><td><span class="badge fw-bold px-2 py-1" style="background:${condColor};color:#000;border:2px solid #000;">${esc(cond)}</span></td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${esc(m.codigo_lote)}</span></td><td><a href="{{ url('almacen/movimiento/COMPRA') }}/${Number(m.id_movimiento)}" class="btn btn-sm btn-outline-dark btn-editar-mov" style="border:2px solid #000;padding:4px 8px;" title="EDITAR"><i class="fas fa-edit"></i></a> <button onclick="eliminarMovimiento(${Number(m.id_movimiento)}, 'COMPRA')" class="btn btn-sm btn-danger" style="border:2px solid #000;padding:4px 8px;" title="ELIMINAR"><i class="fas fa-trash"></i></button></td></tr>`;
+                  const condColor = cond === 'CREDITO' ? 'var(--coral-soft)' : 'var(--mint)';
+                  return `<tr><td class="fw-bold">${esc(m.fecha_movimiento)}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${esc(m.codigo_barras || m.codigo)}</span></td><td class="fw-bold">${txt(m.nombre_producto)}</td><td class="fw-bold">${bs(m.cantidad || 0)}</td><td class="fw-bold">Bs. ${bs(m.costo_unitario || 0)}</td><td class="fw-bold">Bs. ${bs(total)}</td><td class="fw-bold">${txt(m.proveedor)}</td><td><span class="badge fw-bold px-2 py-1" style="background:${condColor};color: var(--ink);border:2px solid var(--line-strong);">${esc(cond)}</span></td><td class="fw-bold"><span class="badge bg-black text-white px-2" style="font-family:monospace;">${esc(m.codigo_lote)}</span></td><td><a href="{{ url('almacen/movimiento/COMPRA') }}/${Number(m.id_movimiento)}" class="btn btn-sm btn-outline-dark btn-editar-mov" style="border:2px solid var(--line-strong);padding:4px 8px;" title="EDITAR"><i class="fas fa-edit"></i></a> <button onclick="eliminarMovimiento(${Number(m.id_movimiento)}, 'COMPRA')" class="btn btn-sm btn-danger" style="border:2px solid var(--line-strong);padding:4px 8px;" title="ELIMINAR"><i class="fas fa-trash"></i></button></td></tr>`;
               }).join('') || '<tr><td colspan="10" class="text-center py-5 opacity-50">SIN COMPRAS REGISTRADAS</td></tr>';
         });
 }
@@ -266,7 +266,7 @@ function loadEntregas() {
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>'; return;
             }
 tbody.innerHTML = res.data.filter(m => m.tipo_movimiento === 'SALIDA').map(m =>
-                  `<tr><td class="fw-bold">${esc(m.fecha_movimiento)}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${esc(m.codigo_barras || m.codigo)}</span></td><td class="fw-bold">${txt(m.nombre_producto)}</td><td class="fw-bold">${bs(m.cantidad || 0)}</td><td class="fw-bold">Bs. ${bs(m.costo_unitario || 0)}</td><td class="fw-bold">${txt(m.placa_vehiculo)}</td><td class="fw-bold">${txt(m.conductor)}</td><td><a href="{{ url('almacen/movimiento/ENTREGA') }}/${Number(m.id_movimiento)}" class="btn btn-sm btn-outline-dark btn-editar-mov" style="border:2px solid #000;padding:4px 8px;" title="EDITAR"><i class="fas fa-edit"></i></a> <button onclick="eliminarMovimiento(${Number(m.id_movimiento)}, 'SALIDA')" class="btn btn-sm btn-danger" style="border:2px solid #000;padding:4px 8px;" title="ELIMINAR"><i class="fas fa-trash"></i></button></td></tr>`
+                  `<tr><td class="fw-bold">${esc(m.fecha_movimiento)}</td><td class="fw-bold"><span class="badge bg-black text-white px-2">${esc(m.codigo_barras || m.codigo)}</span></td><td class="fw-bold">${txt(m.nombre_producto)}</td><td class="fw-bold">${bs(m.cantidad || 0)}</td><td class="fw-bold">Bs. ${bs(m.costo_unitario || 0)}</td><td class="fw-bold">${txt(m.placa_vehiculo)}</td><td class="fw-bold">${txt(m.conductor)}</td><td><a href="{{ url('almacen/movimiento/ENTREGA') }}/${Number(m.id_movimiento)}" class="btn btn-sm btn-outline-dark btn-editar-mov" style="border:2px solid var(--line-strong);padding:4px 8px;" title="EDITAR"><i class="fas fa-edit"></i></a> <button onclick="eliminarMovimiento(${Number(m.id_movimiento)}, 'SALIDA')" class="btn btn-sm btn-danger" style="border:2px solid var(--line-strong);padding:4px 8px;" title="ELIMINAR"><i class="fas fa-trash"></i></button></td></tr>`
               ).join('') || '<tr><td colspan="8" class="text-center py-5 opacity-50">SIN ENTREGAS REGISTRADAS</td></tr>';
         });
 }
@@ -280,7 +280,7 @@ function cargarKardex() {
         .then(r => r.json()).then(res => {
             if (!res.success || !res.data || res.data.length === 0) {
                 if (prod && parseFloat(prod.stock_actual) > 0) {
-                    tbody.innerHTML = `<tr><td class="fw-bold">${new Date().toISOString().split('T')[0]}</td><td><span class="badge fw-bold px-2 py-1" style="border:2px solid #000;background:#d4edda;color:#000;">COMPRA</span></td><td class="fw-bold" style="color:#007400;">${parseFloat(prod.stock_actual).toFixed(2)}</td><td class="fw-bold" style="color:#dc3545;">—</td><td class="fw-bold">${parseFloat(prod.stock_actual).toFixed(2)}</td><td class="fw-bold">Stock inicial</td></tr>`;
+                    tbody.innerHTML = `<tr><td class="fw-bold">${new Date().toISOString().split('T')[0]}</td><td><span class="badge fw-bold px-2 py-1" style="border:2px solid var(--line-strong);background:var(--mint);color: var(--ink);">COMPRA</span></td><td class="fw-bold" style="color:var(--success);">${parseFloat(prod.stock_actual).toFixed(2)}</td><td class="fw-bold" style="color:var(--danger);">—</td><td class="fw-bold">${parseFloat(prod.stock_actual).toFixed(2)}</td><td class="fw-bold">Stock inicial</td></tr>`;
                 } else {
                     tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 opacity-50">SIN MOVIMIENTOS</td></tr>';
                 }
@@ -292,9 +292,9 @@ function cargarKardex() {
                 saldo += m.tipo_movimiento === 'COMPRA' ? parseFloat(m.cantidad || 0) : -parseFloat(m.cantidad || 0);
                 return `<tr>
                     <td class="fw-bold">${esc(m.fecha_movimiento)}</td>
-                    <td><span class="badge fw-bold px-2 py-1" style="border:2px solid #000;background:${m.tipo_movimiento === 'COMPRA' ? '#d4edda' : '#f8d7da'};color:#000;">${m.tipo_movimiento === 'COMPRA' ? 'COMPRA' : 'ENTREGA'}</span></td>
-                    <td class="fw-bold" style="color:#007400;">${m.tipo_movimiento === 'COMPRA' ? bs(m.cantidad || 0) : '—'}</td>
-                    <td class="fw-bold" style="color:#dc3545;">${m.tipo_movimiento === 'SALIDA' ? bs(m.cantidad || 0) : '—'}</td>
+                    <td><span class="badge fw-bold px-2 py-1" style="border:2px solid var(--line-strong);background:${m.tipo_movimiento === 'COMPRA' ? 'var(--mint)' : 'var(--coral-soft)'};color: var(--ink);">${m.tipo_movimiento === 'COMPRA' ? 'COMPRA' : 'ENTREGA'}</span></td>
+                    <td class="fw-bold" style="color:var(--success);">${m.tipo_movimiento === 'COMPRA' ? bs(m.cantidad || 0) : '—'}</td>
+                    <td class="fw-bold" style="color:var(--danger);">${m.tipo_movimiento === 'SALIDA' ? bs(m.cantidad || 0) : '—'}</td>
                     <td class="fw-bold">${bs(saldo)}</td>
                     <td class="fw-bold">${txt(m.motivo || m.observaciones)}</td>
                 </tr>`;
@@ -333,11 +333,11 @@ function renderSaldos(data) {
             <td class="fw-bold">${esc(p.nombre_producto)}</td>
             <td class="fw-bold">${txt(p.categoria)}</td>
             <td class="fw-bold">${txt(p.unidad_medida)}</td>
-            <td class="fw-bold" style="color:${sb ? '#dc3545' : '#007400'};">${bs(p.stock_actual || 0)}</td>
+            <td class="fw-bold" style="color:${sb ? 'var(--danger)' : 'var(--success)'};">${bs(p.stock_actual || 0)}</td>
             <td class="fw-bold">${bs(p.stock_minimo || 0)}</td>
             <td class="fw-bold">Bs. ${bs(precio)}</td>
             <td class="fw-bold">Bs. ${bs(total)}</td>
-            <td><span class="badge fw-bold px-3 py-2" style="border:2px solid #000;background:${sb ? '#f8d7da' : '#d4edda'};color:${sb ? '#dc3545' : '#007400'};">${sb ? 'BAJO' : 'OK'}</span></td>
+            <td><span class="badge fw-bold px-3 py-2" style="border:2px solid var(--line-strong);background:${sb ? 'var(--coral-soft)' : 'var(--mint)'};color:${sb ? 'var(--danger)' : 'var(--success)'};">${sb ? 'BAJO' : 'OK'}</span></td>
         </tr>`;
     }).join('');
 }
@@ -355,7 +355,7 @@ function eliminarProducto(id) {
     Swal.fire({
         title: 'DESACTIVAR PRODUCTO', text: '¿Está seguro?', icon: 'warning',
         showCancelButton: true, confirmButtonText: 'SÍ, DESACTIVAR', cancelButtonText: 'CANCELAR',
-        confirmButtonColor: '#dc3545',
+        confirmButtonColor: '#d6336c',
     }).then(result => {
         if (result.isConfirmed) {
             fetch('{{ url("almacen") }}/' + id, {
@@ -374,7 +374,7 @@ function eliminarMovimiento(id, tipo) {
         text: 'Se revertirá el stock y el dinero movido. ¿Eliminar?',
         icon: 'warning',
         showCancelButton: true, confirmButtonText: 'SÍ, ELIMINAR', cancelButtonText: 'CANCELAR',
-        confirmButtonColor: '#dc3545',
+        confirmButtonColor: '#d6336c',
     }).then(result => {
         if (!result.isConfirmed) return;
         fetch(`{{ url("api/almacen/movimientos") }}/${id}`, {

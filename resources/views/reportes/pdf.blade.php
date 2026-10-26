@@ -58,7 +58,7 @@
         }
         .company-details {
             font-size: 7.5pt;
-            color: #555;
+            color: var(--muted);
             line-height: 1.5;
         }
         .company-details strong {
@@ -68,7 +68,7 @@
             text-align: center;
             margin-bottom: 16px;
             padding: 10px 0;
-            border-bottom: 2px solid #ddd;
+            border-bottom: 2px solid var(--line);
         }
         .report-title {
             font-size: 13pt;
@@ -99,14 +99,14 @@
             text-align: center;
             border: 2.5px solid #1a1a1a;
         }
-        .summary-box.ingresos { border-color: #007400; background: #f0fff0; }
-        .summary-box.egresos { border-color: #cc0000; background: #fff0f0; }
-        .summary-box.balance { border-color: #1a1a1a; background: #fffde7; }
+        .summary-box.ingresos { border-color: var(--success); background: #f0fff0; }
+        .summary-box.egresos { border-color: var(--danger); background: #fff0f0; }
+        .summary-box.balance { border-color: #1a1a1a; background: var(--sun-soft); }
         .summary-label {
             font-size: 6.5pt;
             font-weight: 700;
             text-transform: uppercase;
-            color: #888;
+            color: var(--muted);
             letter-spacing: 0.5px;
         }
         .summary-value {
@@ -114,8 +114,8 @@
             font-weight: 900;
             margin-top: 3px;
         }
-        .summary-box.ingresos .summary-value { color: #007400; }
-        .summary-box.egresos .summary-value { color: #cc0000; }
+        .summary-box.ingresos .summary-value { color: var(--success); }
+        .summary-box.egresos .summary-value { color: var(--danger); }
         .summary-box.balance .summary-value { color: #1a1a1a; }
         table {
             width: 100%;
@@ -124,7 +124,7 @@
         }
         thead th {
             background: #1a1a1a;
-            color: #2f2c79;
+            color: var(--primary);
             font-weight: 800;
             font-size: 7pt;
             text-transform: uppercase;
@@ -137,15 +137,15 @@
         thead th.center { text-align: center; }
         tbody td {
             padding: 5px 6px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--line);
             font-size: 7.5pt;
             vertical-align: middle;
         }
         tbody td.right { text-align: right; }
         tbody td.center { text-align: center; }
         tbody tr:nth-child(even) { background: #fafafa; }
-        tbody tr.row-ingreso { border-left: 3px solid #007400; }
-        tbody tr.row-egreso { border-left: 3px solid #cc0000; }
+        tbody tr.row-ingreso { border-left: 3px solid var(--success); }
+        tbody tr.row-egreso { border-left: 3px solid var(--danger); }
         .badge-tipo {
             display: inline-block;
             padding: 1px 8px;
@@ -154,11 +154,11 @@
             letter-spacing: 0.4px;
             border: 1.5px solid #1a1a1a;
         }
-        .badge-ingreso { background: #e2ffd6; color: #007400; }
-        .badge-egreso { background: #ffdcd6; color: #cc0000; }
+        .badge-ingreso { background: var(--mint); color: var(--success); }
+        .badge-egreso { background: var(--coral-soft); color: var(--danger); }
         .footer-total {
             background: #1a1a1a;
-            color: #2f2c79;
+            color: var(--primary);
             font-weight: 800;
             font-size: 8.5pt;
             padding: 8px 10px;
@@ -168,7 +168,7 @@
         .footer-note {
             margin-top: 14px;
             padding-top: 8px;
-            border-top: 2px solid #ddd;
+            border-top: 2px solid var(--line);
             font-size: 6.5pt;
             color: #999;
             text-align: center;
@@ -284,10 +284,10 @@
                     <td style="font-weight:600;">{{ $recorrido ?: '—' }}</td>
                     <td class="center">{{ $item->placa_vehiculo ?? '—' }}</td>
                     <td style="font-weight:600;">{{ $gastos }}</td>
-                    <td class="right" style="font-weight:700;color:#007400;">
+                    <td class="right" style="font-weight:700;color:var(--success);">
                         {{ $item->tipo_registro === 'INGRESO' ? number_format($item->ingreso, 2, ',', '.') : '—' }}
                     </td>
-                    <td class="right" style="font-weight:700;color:#cc0000;">
+                    <td class="right" style="font-weight:700;color:var(--danger);">
                         {{ $item->tipo_registro === 'GASTO' ? number_format($item->egreso, 2, ',', '.') : '—' }}
                     </td>
                     <td style="font-size:6.5pt;">{{ $detalle }}</td>

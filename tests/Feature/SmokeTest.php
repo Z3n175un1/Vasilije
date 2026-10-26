@@ -333,9 +333,9 @@ class SmokeTest extends TestCase
         );
 
         $this->assertMatchesRegularExpression(
-            '/TRANSACCIONES.*?UNIDADES.*?GASTOS GENERALES.*?CLASIFICADOR DE GASTOS/s',
+            '/TRANSACCIONES.*?UNIDADES.*?GASTOS.*?CLASIFICADOR DE GASTOS/s',
             $contenido,
-            'Transacciones debe contener Unidades, Gastos Generales y el Clasificador.'
+            'Transacciones debe contener Unidades, Gastos y el Clasificador.'
         );
     }
 

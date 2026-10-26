@@ -18,7 +18,7 @@
     :root {
         --ds-navy: #0a1f44;
         --ds-navy-deep: #06142f;
-        --ds-amber: #f5b342;
+        --ds-amber: var(--sun);            /* paleta: --sun */
         --ds-ease: cubic-bezier(.77, 0, .18, 1);
     }
 
@@ -34,7 +34,7 @@
         place-items: center;
         overflow: hidden;
         background:
-            radial-gradient(120% 90% at 50% 110%, #123070 0%, transparent 60%),
+            radial-gradient(120% 90% at 50% 110%, var(--primary-light) 0%, transparent 60%),
             var(--ds-navy);
         transform: translateY(100%);
         visibility: hidden;

@@ -18,13 +18,13 @@
         <div class="bg-white text-black font-bold p-3 border-bottom border-black d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
             <span><i class="fas fa-handshake me-2"></i> Proveedores Registrados</span>
             <div class="d-flex align-items-center gap-2" style="max-width:460px;width:100%;">
-                <input type="text" id="buscarProveedor" class="form-control fw-bold" style="border-radius:0;border:3px solid #000;padding:8px 12px;" placeholder="BUSCAR POR NOMBRE, NIT, CONTACTO..." oninput="loadProveedores()">
-                <select id="ordenProveedor" class="form-control fw-bold" style="border-radius:0;border:3px solid #000;padding:8px 12px;width:auto;" onchange="loadProveedores()">
+                <input type="text" id="buscarProveedor" class="form-control fw-bold" style="border-radius:10px;border:3px solid var(--line-strong);padding:8px 12px;" placeholder="BUSCAR POR NOMBRE, NIT, CONTACTO..." oninput="loadProveedores()">
+                <select id="ordenProveedor" class="form-control fw-bold" style="border-radius:10px;border:3px solid var(--line-strong);padding:8px 12px;width:auto;" onchange="loadProveedores()">
                     <option value="abc">A-Z</option>
                     <option value="z_a">Z-A</option>
                     <option value="ultimo">ÚLTIMOS</option>
                 </select>
-                <button class="btn fw-bold" style="background:#000;color:#fff;border:3px solid #000;border-radius:0;" onclick="loadProveedores()"><i class="fas fa-search"></i></button>
+                <button class="btn fw-bold" style="background: var(--primary);color:#fff;border:3px solid var(--line-strong);border-radius:999px;" onclick="loadProveedores()"><i class="fas fa-search"></i></button>
             </div>
         </div>
         <div class="table-responsive-brutalist">
@@ -81,7 +81,7 @@ function loadProveedores() {
                 <td>${p.contacto || '—'}</td>
                 <td class="font-bold">${p.telefono || '—'}</td>
                 <td>${p.email || '—'}</td>
-                <td><span class="badge font-bold px-3 py-2" style="background:#2f2c79;color:#fff;border:2px solid #000;">${p.tipo_proveedor || 'GENERAL'}</span></td>
+                <td><span class="badge font-bold px-3 py-2" style="background:var(--primary);color:#fff;border:2px solid var(--line-strong);">${p.tipo_proveedor || 'GENERAL'}</span></td>
                 <td>
                     <div class="d-flex gap-2 justify-content-center">
                         <button class="btn btn-sm btn-warning border-black font-bold" onclick="window.location.href='{{ url("proveedores") }}/${p.id_proveedor}/editar'" title="EDITAR"><i class="fas fa-edit"></i></button>
@@ -104,7 +104,7 @@ function eliminarProveedor(id) {
         showCancelButton: true,
         confirmButtonText: 'SÍ, ELIMINAR',
         cancelButtonText: 'CANCELAR',
-        confirmButtonColor: '#dc3545',
+        confirmButtonColor: '#d6336c',
     }).then(result => {
         if (result.isConfirmed) {
             fetch('{{ url("proveedores") }}/' + id, {

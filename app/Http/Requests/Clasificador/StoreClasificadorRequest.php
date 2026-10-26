@@ -28,6 +28,7 @@ class StoreClasificadorRequest extends FormRequest
             // gastos ya registrados quedarian apuntando a otra fila.
             'descripcion' => ['required', 'string', 'max:200'],
             'tipo_gasto' => ['required', 'string', Rule::in(TipoGasto::values())],
+            'id_grupo_gasto' => ['nullable', 'integer', Rule::exists('grupos_gastos', 'id_grupo_gasto')],
             'afecta_unidad' => ['nullable', 'boolean'],
             'afecta_general' => ['nullable', 'boolean'],
             'estado' => ['nullable', 'string', Rule::in(['ACTIVO', 'INACTIVO'])],
@@ -80,6 +81,7 @@ class StoreClasificadorRequest extends FormRequest
             // porque los gastos registrados ya lo referencian.
             'descripcion' => $this->string('descripcion')->trim()->value(),
             'tipo_gasto' => $this->string('tipo_gasto')->value(),
+            'id_grupo_gasto' => $this->filled('id_grupo_gasto') ? (int) $this->input('id_grupo_gasto') : null,
             'afecta_unidad' => $afectaUnidad,
             'afecta_general' => $afectaGeneral,
             'estado' => $this->input('estado', 'ACTIVO'),

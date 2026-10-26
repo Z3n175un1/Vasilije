@@ -54,6 +54,9 @@ class ConfiguracionController extends Controller
             'valorFlota' => $this->config->numero('valor_flota_por_unidad', 0),
             'fuenteTipoCambio' => $this->config->fuenteTipoCambio(),
             'bcb' => $bcb,
+            'ultimoHistorico' => \Illuminate\Support\Facades\DB::table('global.tipo_cambio_historico')
+                ->orderByDesc('fecha')
+                ->first(['fecha', 'tipo_de_cambio']),
         ]);
     }
 
@@ -77,6 +80,33 @@ class ConfiguracionController extends Controller
         return response()->json(['success' => true, 'data' => $datos]);
     }
 
+    /**
+     * Valor que el sistema usaria para registrar un flete de la fecha que
+     * llega por query. La ruta form/edit lo usa para refrescar el campo
+     * readonly cuando el usuario cambia la fecha (fuente HISTORICO).
+     */
+    public function apiTipoCambioPorFecha(Request $request): JsonResponse
+    {
+        $validado = $request->validate([
+            'fecha' => ['nullable', 'date', 'before_or_equal:today'],
+        ]);
+
+        $fecha = $validado['fecha'] ?? null;
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'fecha_dia' => \Illuminate\Support\Carbon::parse(
+                    ($this->config->fuenteTipoCambio() === 'HISTORICO')
+                        ? app(\App\Services\HistoricoTipoCambio::class)->fechaParam($fecha)
+                        : ($fecha ?? now())
+                )->format('d/m/Y'),
+                'valor' => round($this->config->tipoCambioParaFecha($fecha), 2),
+                'fuente' => $this->config->fuenteTipoCambio(),
+            ],
+        ]);
+    }
+
     public function update(Request $request): RedirectResponse
     {
         $validado = $request->validate([
@@ -84,7 +114,7 @@ class ConfiguracionController extends Controller
             'precio_tonelada_usd' => ['required', 'numeric', 'gt:0', 'max:100000'],
             'valor_flota_por_unidad' => ['nullable', 'numeric', 'min:0', 'max:10000000'],
             'saldo_inicial_proveedores' => ['nullable', 'numeric', 'min:0', 'max:100000000'],
-            'fuente_tipo_cambio' => ['nullable', 'string', 'in:MANUAL,BCB'],
+            'fuente_tipo_cambio' => ['nullable', 'string', 'in:MANUAL,BCB,HISTORICO'],
         ]);
 
         $antes = $this->config->todo();

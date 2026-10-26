@@ -5,7 +5,7 @@
 @section('content')
 <div class="main-container w-full">
     @if($errors->any())
-        <div class="alert alert-danger font-bold mb-4" style="border:3px solid #000;border-radius:0;">
+        <div class="alert alert-danger font-bold mb-4" style="border:3px solid var(--line-strong);border-radius:0;">
             <i class="fas fa-exclamation-triangle me-2"></i> CORREGIR LOS ERRORES
             <ul class="mb-0 mt-2">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
         </div>
@@ -20,7 +20,7 @@
         </a>
     </header>
 
-    <div class="bento-card" style="border: 6px solid #000;">
+    <div class="bento-card" style="border:6px solid var(--line);">
         <form method="POST" action="{{ $item ? route('items.update', $item->id_inventario) : route('items.store') }}" class="form-bento">
             @csrf
             @if($item) @method('PUT') @endif

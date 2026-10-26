@@ -12,7 +12,7 @@
    "combustible, mantenimiento, viáticos..." de un vistazo.
    ========================================================= */
 .clas-tipo {
-    border: 4px solid #000;
+    border:4px solid var(--line);
     background: #fff;
     margin-bottom: 1.25rem;
     overflow: hidden;
@@ -24,7 +24,7 @@
     gap: 1rem;
     width: 100%;
     padding: 1rem 1.25rem;
-    background: #2f2c79;
+    background: var(--primary);
     color: #fff;
     border: none;
     cursor: pointer;
@@ -33,7 +33,7 @@
 
 .clas-tipo__cabecera:hover,
 .clas-tipo__cabecera:focus-visible {
-    background: #403c91;
+    background: var(--primary-light);
 }
 
 .clas-tipo__nombre {
@@ -46,8 +46,8 @@
 
 .clas-tipo__conteo {
     background: #fff;
-    color: #2f2c79;
-    border: 2px solid #000;
+    color: var(--primary);
+    border:2px solid var(--line-strong);
     border-radius: 999px;
     padding: 0.15rem 0.75rem;
     font-weight: 800;
@@ -73,11 +73,11 @@
    TABLA
    ========================================================= */
 .clas-table th {
-    background: #eef2ff;
-    color: #000;
+    background: var(--primary-soft);
+    color: var(--ink);
     font-weight: 800;
     padding: 10px;
-    border-bottom: 3px solid #000;
+    border-bottom:3px solid var(--line-strong);
     font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -86,7 +86,7 @@
 
 .clas-table td {
     padding: 10px;
-    border-bottom: 1px solid #d4d4d4;
+    border-bottom: 1px solid var(--line);
     font-weight: 600;
     vertical-align: middle;
 }
@@ -96,11 +96,11 @@
 }
 
 .clas-table tbody tr:hover {
-    background: #fff8e1;
+    background: var(--sun-soft);
 }
 
 .clas-codigo {
-    background: #000;
+    background: var(--primary);
     color: #fff;
     padding: 0.25rem 0.5rem;
     font-family: ui-monospace, monospace;
@@ -113,9 +113,9 @@
    INDICADORES DE ALCANCE
    ========================================================= */
 .scope-si {
-    background: #d4edda;
-    color: #155724;
-    border: 2px solid #000;
+    background: var(--mint);
+    color: var(--success);
+    border:2px solid var(--line-strong);
     font-weight: 800;
     padding: 3px 10px;
     display: inline-block;
@@ -123,9 +123,9 @@
 }
 
 .scope-no {
-    background: #f1f1f1;
-    color: #767676;
-    border: 2px dashed #b8b8b8;
+    background: var(--surface);
+    color: var(--muted);
+    border: 2px dashed var(--line);
     font-weight: 700;
     padding: 3px 10px;
     display: inline-block;
@@ -142,7 +142,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    border: 3px solid #000;
+    border:3px solid var(--line-strong);
     padding: 0.35rem 0.7rem;
     font-weight: 800;
     font-size: 0.78rem;
@@ -150,7 +150,7 @@
     white-space: nowrap;
     cursor: pointer;
     background: #fff;
-    color: #000;
+    color: var(--ink);
 }
 
 .clas-accion:hover,
@@ -159,16 +159,16 @@
 }
 
 .clas-accion--editar {
-    background: #ffc107;
+    background: var(--sun);
 }
 
 .clas-accion--quitar {
-    background: #dc3545;
+    background: var(--danger);
     color: #fff;
 }
 
 .clas-accion--agregar {
-    background: #007400;
+    background: var(--success);
     color: #fff;
 }
 
@@ -176,7 +176,7 @@
    INDICADORES Y FILTROS
    ========================================================= */
 .kpi {
-    border: 4px solid #000;
+    border:4px solid var(--line);
     padding: 1rem;
     text-align: center;
 }
@@ -186,13 +186,13 @@
     font-size: 0.78rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #000;
+    color: var(--ink);
     margin-bottom: 0.35rem;
 }
 
 .filter-card input,
 .filter-card select {
-    border: 3px solid #000;
+    border:3px solid var(--line-strong);
     border-radius: 0;
     font-weight: 700;
 }
@@ -217,7 +217,7 @@
         @can('administrar', 'clasificadores')
             <a href="{{ route('clasificadores.create') }}"
                class="btn-bento btn-bento-primary py-2 px-3 font-bold rounded-3 text-decoration-none d-inline-flex align-items-center gap-2"
-               style="border:3px solid #000;font-size:1rem;">
+               style="border:3px solid var(--line-strong);font-size:1rem;">
                 <i class="fas fa-plus"></i> NUEVO CLASIFICADOR
             </a>
         @endcan
@@ -230,27 +230,27 @@
 
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
-            <div class="kpi" style="background:#e2e3e5;">
+            <div class="kpi" style="background:var(--line);">
                 <div class="small fw-bold text-uppercase text-secondary">TOTAL</div>
                 <div class="fs-3 fw-bold" id="kpiTotal">{{ $resumen['total'] }}</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="kpi" style="background:#e2ffd6;">
+            <div class="kpi" style="background:var(--mint);">
                 <div class="small fw-bold text-uppercase text-secondary">AFECTA UNIDAD</div>
-                <div class="fs-3 fw-bold" style="color:#007400;" id="kpiUnidad">{{ $resumen['unidad'] }}</div>
+                <div class="fs-3 fw-bold" style="color:var(--success);" id="kpiUnidad">{{ $resumen['unidad'] }}</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="kpi" style="background:#fff3cd;">
+            <div class="kpi" style="background:var(--sun-soft);">
                 <div class="small fw-bold text-uppercase text-secondary">AFECTA GENERAL</div>
-                <div class="fs-3 fw-bold" style="color:#746700;" id="kpiGeneral">{{ $resumen['general'] }}</div>
+                <div class="fs-3 fw-bold" style="color:var(--ink);" id="kpiGeneral">{{ $resumen['general'] }}</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="kpi" style="background:#ffdcd6;">
+            <div class="kpi" style="background:var(--coral-soft);">
                 <div class="small fw-bold text-uppercase text-secondary">AMBOS</div>
-                <div class="fs-3 fw-bold" style="color:#740000;" id="kpiAmbos">{{ $resumen['ambos'] }}</div>
+                <div class="fs-3 fw-bold" style="color:var(--soft-danger);" id="kpiAmbos">{{ $resumen['ambos'] }}</div>
             </div>
         </div>
     </div>
@@ -260,7 +260,7 @@
          FILTROS
          ===================================================== --}}
 
-    <div class="filter-card mb-4 bg-white p-3" style="border:4px solid #000;">
+    <div class="filter-card mb-4 bg-white p-3" style="border:4px solid var(--line);">
         <div class="row g-3 align-items-end">
             <div class="col-12 col-lg-5">
                 <label for="filtroBusqueda">BÚSQUEDA</label>
@@ -291,19 +291,19 @@
 
             <div class="col-12 col-lg-2 d-flex gap-2">
                 <button type="button" class="btn fw-bold flex-grow-1" id="btnFiltrar"
-                        style="background:#2f2c79;color:#fff;border:3px solid #000;padding:10px;border-radius:0;">
+                        style="background:var(--primary);color:#fff;border:3px solid var(--line-strong);padding:10px;border-radius:999px;">
                     <i class="fas fa-filter me-1"></i> FILTRAR
                 </button>
 
                 <button type="button" class="btn fw-bold" id="btnLimpiar"
                         title="QUITAR FILTROS" aria-label="Quitar filtros"
-                        style="background:#fff;color:#000;border:3px solid #000;padding:10px 14px;border-radius:0;">
+                        style="background:#fff;color: var(--ink);border:3px solid var(--line-strong);padding:10px 14px;border-radius:999px;">
                     <i class="fas fa-rotate-left"></i>
                 </button>
             </div>
         </div>
 
-        <div class="small fw-bold mt-2" style="color:#2f2c79;">
+        <div class="small fw-bold mt-2" style="color:var(--primary);">
             Mostrando <span id="contadorVisibles">{{ count($clasificadores) }}</span>
             de {{ count($clasificadores) }} clasificadores
         </div>
@@ -311,20 +311,22 @@
 
 
     {{-- =====================================================
-         LISTA AGRUPADA POR TIPO
+         LISTA AGRUPADA POR GRUPO DE GASTOS
          ===================================================== --}}
 
-    <div id="tablaVacia" class="text-center py-5" style="display:none; border:4px solid #000;">
+    <div id="tablaVacia" class="text-center py-5" style="display:none; border:4px solid var(--line);">
         <i class="fas fa-magnifying-glass" style="font-size:56px; opacity:.2;"></i>
         <h3 class="mt-3 fw-bold">NO HAY CLASIFICADORES QUE COINCIDAN</h3>
         <p class="fw-bold mb-0" style="color:#666;">Pruebe con otro criterio de búsqueda.</p>
     </div>
 
     <div id="listaClasificadores">
-        @forelse($clasificadoresAgrupados as $tipo => $items)
+        @forelse($clasificadoresAgrupados as $grupo => $items)
 
             @php
-                $abierto = $loop->first || count($items) <= 4;
+                // Colapsados por defecto: el catalogo se abre por bloque al
+                // hacer click en la cabecera del grupo.
+                $abierto = false;
             @endphp
 
             <section class="clas-tipo" data-abierto="{{ $abierto ? '1' : '0' }}">
@@ -332,7 +334,7 @@
 
                     <i class="fas fa-chevron-down clas-tipo__flecha" aria-hidden="true"></i>
 
-                    <span class="clas-tipo__nombre">{{ $items[0]->tipo_gasto }}</span>
+                    <span class="clas-tipo__nombre">{{ $grupo }}</span>
 
                     <span class="clas-tipo__conteo">{{ count($items) }}</span>
                 </button>
@@ -406,7 +408,7 @@
             </section>
 
         @empty
-            <div class="text-center py-5" style="border:4px solid #000;">
+            <div class="text-center py-5" style="border:4px solid var(--line);">
                 <i class="fas fa-layer-group" style="font-size:56px; opacity:.2;"></i>
                 <h3 class="mt-3 fw-bold">EL CATÁLOGO ESTÁ VACÍO</h3>
             </div>
@@ -418,15 +420,15 @@
          NOTA DE ALCANCE
          ===================================================== --}}
 
-    <div class="mt-4 p-3" style="background:#eef2ff;border:3px solid #2f2c79;">
-        <div class="fw-bold text-uppercase mb-1" style="color:#2f2c79;">
+    <div class="mt-4 p-3" style="background:var(--primary-soft);border:3px solid var(--primary);">
+        <div class="fw-bold text-uppercase mb-1" style="color:var(--primary);">
             <i class="fas fa-circle-info me-1"></i> CÓMO FUNCIONA EL ALCANCE
         </div>
         <div class="small" style="line-height:1.6;">
             Al marcar <strong>AFECTA UNIDAD</strong>, el clasificador aparece en el formulario de
             <strong>GASTOS DE UNIDAD</strong>.
             Al marcar <strong>AFECTA GENERAL</strong>, aparece en
-            <strong>GASTOS GENERALES</strong>.
+            <strong>GASTOS</strong>.
             Puede tener ambos alcances. Un clasificador marcado en ninguno queda fuera de ambos formularios.
         </div>
     </div>
@@ -552,7 +554,7 @@ function eliminarClasificador(id, codigo) {
         showCancelButton: true,
         confirmButtonText: 'SÍ, QUITAR',
         cancelButtonText: 'CANCELAR',
-        confirmButtonColor: '#dc3545',
+        confirmButtonColor: '#d6336c',
     }).then(function (resultado) {
         if (!resultado.isConfirmed) return;
 

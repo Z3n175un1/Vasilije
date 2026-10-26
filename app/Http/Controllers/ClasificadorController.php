@@ -53,23 +53,20 @@ class ClasificadorController extends Controller
             'inactivos' => $clasificadores->where('estado', 'INACTIVO')->count(),
         ];
 
-        $porTipo = $clasificadores->groupBy(static fn ($c) => $c->tipo_gasto);
-
-        // `groupBy` respeta el orden en que llega la consulta, no el orden de
-        // los tipos canónicos. Se reordena para que Combustible siempre salga
-        // primero y el catálogo se lea siempre igual.
+        // Agrupacion por grupo de gastos (HU grupos). La consulta ya llega
+        // ordenada por descripcion; los bloques se ordenan por nombre de
+        // grupo y SIN GRUPO queda al final.
+        $porGrupo = $clasificadores->groupBy(static fn ($c) => $c->grupo_gasto ?? 'SIN GRUPO');
         $ordenados = [];
 
-        foreach (TipoGasto::cases() as $tipo) {
-            if ($porTipo->has($tipo->value)) {
-                $ordenados[$tipo->value] = $porTipo->get($tipo->value);
-            }
+        foreach ($porGrupo->sortBy(static fn ($i, $clave) => $clave, SORT_NATURAL | SORT_FLAG_CASE) as $clave => $items) {
+            $ordenados[$clave] = $items;
         }
 
-        // Cualquier tipo que no esté en el enum (datos históricos) se anexa al
-        // final en vez de desaparecer del catálogo.
-        foreach ($porTipo as $clave => $items) {
-            $ordenados[$clave] ??= $items;
+        if (isset($ordenados['SIN GRUPO'])) {
+            $sinGrupo = $ordenados['SIN GRUPO'];
+            unset($ordenados['SIN GRUPO']);
+            $ordenados['SIN GRUPO'] = $sinGrupo;
         }
 
         return view('clasificadores.index', [
@@ -85,6 +82,7 @@ class ClasificadorController extends Controller
         return view('clasificadores.form', [
             'clasificador' => null,
             'tipos' => TipoGasto::cases(),
+            'grupos' => $this->clasificadores->grupos(),
 
             // El código no se escribe: se muestra el que le tocará para que el
             // operador sepa de antemano qué se va a registrar.
@@ -103,6 +101,7 @@ class ClasificadorController extends Controller
         return view('clasificadores.form', [
             'clasificador' => $clasificador,
             'tipos' => TipoGasto::cases(),
+            'grupos' => $this->clasificadores->grupos(),
         ]);
     }
 
@@ -192,6 +191,7 @@ class ClasificadorController extends Controller
                 'descripcion' => $c->descripcion,
                 'tipo_gasto' => $c->tipo_gasto,
                 'tipo_label' => TipoGasto::tryFrom($c->tipo_gasto)?->label() ?? $c->tipo_gasto,
+                'grupo_gasto' => $c->grupo_gasto,
                 'afecta_unidad' => (bool) $c->afecta_unidad,
                 'afecta_general' => (bool) $c->afecta_general,
             ])->values(),

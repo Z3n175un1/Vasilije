@@ -43,7 +43,10 @@ class FacturacionController extends Controller
     {
         // El valor aparece en el modal de alta de flete (solo lectura) como
         // información del cambio con el que se van a registrar.
-        return view('facturacion.index', ['tipoCambioVigente' => $this->config->tipoCambioVigente()]);
+        return view('facturacion.index', [
+            'tipoCambioVigente' => $this->config->tipoCambioParaFecha(),
+            'fuenteTipoCambio' => $this->config->fuenteTipoCambio(),
+        ]);
     }
 
     public function create(): View
@@ -69,8 +72,10 @@ class FacturacionController extends Controller
 
             // Cada flete guarda el tipo de cambio con el que se registro:
             // sin esto el reporte no puede reproducir el monto en USD del
-            // dia. Si el formulario no lo manda, manda el vigente.
-            $datos['tipo_cambio'] ??= $this->config->tipoCambioVigente();
+            // dia. Si el formulario no lo manda, manda el vigente (con la
+            // fuente HISTORICO se usa el valor oficial de la fecha del
+            // flete, sabado/domingo resuelven al viernes).
+            $datos['tipo_cambio'] ??= $this->config->tipoCambioParaFecha($datos['fecha_ingreso'] ?? null);
 
             $datos['nro_documento'] = $this->documentos->siguiente('I');
             $datos['fecha_registro'] = now();
@@ -116,8 +121,8 @@ class FacturacionController extends Controller
         $datos = $request->datosNormalizados();
 
         // Misma regla que el alta: si el formulario no manda tipo de cambio,
-        // se queda el vigente de configuracion.
-        $datos['tipo_cambio'] ??= $this->config->tipoCambioVigente();
+        // se queda el vigente en la fecha del flete (fuente HISTORICO).
+        $datos['tipo_cambio'] ??= $this->config->tipoCambioParaFecha($datos['fecha_ingreso'] ?? null);
 
 // Inmutables: identidad del documento y estado de facturacion.
 // `id_tramo` NO va aqui: cambiar la ruta de un flete es una correccion
@@ -384,7 +389,8 @@ unset($datos['estado_factura'], $datos['nro_documento']);
                 ->get(),
             'tramos' => DB::table('global.tramos')->orderBy('origen')->get(),
             'config' => DB::table('global.configuracion')->pluck('valor', 'llave'),
-            'tipo_cambio_vigente' => $this->config->tipoCambioVigente(),
+            'tipo_cambio_vigente' => $this->config->tipoCambioParaFecha(),
+            'fuente_tipo_cambio' => $this->config->fuenteTipoCambio(),
         ];
     }
 }

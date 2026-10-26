@@ -63,7 +63,7 @@ function loadTramos() {
                 <td class="font-bold">${t.origen}</td>
                 <td class="font-bold">${t.destino}</td>
                 <td class="font-bold">${parseFloat(t.kilometros || 0).toFixed(2)}</td>
-                <td class="font-bold" style="color:#007400;">Bs. ${parseFloat(t.precio_total || 0).toFixed(2)}</td>
+                <td class="font-bold" style="color:var(--success);">Bs. ${parseFloat(t.precio_total || 0).toFixed(2)}</td>
                 <td class="font-bold">Bs. ${parseFloat(t.precio_dolar_tonelada || 0).toFixed(2)}</td>
                 <td class="font-bold">Bs. ${parseFloat(t.gasolina_promedio || 0).toFixed(2)}</td>
                 <td class="font-bold">Bs. ${parseFloat(t.diesel_promedio || 0).toFixed(2)}</td>
@@ -87,7 +87,7 @@ function eliminarTramo(id) {
         showCancelButton: true,
         confirmButtonText: 'SÍ, ELIMINAR',
         cancelButtonText: 'CANCELAR',
-        confirmButtonColor: '#dc3545',
+        confirmButtonColor: '#d6336c',
     }).then(result => {
         if (result.isConfirmed) {
             fetch('{{ url("tramos") }}/' + id, {

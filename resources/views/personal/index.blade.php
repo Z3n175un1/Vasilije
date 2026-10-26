@@ -62,10 +62,10 @@ function loadPersonal() {
             <tr>
                 <td class="font-bold text-start ps-3">${p.nombres || ''} ${p.apellidos || ''}</td>
                 <td class="font-bold">${p.ci || '—'}</td>
-                <td><span class="badge font-bold px-3 py-2" style="background:#2f2c79;color:#fff;border:2px solid #000;">${p.cargo || '—'}</span></td>
+                <td><span class="badge font-bold px-3 py-2" style="background:var(--primary);color:#fff;border:2px solid var(--line-strong);">${p.cargo || '—'}</span></td>
                 <td class="font-bold">${p.telefono || '—'}</td>
-                <td class="font-bold" style="color:#007400;">Bs. ${parseFloat(p.sueldo || 0).toFixed(2)}</td>
-                <td><span class="badge font-bold px-3 py-2" style="background:${p.estado == 1 ? '#e2ffd6' : '#ffdcd6'};color:${p.estado == 1 ? '#007400' : '#740000'};border:2px solid #000;">${p.estado == 1 ? 'ACTIVO' : 'INACTIVO'}</span></td>
+                <td class="font-bold" style="color:var(--success);">Bs. ${parseFloat(p.sueldo || 0).toFixed(2)}</td>
+                <td><span class="badge font-bold px-3 py-2" style="background:${p.estado == 1 ? 'var(--mint)' : 'var(--coral-soft)'};color:${p.estado == 1 ? 'var(--success)' : 'var(--soft-danger)'};border:2px solid var(--line-strong);">${p.estado == 1 ? 'ACTIVO' : 'INACTIVO'}</span></td>
                 <td>
                     <div class="d-flex gap-1 justify-content-center" style="flex-wrap:wrap;">
                         <button class="btn btn-sm btn-warning border-black font-bold" onclick="window.location.href='{{ url("personal") }}/${p.id_personal}/editar'" title="EDITAR"><i class="fas fa-edit"></i></button>
@@ -90,7 +90,7 @@ function eliminarPersonal(id) {
         showCancelButton: true,
         confirmButtonText: 'SÍ, ELIMINAR',
         cancelButtonText: 'CANCELAR',
-        confirmButtonColor: '#dc3545',
+        confirmButtonColor: '#d6336c',
     }).then(result => {
         if (result.isConfirmed) {
             fetch('{{ url("personal") }}/' + id, {

@@ -60,10 +60,10 @@ function loadItems() {
             <tr>
                 <td class="font-bold"><span class="badge bg-black text-white px-2">${p.codigo}</span></td>
                 <td class="font-bold">${p.nombre_producto}</td>
-                <td><span class="badge font-bold px-3 py-2" style="background:#2f2c79;color:#fff;border:2px solid #000;">${p.categoria}</span></td>
+                <td><span class="badge font-bold px-3 py-2" style="background:var(--primary);color:#fff;border:2px solid var(--line-strong);">${p.categoria}</span></td>
                 <td class="font-bold">${p.codigo_barras || '—'}</td>
                 <td class="font-bold">${p.unidad_medida}</td>
-                <td class="font-bold" style="color:#007400;">${parseFloat(p.stock_minimo || 0).toFixed(2)}</td>
+                <td class="font-bold" style="color:var(--success);">${parseFloat(p.stock_minimo || 0).toFixed(2)}</td>
                 <td>
                     <div class="d-flex gap-2 justify-content-center">
                         <button class="btn btn-sm btn-warning border-black font-bold" onclick="window.location.href='{{ url("items") }}/${p.id_inventario}/editar'" title="EDITAR"><i class="fas fa-edit"></i></button>
@@ -83,7 +83,7 @@ function eliminarItem(id) {
         showCancelButton: true,
         confirmButtonText: 'SÍ, DESACTIVAR',
         cancelButtonText: 'CANCELAR',
-        confirmButtonColor: '#dc3545',
+        confirmButtonColor: '#d6336c',
     }).then(result => {
         if (result.isConfirmed) {
             fetch('{{ url("items") }}/' + id, {

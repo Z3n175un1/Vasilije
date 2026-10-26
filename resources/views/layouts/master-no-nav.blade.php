@@ -13,6 +13,8 @@
         'resources/css/app.css',
         'resources/js/app.js'
     ])
+    <link rel="stylesheet" href="{{ asset('styles/app-vibrant.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/bento-shape.css') }}">
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     @stack('styles')
 </head>
