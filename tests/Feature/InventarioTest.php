@@ -288,8 +288,10 @@ class InventarioTest extends TestCase
     #[Test]
     public function eliminar_un_movimiento_revierte_el_stock(): void
     {
+        // Eliminar un movimiento revierte el stock y queda para el
+        // administrador: es un borrado de registro.
         $producto = $this->producto(10);
-        $usuario = $this->usuarioConRol('supervisor');
+        $usuario = $this->usuarioConRol('admin');
 
         $id = $this->actingAs($usuario)
             ->postJson('/api/almacen/movimientos', $this->compra($producto, 6))
@@ -436,14 +438,14 @@ class InventarioTest extends TestCase
         $admin = $this->usuarioConRol('admin');
         $vehiculo = $this->vehiculo();
         $banco = $this->banco();
-        $clasificador = $this->clasificadorDeUnidad('Peaje');
+        $grupo = $this->grupoDeGasto('Peaje');
 
         $numeros = [];
 
         for ($i = 0; $i < 12; $i++) {
             $this->actingAs($admin)->post('/gastos', [
                 'id_vehiculo' => $vehiculo,
-                'id_clasificador' => $clasificador,
+                'id_grupo_gasto' => $grupo,
                 'monto' => 10 + $i,
                 'fecha_gasto' => now()->format('Y-m-d'),
                 'concepto' => 'Gasto ' . $i,
@@ -463,11 +465,11 @@ class InventarioTest extends TestCase
         $admin = $this->usuarioConRol('admin');
         $vehiculo = $this->vehiculo();
         $banco = $this->banco();
-        $clasificador = $this->clasificadorDeUnidad('Peaje');
+        $grupo = $this->grupoDeGasto('Peaje');
 
         $alta = fn () => $this->actingAs($admin)->post('/gastos', [
             'id_vehiculo' => $vehiculo,
-            'id_clasificador' => $clasificador,
+            'id_grupo_gasto' => $grupo,
             'monto' => 20,
             'fecha_gasto' => now()->format('Y-m-d'),
             'concepto' => 'Gasto',

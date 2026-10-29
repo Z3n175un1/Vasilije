@@ -38,9 +38,38 @@ final class ModuloPolicy
         'clasificadores',
     ];
 
+    /**
+     * Lo UNICO que el rol lectura puede consultar:
+     *  - reportes (visualizar y descargar: PDF / imprimir),
+     *  - informacion del modulo de almacen,
+     *  - la portada (INICIO/documentos), para navegar y ver su perfil.
+     *
+     * Todo lo demas queda bloqueado a nivel de policy, no solo de menu.
+     *
+     * @var list<string>
+     */
+    private const SOLO_CONSULTA_LECTURA = [
+        'reportes',
+        'almacen',
+        'inventario',
+        'documentos',
+    ];
+
     public function ver(User $user, string $modulo): bool
     {
-        return $this->rol($user)->puedeVer();
+        $rol = $this->rol($user);
+
+        if (!$rol->puedeVer()) {
+            return false;
+        }
+
+        // Lectura consulta SOLO lo autorizado: cualquier otro modulo
+        // queda fuera incluso aunque la ruta no llevara middleware.
+        if ($rol === Rol::Lectura) {
+            return in_array($modulo, self::SOLO_CONSULTA_LECTURA, true);
+        }
+
+        return true;
     }
 
     public function crear(User $user, string $modulo): bool

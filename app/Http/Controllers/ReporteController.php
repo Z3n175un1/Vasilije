@@ -219,6 +219,7 @@ class ReporteController extends Controller
         $query = DB::table('global.gastos as g')
             ->leftJoin('global.vehiculos as v', 'g.id_vehiculo', '=', 'v.id_vehiculo')
             ->leftJoin('global.proveedores as p', 'g.id_proveedor', '=', 'p.id_proveedor')
+            ->leftJoin('global.grupos_gastos as ggr', 'g.id_grupo_gasto', '=', 'ggr.id_grupo_gasto')
             ->leftJoin('global.clasificador_gastos as c', 'g.id_clasificador', '=', 'c.id_clasificador')
             ->whereBetween('g.fecha_gasto', [$desde, $hasta])
             ->select(
@@ -232,7 +233,7 @@ class ReporteController extends Controller
                 DB::raw("COALESCE(v.placa_vehiculo, 'SIN UNIDAD') as placa_vehiculo"),
                 'g.id_vehiculo',
                 'g.tipo_gasto',
-                DB::raw("COALESCE(c.descripcion, g.tipo_gasto) as tipo_gasto_descripcion"),
+                DB::raw("COALESCE(ggr.nombre, c.descripcion, g.tipo_gasto) as tipo_gasto_descripcion"),
                 'g.cantidad',
                 'g.kilometraje',
                 'g.nro_documento',

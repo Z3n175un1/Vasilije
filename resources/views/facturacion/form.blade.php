@@ -62,16 +62,15 @@
                 </div>
             </div>
 
-            <!-- ROW 2: RUTA -->
+            <!-- ROW 2: RUTA | TIPO DE CAMBIO DE TRABAJO -->
             <div class="row g-4 mb-4">
-                <div class="col-12">
+                <div class="col-md-8">
                     <div class="form-group mb-0">
                         <label>RUTA</label>
 
                         {{-- El `name` es lo que hace que el tramo viaje al
                              servidor. Sin el, el select se ve y funciona pero
-                             no envia nada: por eso origen/destino no
-                             reaparecian al registrar el siguiente flete. --}}
+                             no envia nada. --}}
                         <select name="id_tramo" id="form_id_tramo" onchange="seleccionarRutaForm(this)">
                             <option value="">SELECCIONE RUTA...</option>
 
@@ -82,7 +81,7 @@
                                         data-km="{{ $t->kilometros }}"
                                         data-precio-ton="{{ $t->precio_dolar_tonelada }}"
                                         {{ (string) old('id_tramo', $ingreso->id_tramo ?? '') === (string) $t->id_tramo ? 'selected' : '' }}>
-                                    {{ $t->origen }} → {{ $t->destino }} (Bs. {{ $t->precio_total }})
+                                    {{ $t->origen }} → {{ $t->destino }}
                                 </option>
                             @endforeach
                         </select>
@@ -98,46 +97,54 @@
                         </button>
 
                         <small class="d-block mt-2 fw-bold" style="color:#666;">
-                            Al elegir la ruta se completan origen, destino, kilómetros y Bs/TON.
-                            El monto siempre es toneladas &times; Bs/TON.
+                            Al elegir la ruta se completan kilómetros y la TARIFA (US$/TON).
+                            El monto en US$ es toneladas &times; US$/TON; el monto en Bs sale al TC de trabajo.
+                        </small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-0">
+                        <label>TIPO DE CAMBIO DE TRABAJO (Bs/USD)</label>
+                        <input type="number" step="0.01" name="tipo_cambio" id="form_tipo_cambio"
+                               value="{{ old('tipo_cambio', $ingreso->tipo_cambio ?? $tipo_cambio_vigente) }}"
+                               min="0" placeholder="6.96" readonly
+                               style="background:var(--primary-soft)!important;cursor:not-allowed;">
+                        <small class="d-block mt-2 fw-bold" style="color:#666;">
+                            Automático por la FECHA del flete: 6,96 hasta el 30/09/2025;
+                            después, el oficial BCB de esa fecha.
                         </small>
                     </div>
                 </div>
             </div>
 
-            <!-- ROW 3: ORIGEN | DESTINO -->
+            <!-- ROW 3: KILOMETROS | TARIFA US$/TON | TARIFA Bs/TON -->
             <div class="row g-4 mb-4">
-                <div class="col-md-6">
-                    <div class="form-group mb-0">
-                        <label>ORIGEN</label>
-                        <input type="text" name="origen" id="form_origen" value="{{ old('origen', $ingreso->origen ?? '') }}" placeholder="Ciudad de origen" readonly style="background:var(--primary-soft)!important;cursor:not-allowed;">
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group mb-0">
-                        <label>DESTINO</label>
-                        <input type="text" name="destino" id="form_destino" value="{{ old('destino', $ingreso->destino ?? '') }}" placeholder="Ciudad de destino" readonly style="background:var(--primary-soft)!important;cursor:not-allowed;">
-                    </div>
-                </div>
-            </div>
-
-            <!-- ROW 4: KILOMETROS | BS X TON -->
-            <div class="row g-4 mb-4">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="form-group mb-0">
                         <label>KILÓMETROS</label>
                         <input type="number" step="0.01" name="kilometraje_conducido" id="form_kilometraje" value="{{ old('kilometraje_conducido', $ingreso->kilometraje_conducido ?? '0') }}" min="0" placeholder="0.00">
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="form-group mb-0">
-                        <label>BS X TON</label>
-                        <input type="number" step="0.01" name="precio_tonelada_bs" id="form_precio_ton" value="{{ old('precio_tonelada_bs', '') }}" min="0" placeholder="Bs por tonelada">
+                        <label>TARIFA (US$/TON)</label>
+                        <input type="number" step="0.01" name="precio_tonelada_usd" id="form_precio_ton" value="{{ old('precio_tonelada_usd', '') }}" min="0" placeholder="US$ por tonelada">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-0">
+                        <label>TARIFA (Bs/TON)</label>
+                        <input type="number" step="0.01" name="precio_tonelada_bs" id="form_precio_ton_bs"
+                               value="{{ old('precio_tonelada_bs', '') }}" min="0" placeholder="0.00" readonly
+                               style="background:var(--primary-soft)!important;cursor:not-allowed;">
+                        <small class="d-block mt-2 fw-bold" style="color:#666;">
+                            = US$/TON &times; TC de trabajo
+                        </small>
                     </div>
                 </div>
             </div>
 
-            <!-- ROW 5: TONELADAS | MONTO -->
+            <!-- ROW 5: TONELADAS | MONTO US$ -->
             <div class="row g-4 mb-4">
                 <div class="col-md-6">
                     <div class="form-group mb-0">
@@ -147,22 +154,24 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group mb-0">
-                        <label>MONTO (Bs) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="monto" id="form_monto" value="{{ old('monto', $ingreso->monto ?? '0') }}" required min="0" placeholder="0.00" readonly style="background:var(--primary-soft)!important;cursor:not-allowed;">
+                        <label>MONTO (US$) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" name="monto_usd" id="form_monto_usd"
+                               value="{{ old('monto_usd', $ingreso->monto_usd ?? '') }}"
+                               required min="0" placeholder="0.00">
+                        <small class="d-block mt-2 text-black-50">
+                            Obligatorio: toneladas &times; US$/TON. Es lo que se factura al TC de trabajo.
+                        </small>
                     </div>
                 </div>
             </div>
 
-            <!-- ROW 6: TIPO DE CAMBIO -->
+            <!-- ROW 6: MONTO Bs -->
             <div class="row g-4 mb-4">
                 <div class="col-md-6">
                     <div class="form-group mb-0">
-                        <label>TIPO DE CAMBIO (Bs/USD)</label>
-                        <input type="number" step="0.01" name="tipo_cambio" id="form_tipo_cambio"
-                               value="{{ old('tipo_cambio', $ingreso->tipo_cambio ?? $tipo_cambio_vigente) }}"
-                               min="0" placeholder="6.96" readonly
-                               style="background:var(--primary-soft)!important;cursor:not-allowed;">
-                        <small class="d-block mt-1 fw-bold text-muted">Se guarda el cambio con el que se facturó el flete</small>
+                        <label>MONTO (Bs)</label>
+                        <input type="number" step="0.01" name="monto" id="form_monto" value="{{ old('monto', $ingreso->monto ?? '0') }}" required min="0" placeholder="0.00" readonly style="background:var(--primary-soft)!important;cursor:not-allowed;">
+                        <small class="d-block mt-1 fw-bold text-muted">= Monto US$ &times; TC de trabajo (automatico)</small>
                     </div>
                 </div>
             </div>
@@ -241,8 +250,6 @@
  */
 function seleccionarRutaForm(select) {
     const opt = select.options[select.selectedIndex];
-    const origen = document.getElementById('form_origen');
-    const destino = document.getElementById('form_destino');
     const kilometros = document.getElementById('form_kilometraje');
     const precioTon = document.getElementById('form_precio_ton');
     const toneladas = document.getElementById('form_toneladas');
@@ -250,8 +257,6 @@ function seleccionarRutaForm(select) {
     // Volver a "SELECCIONE RUTA..." limpia los campos: si no, el operador
     // ve una ruta en el select y los datos de otra en los campos de abajo.
     if (!opt || !opt.value) {
-        origen.value = '';
-        destino.value = '';
         kilometros.value = '0';
         precioTon.value = '';
 
@@ -260,8 +265,6 @@ function seleccionarRutaForm(select) {
         return;
     }
 
-    origen.value = opt.dataset.origen || '';
-    destino.value = opt.dataset.destino || '';
     kilometros.value = opt.dataset.km || '0';
 
     const precio = parseFloat(opt.dataset.precioTon) || 0;
@@ -278,7 +281,8 @@ function seleccionarRutaForm(select) {
 }
 
 /**
- * Calcula MONTO = TONELADAS x BS/TON.
+ * Calcula MONTO (US$) = TONELADAS x TARIFA (US$/TON) y, a partir de ese,
+ * MONTO (Bs) = US$ x TC DE TRABAJO.
  *
  * Antes solo recalculaba si ambas eran mayores a cero. Con las toneladas en
  * blanco el monto se quedaba con el valor de la carga anterior, que es lo
@@ -286,32 +290,77 @@ function seleccionarRutaForm(select) {
  */
 function recalcularMonto() {
     const toneladas = parseFloat(document.getElementById('form_toneladas').value) || 0;
-    const precioTon = parseFloat(document.getElementById('form_precio_ton').value) || 0;
-    const monto = document.getElementById('form_monto');
+    const tarifaUsd = parseFloat(document.getElementById('form_precio_ton').value) || 0;
+    const tc = parseFloat(document.getElementById('form_tipo_cambio').value) || 0;
 
-    if (toneladas > 0 && precioTon > 0) {
-        monto.value = (toneladas * precioTon).toFixed(2);
+    const montoUsd = document.getElementById('form_monto_usd');
+    const montoBs = document.getElementById('form_monto');
+    const precioBs = document.getElementById('form_precio_ton_bs');
 
+    if (toneladas > 0 && tarifaUsd > 0) {
+        montoUsd.value = (toneladas * tarifaUsd).toFixed(2);
+    } else {
+        // Sin datos suficientes el monto se pone en cero en vez de conservar
+        // un valor que ya no corresponde a lo que hay en pantalla.
+        montoUsd.value = '0.00';
+    }
+
+    montoBs.value = ((parseFloat(montoUsd.value) || 0) * tc).toFixed(2);
+
+    // La tarifa en Bs/TON viaja al TC con el que se esta trabajando: si no
+    // hay TC todavia (fecha sin registro), queda en cero, no en vacio.
+    if (precioBs) {
+        precioBs.value = (tarifaUsd * tc).toFixed(2);
+    }
+}
+
+/**
+ * El TC de trabajo es automatico por FECHA del flete: 6,96 hasta el
+ * 30/09/2025 y despues el oficial BCB de esa fecha. Al cambiar el campo
+ * FECHA se pide el valor al endpoint interno y se recalcula el BS.
+ */
+function actualizarTipoCambio() {
+    const fecha = document.querySelector('input[name="fecha_ingreso"]')?.value;
+
+    if (!fecha) {
         return;
     }
 
-    // Sin datos suficientes el monto se pone en cero en vez de conservar un
-    // valor que ya no corresponde a lo que hay en pantalla.
-    monto.value = '0.00';
+    fetch('{{ url("api/tipo-cambio-para-fecha") }}?fecha=' + fecha, {
+        headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (!res.success || !res.data) return;
+        const tc = parseFloat(res.data.valor) || 0;
+        if (tc > 0) {
+            document.getElementById('form_tipo_cambio').value = tc.toFixed(2);
+            // Recalcula monto US$, monto Bs y la TARIFA Bs/TON al nuevo TC.
+            recalcularMonto();
+        }
+    })
+    .catch(() => { /* sin historico disponible se queda el valor actual */ });
 }
 
 document.addEventListener('input', function (e) {
-    if (e.target.id === 'form_toneladas' || e.target.id === 'form_precio_ton') {
+    if (['form_toneladas', 'form_precio_ton'].includes(e.target.id)) {
         recalcularMonto();
     }
 });
 
+document.addEventListener('change', function (e) {
+    if (e.target.name === 'fecha_ingreso') {
+        actualizarTipoCambio();
+    }
+});
+
 // Al editar un flete, la ruta ya viene seleccionada desde el servidor: hay
-// que aplicar sus datos para que origen, destino y Bs/TON no queden vacios.
+// que aplicar sus datos para que kilometros y TARIFA US$/TON no queden vacios.
 document.addEventListener('DOMContentLoaded', function () {
     const select = document.getElementById('form_id_tramo');
 
     if (!select || !select.value) {
+        recalcularMonto();
         return;
     }
 

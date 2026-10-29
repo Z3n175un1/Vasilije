@@ -23,7 +23,9 @@ class TramoController extends Controller
 
     public function index(): View
     {
-        return view('tramos.index');
+        return view('tramos.index', [
+            'tipoCambio' => $this->config->tipoCambio(),
+        ]);
     }
 
     public function create(): View

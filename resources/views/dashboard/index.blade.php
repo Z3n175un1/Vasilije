@@ -210,7 +210,7 @@
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
-                    <div class="col-12">
+                    <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">RUTA</label>
                         <select class="form-control fw-bold" id="fd_id_tramo" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;" onchange="seleccionarRuta(this)">
                             <option value="">SELECCIONE RUTA...</option>
@@ -219,37 +219,41 @@
                             <i class="fas fa-rotate-right me-1"></i> APLICAR RUTA
                         </button>
                     </div>
-                </div>
-                <div class="row g-3 mb-3">
                     <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">ORIGEN</label>
-                        <input type="text" class="form-control fw-bold" id="fd_origen" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;background:var(--primary-soft)!important;cursor:not-allowed;" placeholder="Ciudad origen" readonly>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">DESTINO</label>
-                        <input type="text" class="form-control fw-bold" id="fd_destino" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;background:var(--primary-soft)!important;cursor:not-allowed;" placeholder="Ciudad destino" readonly>
+                        <label class="fw-bold small text-uppercase">TIPO DE CAMBIO (Bs/USD)</label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_tipo_cambio" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;background:var(--primary-soft)!important;cursor:not-allowed;" min="0" placeholder="6.96" readonly value="{{ $tipoCambioVigente ?? '' }}">
+                        <small class="d-block mt-1 fw-bold" style="color:#666;font-size:0.7rem;">
+                            Automático por la FECHA del flete
+                        </small>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
-                    <div class="col-md-12">
-                        <label class="fw-bold small text-uppercase">BS X TON</label>
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">TARIFA (US$/TON)</label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_precio_ton_usd" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;background:var(--primary-soft)!important;cursor:not-allowed;" min="0" placeholder="US$ por tonelada" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">TARIFA (Bs/TON)</label>
                         <input type="number" step="0.01" class="form-control fw-bold" id="fd_precio_ton" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;background:var(--primary-soft)!important;cursor:not-allowed;" min="0" placeholder="Bs por tonelada" readonly>
+                        <small class="d-block mt-1 fw-bold" style="color:#666;font-size:0.7rem;">
+                            = US$/TON &times; TC de trabajo
+                        </small>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="fw-bold small text-uppercase" style="font-size:0.9rem;">TONELADAS</label>
                         <input type="number" step="0.01" class="form-control fw-bold" id="fd_toneladas" style="border-radius:10px;border:3px solid var(--line-strong);padding:12px;font-size:1.1rem;" min="0" value="0">
                     </div>
-                    <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase" style="font-size:0.9rem;">MONTO (Bs) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_monto" style="border-radius:10px;border:3px solid var(--line-strong);padding:12px;background:var(--primary-soft)!important;cursor:not-allowed;font-size:1.1rem;" required min="0" placeholder="0.00" readonly>
+                    <div class="col-md-4">
+                        <label class="fw-bold small text-uppercase" style="font-size:0.9rem;">MONTO (US$) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_monto_usd" style="border-radius:10px;border:3px solid var(--line-strong);padding:12px;background:var(--primary-soft)!important;cursor:not-allowed;font-size:1.1rem;" required min="0" placeholder="0.00" readonly>
+                        <small class="d-block mt-1 fw-bold" style="color:#666;font-size:0.7rem;">= TONELADAS &times; US$/TON</small>
                     </div>
-                </div>
-                <div class="row g-3 mb-3">
-                    <div class="col-12">
-                        <label class="fw-bold small text-uppercase" style="font-size:0.9rem;">TIPO DE CAMBIO (Bs/USD)</label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_tipo_cambio" style="border-radius:10px;border:3px solid var(--line-strong);padding:12px;background:var(--primary-soft)!important;cursor:not-allowed;font-size:1.1rem;" min="0" placeholder="6.96" readonly value="{{ $tipoCambioVigente ?? '' }}">
+                    <div class="col-md-4">
+                        <label class="fw-bold small text-uppercase" style="font-size:0.9rem;">MONTO (Bs)</label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="fd_monto" style="border-radius:10px;border:3px solid var(--line-strong);padding:12px;background:var(--primary-soft)!important;cursor:not-allowed;font-size:1.1rem;" required min="0" placeholder="0.00" readonly>
+                        <small class="d-block mt-1 fw-bold" style="color:#666;font-size:0.7rem;">= US$ &times; TC de trabajo</small>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
@@ -441,7 +445,7 @@ function loadTramos() {
             // Sin ellos el select mostraba la ruta pero ORIGEN y DESTINO
             // seguian en su placeholder.
             sel.innerHTML = '<option value="">SELECCIONE RUTA...</option>' +
-                tramos.map(t => `<option value="${t.id_tramo}" data-origen="${window.esc(t.origen || '')}" data-destino="${window.esc(t.destino || '')}" data-precio-ton="${t.precio_dolar_tonelada || 0}" data-km="${t.kilometros || 0}">${window.esc(t.origen || '')} → ${window.esc(t.destino || '')} (Bs. ${t.precio_total})</option>`).join('');
+                tramos.map(t => `<option value="${t.id_tramo}" data-origen="${window.esc(t.origen || '')}" data-destino="${window.esc(t.destino || '')}" data-precio-ton="${t.precio_dolar_tonelada || 0}" data-km="${t.kilometros || 0}">${window.esc(t.origen || '')} → ${window.esc(t.destino || '')}</option>`).join('');
 
             // El modal puede haberse abierto antes de que volviera el fetch.
             // Si ya hay una ruta elegida, se aplica para no dejarla a medias.
@@ -458,57 +462,59 @@ function loadTramos() {
  */
 function seleccionarRuta(select) {
     const opt = select.options[select.selectedIndex];
-    const origen = document.getElementById('fd_origen');
-    const destino = document.getElementById('fd_destino');
-    const precioTon = document.getElementById('fd_precio_ton');
+    const precioTon = document.getElementById('fd_precio_ton_usd');
 
     // Volver a "SELECCIONE RUTA..." limpia: si no, el select muestra una
     // ruta y los campos de abajo los datos de otra.
     if (!opt || !opt.value) {
-        origen.value = '';
-        destino.value = '';
         precioTon.value = '';
         recalcularMontoDash();
         return;
     }
 
-    origen.value = opt.dataset.origen || '';
-    destino.value = opt.dataset.destino || '';
-
     const precio = parseFloat(opt.dataset.precioTon) || 0;
     precioTon.value = precio ? precio.toFixed(2) : '';
 
     // Las toneladas no se tocan: son del flete, no de la ruta. Se recalcula
-    // el monto para que se vea el efecto del nuevo Bs/TON sobre lo escrito.
+    // el monto para que se vea el efecto del nuevo US$/TON sobre lo escrito.
     recalcularMontoDash();
 }
 
 /**
- * MONTO = TONELADAS x BS/TON.
+ * MONTO (US$) = TONELADAS x TARIFA (US$/TON), MONTO (Bs) = US$ x TC de
+ * trabajo y TARIFA (Bs/TON) = US$/TON x TC de trabajo.
  *
  * Antes solo recalculaba con toneladas > 0 y sin salida: cuando el modal se
  * abria restaurando el `localStorage`, el monto conservaba el valor de la
- * carga anterior en vez de tonnes x Bs/TON de esta.
+ * carga anterior en vez de toneladas x US$/TON de esta.
  */
 function recalcularMontoDash() {
     const ton = parseFloat(document.getElementById('fd_toneladas').value) || 0;
-    const precioTon = parseFloat(document.getElementById('fd_precio_ton').value) || 0;
+    const precioTon = parseFloat(document.getElementById('fd_precio_ton_usd').value) || 0;
+    const tc = parseFloat(document.getElementById('fd_tipo_cambio').value) || 0;
+
+    const montoUsd = document.getElementById('fd_monto_usd');
     const monto = document.getElementById('fd_monto');
+    const precioBs = document.getElementById('fd_precio_ton');
 
     if (ton > 0 && precioTon > 0) {
-        monto.value = (ton * precioTon).toFixed(2);
-        return;
+        montoUsd.value = (ton * precioTon).toFixed(2);
+    } else {
+        // Sin datos suficientes el total va a 0, no un numero viejo.
+        montoUsd.value = '0';
     }
 
-    // Sin datos suficientes el total va a 0, no un numero viejo.
-    monto.value = '0';
+    monto.value = ((parseFloat(montoUsd.value) || 0) * tc).toFixed(2);
+
+    // La tarifa en Bs/TON viaja al TC con el que se esta trabajando.
+    precioBs.value = (precioTon * tc).toFixed(2);
 }
 
 document.addEventListener('input', function(e) {
     if (e.target.id && e.target.id.startsWith('fd_')) {
         // El monto es derivado (toneladas x Bs/TON): guardarlo y restaurarlo
         // hacia que el modal abriera con el total de la carga anterior.
-        const derivados = ['fd_monto', 'fd_origen', 'fd_destino', 'fd_precio_ton'];
+        const derivados = ['fd_monto', 'fd_monto_usd', 'fd_precio_ton'];
 
         if (!derivados.includes(e.target.id)) {
             const savedValues = JSON.parse(localStorage.getItem('fleteValues') || '{}');
@@ -516,7 +522,7 @@ document.addEventListener('input', function(e) {
             localStorage.setItem('fleteValues', JSON.stringify(savedValues));
         }
     }
-    if (e.target.id === 'fd_toneladas' || e.target.id === 'fd_precio_ton') {
+    if (e.target.id === 'fd_toneladas' || e.target.id === 'fd_precio_ton_usd') {
         recalcularMontoDash();
     }
 });
@@ -666,20 +672,16 @@ function prepararIngreso(id) {
     document.getElementById('fd_id_tramo').value = savedValues.fd_id_tramo || '';
     document.getElementById('fd_cliente_nombre').value = savedValues.fd_cliente_nombre || 'INDUSTRIAS OLEAGINOSAS S.A.';
     document.getElementById('fd_toneladas').value = savedValues.fd_toneladas || '0';
-    document.getElementById('fd_precio_ton').value = savedValues.fd_precio_ton || '';
     document.getElementById('fd_concepto').value = savedValues.fd_concepto || 'TRANSPORTE DE SOYA';
     document.getElementById('fd_fecha_ingreso').value = savedValues.fd_fecha_ingreso || new Date().toISOString().split('T')[0];
 
-    // Origen, destino y monto NO se restauran: se derivan de la ruta y de las
+    // Ruta, tarifas y montos NO se restauran: se derivan de la ruta y de las
     // toneladas. Restaurarlos directo era el bug: el modal abria mostrando
     // el total del flete anterior y el operador enviaba el guardado sin
     // tocar nada.
     const selTramo = document.getElementById('fd_id_tramo');
     if (selTramo.value) {
         seleccionarRuta(selTramo);
-    } else {
-        document.getElementById('fd_origen').value = '';
-        document.getElementById('fd_destino').value = '';
     }
 
     // Siempre al final: el monto se recalcula desde toneladas x Bs/TON, nunca
@@ -712,9 +714,8 @@ function guardarFleteDash(event) {
         id_tramo: document.getElementById('fd_id_tramo').value || null,
         cliente_nombre: document.getElementById('fd_cliente_nombre').value,
         monto: document.getElementById('fd_monto').value,
+        monto_usd: document.getElementById('fd_monto_usd').value,
         tipo_cambio: document.getElementById('fd_tipo_cambio').value || null,
-        origen: document.getElementById('fd_origen').value,
-        destino: document.getElementById('fd_destino').value,
         toneladas: document.getElementById('fd_toneladas').value || 0,
         concepto: document.getElementById('fd_concepto').value,
         fecha_ingreso: document.getElementById('fd_fecha_ingreso').value,

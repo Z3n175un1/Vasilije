@@ -14,11 +14,13 @@ use Tests\TestCase;
 /**
  * TIPO DE CAMBIO OFICIAL (BCB) EN CONFIGURACION.
  *
- * El usuario construyo una API (app/Http/Api/api.py) que saca el cambio al
- * dia del Banco Central de Bolivia. La version en PHP vive en BcbService y
- * config extra:
- *  a. Digitar el monto con el cual se registran los fletes (MANUAL).
- *  b. Usar el monto oficial al tipo de cambio (BCB).
+ * La version en PHP vive en BcbService y config extra:
+ *  a. Usar el monto oficial al tipo de cambio (BCB) para el dia de hoy.
+ *  b. Usar el registro oficial guardado por fecha de flete (HISTORICO).
+ *
+ * La opcion MANUAL (digitar el valor a mano) se retiro de la pantalla:
+ * causaba errores de digitacion. El campo tipo_cambio queda bloqueado y
+ * solo sirve como respaldo si el BCB no responde.
  */
 class TipoCambioBcbTest extends TestCase
 {
@@ -52,12 +54,12 @@ class TipoCambioBcbTest extends TestCase
     }
 
     #[Test]
-    public function por_defecto_la_fuente_es_manual_y_manda_el_valor_digitado(): void
+    public function por_defecto_la_fuente_es_historico_y_el_manual_queda_como_respaldo(): void
     {
         $config = new ConfiguracionService();
 
-        $this->assertSame('MANUAL', $config->fuenteTipoCambio());
-        $this->assertSame(6.96, $config->tipoCambioVigente());
+        $this->assertSame('HISTORICO', $config->fuenteTipoCambio());
+        $this->assertSame(6.96, $config->tipoCambio());
     }
 
     /** Deja la fuente conicia en BCB (como lo haria el administrador via web). */
@@ -159,11 +161,36 @@ class TipoCambioBcbTest extends TestCase
     }
 
     #[Test]
-    public function la_vista_de_configuracion_ofrece_las_dos_opciones_pedidas(): void
+    public function la_vista_de_configuracion_ofrece_las_opciones_sin_la_manual(): void
     {
         $this->actingAs($this->usuarioConRol('admin'))->get('/configuracion')->assertOk()
-            ->assertSee('Ingresarlo manualmente')
+            // La opcion de digitar el valor a mano fue retirada: es la puerta
+            // a errores de capa 8 (el operador sobrescribia el TC judicial).
+            ->assertDontSee('Ingresarlo manualmente')
+            ->assertSee('Usar el valor oficial de hoy')
             ->assertSee('Usar el valor oficial del')
             ->assertSee('api/tipo-cambio-bcb');
+    }
+
+    #[Test]
+    public function el_panel_del_valor_oficial_de_hoy_solo_aparece_con_la_fuente_bcb(): void
+    {
+        // Con HISTORICO el operador consulta un dia concreto: mostrar el
+        // valor de HOY arriba confunde (la fecha del flete es la que manda).
+        $this->fuenteEnHistorico();
+
+        $html = $this->actingAs($this->usuarioConRol('admin'))->get('/configuracion')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('/<div id="bcb-box" class="cfg-bcb ?">/', $html);
+        $this->assertMatchesRegularExpression('/<div id="hist-consulta" class="cfg-hist is-visible">/', $html);
+    }
+
+    /** Deja la fuente fija en HISTORICO (como el administrador via web). */
+    private function fuenteEnHistorico(): void
+    {
+        $llave = ConfiguracionService::FUENTE_TIPO_CAMBIO;
+        DB::table('global.configuracion')->insert([
+            'llave' => $llave, 'valor' => 'HISTORICO', 'descripcion' => $llave, 'created_at' => now(),
+        ]);
     }
 }

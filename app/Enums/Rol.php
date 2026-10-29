@@ -7,11 +7,17 @@ namespace App\Enums;
 /**
  * Roles del sistema. Refleja el CHECK constraint usuarios_rol_check.
  *
- * Jerarquia de permisos:
- *   admin      -> control total (incluye Usuarios + Configuracion)
- *   supervisor -> opera todos los modulos + aprueba anulaciones
- *   operador   -> registra operacion diaria, no borra ni cambia configuracion
- *   lectura    -> solo consulta
+ * Matriz de permisos (App\Policies\ModuloPolicy + modulosDeLectura()):
+ *
+ *                  ver        crear  editar  eliminar  anular  administrar
+ *   admin          todo         si     si       si       si        si
+ *   supervisor     todo         si     si       no       si        no
+ *   operador       todo         si     si       no       no        no
+ *   lectura        limitada     no     no       no       no        no
+ *
+ * El ver de lectura queda restringido (ModuloPolicy::SOLO_CONSULTA):
+ * reportes (visualizar y descargar), informacion de almacen y la
+ * portada/perfil. Nigun otro modulo.
  */
 enum Rol: string
 {
@@ -62,10 +68,13 @@ enum Rol: string
         return in_array($this, [self::Admin, self::Supervisor, self::Operador], true);
     }
 
-    /** Puede eliminar / anular registros de forma definitiva. */
+    /** Puede eliminar registros de forma definitiva (baja de maestros). */
     public function puedeEliminar(): bool
     {
-        return in_array($this, [self::Admin, self::Supervisor], true);
+        // SOLO administrador: un borrado asienta en el ledger y es una
+        // decision contable final. El supervisor revisa y aprueba
+        // (anular/emitir baja de operacion), pero no elimina registros.
+        return $this === self::Admin;
     }
 
     /** Solo admin: usuarios, configuracion financiera y clasificador maestro. */

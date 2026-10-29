@@ -46,10 +46,10 @@
                         <label>ROL <span class="text-danger">*</span></label>
                         <select name="rol" required>
                             <option value="">SELECCIONAR...</option>
-                            <option value="admin" {{ old('rol', $user->rol ?? '') == 'admin' ? 'selected' : '' }}>ADMIN</option>
-                            <option value="supervisor" {{ old('rol', $user->rol ?? '') == 'supervisor' ? 'selected' : '' }}>SUPERVISOR (gestiona personal, almacén, reportes)</option>
-                            <option value="operador" {{ old('rol', $user->rol ?? '') == 'operador' ? 'selected' : '' }}>OPERADOR (registra gastos, facturación)</option>
-                            <option value="lectura" {{ old('rol', $user->rol ?? '') == 'lectura' ? 'selected' : '' }}>LECTURA (solo visualizar)</option>
+                            <option value="admin" {{ old('rol', $user->rol ?? '') == 'admin' ? 'selected' : '' }}>ADMIN (acceso total: altas, bajas, cambios y permisos de usuarios)</option>
+                            <option value="supervisor" {{ old('rol', $user->rol ?? '') == 'supervisor' ? 'selected' : '' }}>SUPERVISOR (consulta, modifica y aprueba operaciones; sin eliminar registros)</option>
+                            <option value="operador" {{ old('rol', $user->rol ?? '') == 'operador' ? 'selected' : '' }}>OPERADOR (consulta y registra operaciones de su área; sin eliminar)</option>
+                            <option value="lectura" {{ old('rol', $user->rol ?? '') == 'lectura' ? 'selected' : '' }}>LECTURA (solo consulta: reportes y almacén; sin altas ni cambios)</option>
                         </select>
                         @error('rol') <small class="text-danger font-bold">{{ $message }}</small> @enderror
                     </div>

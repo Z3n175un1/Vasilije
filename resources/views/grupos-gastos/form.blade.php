@@ -7,7 +7,7 @@
     <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 bg-white text-black p-4 rounded-3 shadow-heavy">
         <div class="header-decoration">
             <h1 class="fs-title mb-0 text-black">{{ $grupo ? 'EDITAR' : 'NUEVO' }} GRUPO DE GASTOS</h1>
-            <p class="font-bold small text-black uppercase">Apartado del clasificador de gastos</p>
+            <p class="font-bold small text-black uppercase">Categorías del gasto</p>
         </div>
         <a href="{{ route('grupos-gastos.index') }}" class="btn-bento btn-bento-outline py-1 px-2 fs-mid font-bold rounded-3 text-decoration-none">
             <i class="fas fa-arrow-left me-1"></i> VOLVER
@@ -30,12 +30,30 @@
             @csrf
             @if($grupo) @method('PUT') @endif
 
-            <div class="form-group mb-4">
-                <label>NOMBRE <span class="text-danger">*</span></label>
-                <input type="text" name="nombre" value="{{ old('nombre', $grupo->nombre ?? '') }}" required maxlength="100" placeholder="EJ. TELECOMUNICACIONES, SUELDOS, COMBUSTIBLE">
-                @error('nombre')
-                    <small class="text-danger font-bold">{{ $message }}</small>
-                @enderror
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="form-group mb-0">
+                        <label>NOMBRE <span class="text-danger">*</span></label>
+                        <input type="text" name="nombre" value="{{ old('nombre', $grupo->nombre ?? '') }}" required maxlength="100" placeholder="EJ. TELECOMUNICACIONES, SUELDOS, COMBUSTIBLE">
+                        @error('nombre')
+                            <small class="text-danger font-bold">{{ $message }}</small>
+                        @enderror
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-0">
+                        <label>TIPO DE GASTO (canonico)</label>
+                        <select name="tipo_gasto">
+                            <option value="">SIN TIPO FIJO</option>
+                            @foreach($tiposGasto as $tipo)
+                                <option value="{{ $tipo }}" {{ old('tipo_gasto', $grupo->tipo_gasto ?? '') == $tipo ? 'selected' : '' }}>{{ $tipo }}</option>
+                            @endforeach
+                        </select>
+                        <small class="d-block mt-2 text-black-50">
+                            Los gastos de este grupo heredan este tipo: se deriva al guardar.
+                        </small>
+                    </div>
+                </div>
             </div>
 
             <div class="form-group mb-4">

@@ -43,13 +43,21 @@ final class CapacidadMiddleware
 
     public function handle(Request $request, Closure $next, string $alias, ?string $modulo = null): Response
     {
+        // Laravel puede entregar el alias y el modulo como UN solo
+        // argumento ('lectura:clasificadores') o como dos ('lectura',
+        // 'clasificadores') segun como resolvio la definicion del alias.
+        // Se tolera cada formato: la clave es la primera parte.
+        $partes = explode(':', $alias);
+        $clave = array_shift($partes);
+        $modulo ??= $partes[0] ?? null;
+
         $usuario = $request->user();
 
         if (!$usuario) {
             return redirect()->route('login');
         }
 
-        $capacidades = self::ALIAS[$alias] ?? [$alias];
+        $capacidades = self::ALIAS[$clave] ?? [$clave];
 
         // El modulo se puede fijar por parametro de ruta, p. ej.
         // ->middleware('escritura:gastos'); si no, se deduce del nombre de

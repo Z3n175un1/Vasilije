@@ -50,7 +50,7 @@
         <div class="header-decoration">
             <h1 class="fs-title mb-0 text-black">REGISTRAR GASTOS</h1>
             <p class="font-bold small text-black uppercase">
-                Clasificación mediante el <a href="{{ route('clasificadores.index') }}" class="text-decoration-underline">Clasificador de Gastos</a>
+                Clasificación mediante los <a href="{{ route('grupos-gastos.index') }}" class="text-decoration-underline">Grupos de Gastos</a>
             </p>
         </div>
         @can('crear', 'gastos_generales')
@@ -66,8 +66,8 @@
     <div class="filter-card mb-4">
         <div class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label>CLASIFICADOR</label>
-                <select class="form-select" id="filterClasificador">
+                <label>GRUPO GASTO</label>
+                <select class="form-select" id="filterGrupoGasto">
                     <option value="">TODOS</option>
                 </select>
             </div>
@@ -114,7 +114,7 @@
                     <tr>
                         <th>N° DOC</th>
                         <th>FECHA</th>
-                        <th>CLASIFICADOR</th>
+                        <th>GRUPO</th>
                         <th>TIPO</th>
                         <th>CONCEPTO</th>
                         <th>MONTO</th>
@@ -133,45 +133,35 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    cargarClasificadores();
+    cargarGruposGasto();
     cargarGastos();
 });
 
-/** Pobla el filtro de clasificadores (alcance general). */
-function cargarClasificadores() {
-    fetch('{{ url("api/clasificadores") }}?alcance=general', {
+/** Pobla el filtro de GRUPOS DE GASTOS. */
+function cargarGruposGasto() {
+    fetch('{{ url("api/grupos-gastos") }}', {
         headers: { 'Accept': 'application/json' }
     })
         .then(r => r.json())
         .then(res => {
-            const sel = document.getElementById('filterClasificador');
+            const sel = document.getElementById('filterGrupoGasto');
             if (!sel || !res.success) return;
-
-            const grupos = {};
-            res.data.forEach(c => {
-                (grupos[c.tipo_gasto] = grupos[c.tipo_gasto] || []).push(c);
-            });
 
             let html = '<option value="">TODOS</option>';
 
-            Object.keys(grupos).sort().forEach(tipo => {
-                html += `<optgroup label="${esc(tipo)}">`;
-                grupos[tipo].forEach(c => {
-                    html += `<option value="${c.id_clasificador}">${esc(c.codigo)} — ${esc(c.descripcion)}</option>`;
-                });
-                html += '</optgroup>';
+            (res.data || []).forEach(g => {
+                html += `<option value="${g.id_grupo_gasto}">${esc(g.nombre)}</option>`;
             });
 
             sel.innerHTML = html;
             sel.addEventListener('change', cargarGastos);
         });
 }
-
 function cargarGastos() {
     const params = new URLSearchParams();
 
-    const clasificador = document.getElementById('filterClasificador').value;
-    if (clasificador) params.append('id_clasificador', clasificador);
+    const grupo = document.getElementById('filterGrupoGasto').value;
+    if (grupo) params.append('id_grupo_gasto', grupo);
 
     params.append('fecha_inicio', document.getElementById('filterFechaInicio').value);
     params.append('fecha_fin', document.getElementById('filterFechaFin').value);
@@ -228,8 +218,8 @@ function renderizar(filas) {
 
         const colorMonto = esDevolucion ? 'var(--success)' : 'var(--danger)';
 
-        const badgeClasificador = g.clasificador_codigo
-            ? `<span class="badge" style="background: var(--primary);color:#fff;border:2px solid var(--line-strong);font-family:monospace;">${esc(g.clasificador_codigo)}</span>`
+        const badgeGrupo = g.grupo_gasto
+            ? `<span class="badge" style="background: var(--primary);color:#fff;border:2px solid var(--line-strong);font-family:monospace;">${esc(g.grupo_gasto)}</span>`
             : '<span class="badge scope-no">LEGACY</span>';
 
         const marcaDevolucion = esDevolucion
@@ -267,7 +257,7 @@ $puedeAnularGasto  = auth()->user()?->can('eliminar', 'gastos_generales') ?? fal
         return `<tr>
             <td class="fw-bold font-monospace" style="white-space:nowrap;">${esc(g.nro_documento || '—')}</td>
             <td style="white-space:nowrap;">${esc(g.fecha_gasto || '—')}</td>
-            <td style="text-align:center;">${badgeClasificador}</td>
+            <td style="text-align:center;">${badgeGrupo}</td>
             <td style="text-align:center;">
                 <span class="badge" style="background:var(--primary);color:#fff;border:2px solid var(--line-strong);">${esc(g.categoria || '—')}</span>
             </td>

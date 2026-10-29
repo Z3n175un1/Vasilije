@@ -6,16 +6,15 @@ namespace App\Http\Requests\Gasto;
 
 use App\Enums\TipoGasto;
 use App\Services\GastoService;
-use App\Services\ClasificadorGastoService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
  * Gasto OPERACIONAL de una unidad.
  *
- * REGLA NUEVA: el tipo de gasto no se elige de una lista hardcodeada en la
- * vista, sino a traves de un CLASIFICADOR. Solo se ofrecen los
- * clasificadores con `afecta_unidad = true`.
+ * REGLA: el gasto se clasifica por GRUPO DE GASTOS. El tipo canonico lo
+ * lleva el grupo (columna `tipo_gasto` de `grupos_gastos`): nunca se
+ * elige ni se envia, se deriva en el servidor.
  *
  * REGLA DE DEVOLUCION: el monto admite valores negativos. Un monto < 0
  * significa devolucion y se marca como tal (`es_devolucion`).
@@ -52,30 +51,15 @@ class StoreGastoUnidadRequest extends FormRequest
             Rule::exists('bancos', 'id_banco'),
         ];
 
-        // El clasificador debe existir y aplicar a unidades.
-        $reglas['id_clasificador'] = [
+        // El grupo de gastos debe existir.
+        $reglas['id_grupo_gasto'] = [
             'required',
             'integer',
-            Rule::exists('clasificador_gastos', 'id_clasificador')
-                ->where(fn ($q) => $q->where('afecta_unidad', true)->where('estado', 'ACTIVO')),
+            Rule::exists('grupos_gastos', 'id_grupo_gasto'),
         ];
 
-        // El tipo de gasto NO lo elige el usuario: se deriva del clasificador.
-        // Si el cliente lo envia, solo se comprueba que sea coherente con el
-        // clasificador; enviarlo no es obligatorio (asi la UI no duplica el
-        // dato y no pueden quedar desincronizados).
+        // El tipo de gasto NO lo envia el cliente: se deriva del grupo.
         $reglas['tipo_gasto'] = ['nullable', 'string', Rule::in(TipoGasto::values())];
-        $reglas['tipo_gasto'][] = function (string $attribute, mixed $value, \Closure $fail): void {
-            if ($value === null || !$this->filled('id_clasificador')) {
-                return;
-            }
-
-            $clasificador = app(ClasificadorGastoService::class)->buscar((int) $this->input('id_clasificador'));
-
-            if ($clasificador && $clasificador->tipo_gasto !== $value) {
-                $fail("El tipo de gasto debe coincidir con el clasificador seleccionado ({$clasificador->tipo_gasto}).");
-            }
-        };
 
         return $reglas;
     }
@@ -84,10 +68,11 @@ class StoreGastoUnidadRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'id_clasificador.required' => 'Seleccione un clasificador de gasto.',
-            'id_clasificador.exists' => 'El clasificador seleccionado no aplica a gastos de unidad.',
+            'id_grupo_gasto.required' => 'Seleccione un grupo de gastos.',
+            'id_grupo_gasto.exists' => 'El grupo de gastos seleccionado no existe.',
             'monto.required' => 'El monto es obligatorio.',
             'monto.numeric' => 'El monto debe ser numerico.',
+            'monto.not_in' => 'El monto no puede ser cero. Use un monto negativo para registrar una devolucion.',
             'tipo_gasto.in' => 'El tipo de gasto no es valido.',
             'id_vehiculo.exists' => 'La unidad seleccionada no existe.',
         ];
@@ -98,11 +83,24 @@ class StoreGastoUnidadRequest extends FormRequest
     {
         return [
             'id_vehiculo' => 'unidad',
-            'id_clasificador' => 'clasificador de gasto',
-            'tipo_gasto' => 'tipo de gasto',
+            'id_grupo_gasto' => 'grupo de gastos',
             'id_banco' => 'cuenta bancaria',
             'id_proveedor' => 'proveedor',
         ];
+    }
+
+    /** El grupo seleccionado, tal como vive en la base. */
+    public function grupo(): ?object
+    {
+        $id = $this->integer('id_grupo_gasto');
+
+        if ($id <= 0) {
+            return null;
+        }
+
+        return \Illuminate\Support\Facades\DB::table('grupos_gastos')
+            ->where('id_grupo_gasto', $id)
+            ->first(['id_grupo_gasto', 'nombre', 'tipo_gasto']);
     }
 
     /**
@@ -111,23 +109,24 @@ class StoreGastoUnidadRequest extends FormRequest
      *
      * @return array<string, mixed>
      */
-    public function datosNormalizados(ClasificadorGastoService $clasificadores): array
+    public function datosNormalizados(): array
     {
-        $clasificador = $clasificadores->validarAlcance(
-            $this->integer('id_clasificador'),
-            'unidad',
-        );
+        $grupo = $this->grupo();
 
         $monto = (float) $this->input('monto');
 
         return [
             'id_vehiculo' => $this->integer('id_vehiculo'),
-            'id_clasificador' => $clasificador->id_clasificador,
-            'tipo_gasto' => $clasificador->tipo_gasto,
+            // El clasificador queda como legado: en lo adelante no se
+            // asigna, el gasto pertenece a un GRUPO.
+            'id_clasificador' => null,
+            'id_grupo_gasto' => $grupo->id_grupo_gasto ?? null,
+            // Tipo canonico derivado del grupo, nunca del cliente.
+            'tipo_gasto' => TipoGasto::normalizar((string) ($grupo->tipo_gasto ?? ''))?->value,
             'concepto' => $this->string('concepto')->trim()->value(),
             'monto' => round($monto, 2),
             'fecha_gasto' => $this->date('fecha_gasto')->format('Y-m-d'),
-            'descripcion' => $this->input('descripcion'),
+            'comprobante' => $this->input('comprobante'),
             'cantidad' => $this->input('cantidad') ?? 1,
             'precio_unitario' => $this->input('precio_unitario') ?? 0,
             'kilometraje' => $this->input('kilometraje'),

@@ -247,7 +247,6 @@
                                 ['route' => 'almacen.index', 'label' => 'MOV. ALMACÉN', 'icon' => 'fa-warehouse', 'cap' => 'ver:almacen'],
                                 ['route' => 'gastos-generales.index', 'label' => 'GASTOS', 'icon' => 'fa-file-invoice-dollar', 'cap' => 'ver:gastos_generales'],
                                 ['route' => 'grupos-gastos.index', 'label' => 'GRUPOS GASTOS', 'icon' => 'fa-sitemap', 'cap' => 'ver:clasificadores'],
-                                ['route' => 'clasificadores.index', 'label' => 'CLASIFICADOR DE GASTOS', 'icon' => 'fa-receipt', 'cap' => 'ver:clasificadores'],
                             ]),
                         ];
 

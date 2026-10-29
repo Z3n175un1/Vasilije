@@ -3,7 +3,6 @@
 use App\Http\Controllers\AlmacenController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BancoController;
-use App\Http\Controllers\ClasificadorController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FacturacionController;
@@ -130,21 +129,9 @@ Route::middleware('auth')->group(function (): void {
         })->name('reportes.unidad');
     });
 
-    // --- Clasificador de gastos: lectura para todos, escritura admin -----
-    Route::get('/clasificadores', [ClasificadorController::class, 'index'])->name('clasificadores.index');
-    Route::get('/clasificadores/nuevo', [ClasificadorController::class, 'create'])
-        ->middleware('admin')->name('clasificadores.create');
-    Route::get('/clasificadores/{id}/editar', [ClasificadorController::class, 'edit'])
-        ->middleware('admin')->name('clasificadores.edit');
-    Route::post('/clasificadores', [ClasificadorController::class, 'store'])
-        ->middleware('admin')->name('clasificadores.store');
-    Route::put('/clasificadores/{id}', [ClasificadorController::class, 'update'])
-        ->middleware('admin')->name('clasificadores.update');
-    Route::delete('/clasificadores/{id}', [ClasificadorController::class, 'destroy'])
-        ->middleware('admin')->name('clasificadores.destroy');
-
-    // --- GRUPOS DE GASTOS: pagina propia del clasificador -----------------
-    Route::get('/grupos-gastos', [GrupoGastoController::class, 'index'])->name('grupos-gastos.index');
+    // --- GRUPOS DE GASTOS: el clasificador de gastos vive aqui ----------
+    Route::get('/grupos-gastos', [GrupoGastoController::class, 'index'])
+    ->middleware('lectura:clasificadores')->name('grupos-gastos.index');
     Route::get('/grupos-gastos/nuevo', [GrupoGastoController::class, 'create'])
         ->middleware('admin')->name('grupos-gastos.create');
     Route::get('/grupos-gastos/{id}/editar', [GrupoGastoController::class, 'edit'])
@@ -272,6 +259,7 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/proveedores/{id}', [ProveedorController::class, 'apiShow']);
         Route::get('/tramos', [TramoController::class, 'apiList']);
         Route::get('/tramos/{id}', [TramoController::class, 'apiShow']);
+        Route::get('/grupos-gastos', [GrupoGastoController::class, 'apiList']);
         Route::get('/almacen', [AlmacenController::class, 'apiList']);
         Route::get('/almacen/categorias', [AlmacenController::class, 'apiCategorias']);
         Route::get('/almacen/next-code', [AlmacenController::class, 'apiNextCode']);
@@ -291,17 +279,12 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/facturacion/{id}', [FacturacionController::class, 'apiShow']);
 
         // Catalogos de consulta
-        Route::get('/proveedores/activos', function () {
-            return response()->json([
+        Route::get('/proveedores/activos', function () {            return response()->json([
                 'success' => true,
                 'data' => \Illuminate\Support\Facades\DB::table('global.proveedores')
                     ->where('estado', 1)->orderBy('nombre_proveedor')->get(),
             ]);
         });
-
-        // Clasificadores: ?alcance=unidad|general|todos
-        Route::get('/clasificadores', [ClasificadorController::class, 'apiList']);
-        Route::get('/clasificadores/{id}', [ClasificadorController::class, 'apiShow']);
 
         Route::get('/config', function (\App\Services\ConfiguracionService $config) {
             return response()->json(['success' => true, 'data' => $config->todo()]);

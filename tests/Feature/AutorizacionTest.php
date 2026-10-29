@@ -13,20 +13,18 @@ use Tests\TestCase;
 /**
  * CONTROL DE ACCESO POR ROL
  *
- * Este es el agujero de seguridad mas grave que se corrigio. La aplicacion
- * DEFINIA cuatro roles (admin, supervisor, operador, lectura) pero solo
- * `admin` estaba protegido por un middleware. Los otros tres no tenían
- * ninguna comprobacion: un usuario de rol `lectura` podía crear, editar y
- * borrar gastos, fletes, inventario, bancos y proveedores. El menu ocultaba
- * enlaces, pero eso es presentacion.
+ * Cuatro roles con la matriz definida en Rol + ModuloPolicy:
  *
- * Matriz implementada en App\Policies\ModuloPolicy:
+ *                  ver          crear  editar  eliminar  anular  administrar
+ *   admin          todo           si     si       si       si        si
+ *   supervisor     todo           si     si       no       si        no
+ *   operador       todo           si     si       no       no        no
+ *   lectura        limitada       no     no       no       no        no
  *
- *                  ver  crear  editar  eliminar  anular  administrar
- *   admin           si    si     si       si       si       si
- *   supervisor      si    si     si       si       si       no
- *   operador        si    si     si       no       no       no
- *   lectura         si    no     no       no       no       no
+ * "Limitada": lectura solo consulta REPORTES (incluido descargar PDF e
+ * imprimir), la informacion del modulo de ALMACEN y la portada de perfil
+ * (INICIO). El resto de modulos le devuelve 403 aunque la ruta no llevara
+ * el middleware de capacidad.
  *
  * @uses \App\Policies\ModuloPolicy
  * @uses \App\Http\Middleware\CapacidadMiddleware
@@ -152,7 +150,7 @@ class AutorizacionTest extends TestCase
     {
         return [
             'id_vehiculo' => $this->vehiculo(),
-            'id_clasificador' => $this->clasificadorDeUnidad(TipoGasto::Peaje->value),
+            'id_grupo_gasto' => $this->grupoDeGasto(TipoGasto::Peaje->value),
             'monto' => 250.00,
             'fecha_gasto' => now()->format('Y-m-d'),
             'concepto' => 'Peaje de prueba',
@@ -298,6 +296,20 @@ class AutorizacionTest extends TestCase
         $this->assertSame(3, (int) DB::table('global.vehiculos')->where('id_vehiculo', $vehiculo)->value('estado'));
     }
 
+    #[Test]
+    public function el_supervisor_no_elimina_registros(): void
+    {
+        // El rol revisa y aprueba operaciones, pero un borrado definitivo
+        // queda para el administrador: es una decision contable final.
+        $proveedor = $this->proveedor();
+
+        $this->actingAs($this->usuarioConRol('supervisor'))
+            ->delete('/proveedores/' . $proveedor)
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('global.proveedores', ['id_proveedor' => $proveedor]);
+    }
+
     // =================================================================
     // ADMINISTRACION
     // =================================================================
@@ -356,25 +368,56 @@ class AutorizacionTest extends TestCase
     // =================================================================
 
     #[Test]
-    public function cualquier_rol_autenticado_puede_consultar_los_catalogos(): void
+    public function los_roles_de_operacion_consultan_los_catalogos(): void
     {
-        foreach (['admin', 'supervisor', 'operador', 'lectura'] as $rol) {
+        $fallos = [];
+
+        foreach (['admin', 'supervisor', 'operador'] as $rol) {
             $usuario = $this->usuarioConRol($rol);
 
             foreach (['/vehiculos', '/personal', '/almacen', '/items', '/grupos',
                       '/tramos', '/facturacion', '/bancos', '/proveedores',
-                      '/reportes', '/gastos-generales', '/clasificadores'] as $ruta) {
-                $this->actingAs($usuario)->get($ruta)->assertOk();
+                      '/reportes', '/gastos-generales', '/grupos-gastos'] as $ruta) {
+                $codigo = $this->actingAs($usuario)->get($ruta)->getStatusCode();
+
+                if ($codigo !== 200) {
+                    $fallos[] = "{$rol} {$ruta} -> {$codigo}";
+                }
             }
+        }
+
+        $this->assertSame([], $fallos, 'Rutas de operacion bloqueadas: ' . implode(' | ', $fallos));
+    }
+
+    #[Test]
+    public function el_rol_lectura_solo_consulta_reportes_almacen_y_su_perfil(): void
+    {
+        $lectura = $this->usuarioConRol('lectura');
+
+        // Lo que SI puede: reportes (con descarga), almacen y portada.
+        $this->actingAs($lectura)->get('/reportes')->assertOk();
+        $this->actingAs($lectura)->get('/almacen')->assertOk();
+        $this->actingAs($lectura)->get('/documentos')->assertOk();
+
+        // Todo lo demas queda cerrado a nivel de policy.
+        foreach (['/', '/dashboard', '/vehiculos', '/personal', '/items',
+                  '/grupos', '/tramos', '/facturacion', '/bancos',
+                  '/proveedores', '/gastos-generales', '/grupos-gastos',
+                  '/gastos/crear', '/mantenimiento'] as $ruta) {
+            $this->actingAs($lectura)->get($ruta)->assertForbidden();
         }
     }
 
     #[Test]
-    public function el_rol_lectura_sigue_viendo_el_panel(): void
+    public function el_rol_lectura_descarga_reportes(): void
     {
-        $this->actingAs($this->usuarioConRol('lectura'))->get('/dashboard')->assertOk();
-        $this->actingAs($this->usuarioConRol('lectura'))->get('/documentos')->assertOk();
-        $this->actingAs($this->usuarioConRol('lectura'))->get('/')->assertOk();
+        $this->actingAs($this->usuarioConRol('lectura'))
+            ->get('/reportes/pdf?fecha_inicio=' . now()->format('Y-m-01') . '&fecha_fin=' . now()->format('Y-m-d'))
+            ->assertOk();
+
+        $this->actingAs($this->usuarioConRol('lectura'))
+            ->get('/reportes/imprimir?fecha_inicio=' . now()->format('Y-m-01') . '&fecha_fin=' . now()->format('Y-m-d'))
+            ->assertOk();
     }
 
     // =================================================================
@@ -384,7 +427,7 @@ class AutorizacionTest extends TestCase
     #[Test]
     public function un_visitante_es_redirigido_al_login_en_todas_las_rutas(): void
     {
-        foreach (['/dashboard', '/gastos', '/gastos-generales', '/clasificadores',
+        foreach (['/dashboard', '/gastos', '/gastos-generales', '/grupos-gastos',
                   '/facturacion', '/almacen', '/bancos', '/proveedores',
                   '/reportes', '/usuarios', '/configuracion'] as $ruta) {
             $this->get($ruta)->assertRedirect(route('login'));
@@ -395,7 +438,7 @@ class AutorizacionTest extends TestCase
     public function un_visitante_no_alcanza_la_api(): void
     {
         $this->getJson('/api/vehiculos')->assertUnauthorized();
-        $this->getJson('/api/clasificadores')->assertUnauthorized();
+        $this->getJson('/api/tramos')->assertUnauthorized();
     }
 
     // =================================================================

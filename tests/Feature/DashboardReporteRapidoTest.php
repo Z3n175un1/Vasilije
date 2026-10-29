@@ -64,7 +64,7 @@ class DashboardReporteRapidoTest extends TestCase
         ]);
         $this->actingAs($this->usuarioConRol('admin'))->post('/gastos', [
             'id_vehiculo' => $vehiculo,
-            'id_clasificador' => $this->clasificadorDeUnidad('Combustible'),
+            'id_grupo_gasto' => $this->grupoDeGasto('Combustible'),
             'monto' => 250.00,
             'fecha_gasto' => '2026-10-20',
             'concepto' => 'GASTO MAS RECIENTE',
@@ -105,7 +105,7 @@ class DashboardReporteRapidoTest extends TestCase
         ]);
         $this->actingAs($this->usuarioConRol('admin'))->post('/gastos', [
             'id_vehiculo' => $vehiculo,
-            'id_clasificador' => $this->clasificadorDeUnidad('Combustible'),
+            'id_grupo_gasto' => $this->grupoDeGasto('Combustible'),
             'monto' => 300.00,
             'fecha_gasto' => now()->format('Y-m-d'),
             'concepto' => 'CARGA COMBUSTIBLE',

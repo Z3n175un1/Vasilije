@@ -12,11 +12,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
- * GRUPOS DE GASTOS: el "apartado" que agrupa clasificadores.
+ * GRUPOS DE GASTOS: el clasificador de gastos se organiza aqui.
  *
- * Viven en su propia tabla `global.grupos_gastos`, tienen su PROPIA
- * ventana (menu GRUPOS GASTOS) y se referencian desde
- * `global.clasificador_gastos.id_grupo_gasto` (FK con ON DELETE SET NULL).
+ * Cada grupo lleva el TIPO canonico del gasto (`tipo_gasto`) y es a el a
+ * quien referencian los gastos (`gastos.id_grupo_gasto`,
+ * `gastos_generales.id_grupo_gasto`). La tabla clasificador_gastos queda
+ * solo como legado historico.
  */
 class GrupoGastoController extends Controller
 {
@@ -34,12 +35,13 @@ class GrupoGastoController extends Controller
             ->groupBy(
                 'grupos_gastos.id_grupo_gasto',
                 'grupos_gastos.nombre',
+                'grupos_gastos.tipo_gasto',
                 'grupos_gastos.descripcion',
                 'grupos_gastos.created_at',
             )
             ->orderBy('grupos_gastos.nombre')
             ->selectRaw(
-                'grupos_gastos.id_grupo_gasto, grupos_gastos.nombre, grupos_gastos.descripcion, ' .
+                'grupos_gastos.id_grupo_gasto, grupos_gastos.nombre, grupos_gastos.tipo_gasto, grupos_gastos.descripcion, ' .
                 'COUNT(clasificador_gastos.id_clasificador) AS clasificadores'
             )
             ->get();
@@ -49,7 +51,10 @@ class GrupoGastoController extends Controller
 
     public function create(): View
     {
-        return view('grupos-gastos.form', ['grupo' => null]);
+        return view('grupos-gastos.form', [
+            'grupo' => null,
+            'tiposGasto' => \App\Enums\TipoGasto::values(),
+        ]);
     }
 
     public function edit(string $id): View|RedirectResponse
@@ -60,7 +65,10 @@ class GrupoGastoController extends Controller
             return redirect()->route('grupos-gastos.index')->with('error', 'Grupo de gastos no encontrado.');
         }
 
-        return view('grupos-gastos.form', ['grupo' => $grupo]);
+        return view('grupos-gastos.form', [
+            'grupo' => $grupo,
+            'tiposGasto' => \App\Enums\TipoGasto::values(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -68,6 +76,7 @@ class GrupoGastoController extends Controller
         $datos = $request->validate([
             'nombre' => ['required', 'string', 'max:100'],
             'descripcion' => ['nullable', 'string'],
+            'tipo_gasto' => ['nullable', 'string', 'in:' . implode(',', \App\Enums\TipoGasto::values())],
         ], [
             'nombre.required' => 'El nombre del grupo es obligatorio.',
         ]);
@@ -83,6 +92,7 @@ class GrupoGastoController extends Controller
         $id = DB::table('global.grupos_gastos')->insertGetId([
             'nombre' => $datos['nombre'],
             'descripcion' => $datos['descripcion'] ?? null,
+            'tipo_gasto' => $datos['tipo_gasto'] ?? null,
             'created_at' => now(),
             'updated_at' => now(),
         ], 'id_grupo_gasto');
@@ -108,6 +118,7 @@ class GrupoGastoController extends Controller
         $datos = $request->validate([
             'nombre' => ['required', 'string', 'max:100'],
             'descripcion' => ['nullable', 'string'],
+            'tipo_gasto' => ['nullable', 'string', 'in:' . implode(',', \App\Enums\TipoGasto::values())],
         ], [
             'nombre.required' => 'El nombre del grupo es obligatorio.',
         ]);
@@ -126,6 +137,7 @@ class GrupoGastoController extends Controller
             ->update([
                 'nombre' => $datos['nombre'],
                 'descripcion' => $datos['descripcion'] ?? null,
+                'tipo_gasto' => $datos['tipo_gasto'] ?? null,
                 'updated_at' => now(),
             ]);
 
@@ -140,10 +152,21 @@ class GrupoGastoController extends Controller
     }
 
     /**
-     Solo se borra fisicamente si ningun clasificador lo referencia; el
-     intento con clasificadores dentro queda rechazado para no mover de
-     golpe la organizacion del catalogo.
-     */
+      Catalogo para formularios y filtros (select de GRUPO GASTO).
+      */
+    public function apiList(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => DB::table('global.grupos_gastos')->orderBy('nombre')->get(),
+        ]);
+    }
+
+    /**
+      Solo se borra fisicamente si ningun gasto lo referencia: los grupos
+      ya son la clasificacion real, asi que borrar uno usado moveria de
+      golpe gastos existentes.
+      */
     public function destroy(Request $request, string $id): JsonResponse|RedirectResponse
     {
         $grupo = DB::table('global.grupos_gastos')->where('id_grupo_gasto', $id)->first();
@@ -152,15 +175,14 @@ class GrupoGastoController extends Controller
             return $this->respuesta($request, false, 'Grupo de gastos no encontrado.');
         }
 
-        $enUso = DB::table('global.clasificador_gastos')
-            ->where('id_grupo_gasto', $grupo->id_grupo_gasto)
-            ->exists();
+        $enUso = DB::table('global.gastos')->where('id_grupo_gasto', $grupo->id_grupo_gasto)->exists()
+            || DB::table('global.gastos_generales')->where('id_grupo_gasto', $grupo->id_grupo_gasto)->exists();
 
         if ($enUso) {
             return $this->respuesta(
                 $request,
                 false,
-                'No se puede eliminar: el grupo tiene clasificadores asociados.'
+                'No se puede eliminar: el grupo tiene gastos registrados.'
             );
         }
 

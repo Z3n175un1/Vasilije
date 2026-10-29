@@ -11,6 +11,11 @@ use Illuminate\Validation\Rule;
 /**
  * Flete (ingreso por transporte).
  *
+ * EL TARIFARIO ES EN DOLARES: ver Rutas (US$/Ton). El flete se carga con
+ * su MONTO EN USD (toneladas x tarifa del tramo) y el monto en Bs sale
+ * de multiplicar por el tipo de cambio de la FECHA del flete (automatico,
+ * sin digitacion manual).
+ *
  * `nro_documento` NO se acepta del cliente: lo genera
  * DocumentoService con la secuencia atomica de la serie I_.
  */
@@ -30,6 +35,7 @@ class StoreFleteRequest extends FormRequest
             'id_tramo' => ['nullable', 'integer', Rule::exists('tramos', 'id_tramo')],
             'concepto' => ['nullable', 'string', 'max:200'],
             'monto' => ['required', 'numeric', 'gt:0'],
+            'monto_usd' => ['nullable', 'numeric', 'min:0'],
             'tipo_cambio' => ['nullable', 'numeric', 'min:0', 'max:1000'],
             'fecha_ingreso' => ['required', 'date'],
             'fecha_vencimiento' => ['nullable', 'date', 'after_or_equal:fecha_ingreso'],
@@ -82,7 +88,28 @@ class StoreFleteRequest extends FormRequest
         if ($this->filled('id_tramo')) {
             $tramo = \Illuminate\Support\Facades\DB::table('tramos')
                 ->where('id_tramo', $this->integer('id_tramo'))
-                ->first(['origen', 'destino', 'kilometros']);
+                ->first(['origen', 'destino', 'kilometros', 'precio_dolar_tonelada']);
+        }
+
+        $monto = round((float) $this->input('monto'), 2);
+        $toneladas = (float) ($this->input('toneladas') ?? 0);
+
+        // MONTO EN USD: obligatorio para facturar al cambio. Primero lo que
+        // mando el formulario; si no, toneladas x tarifa del tramo (US$/Ton);
+        // si tampoco, el monto en Bs dividido por el TC de la fecha.
+        $montoUsd = $this->filled('monto_usd')
+            ? round((float) $this->input('monto_usd'), 2)
+            : null;
+
+        if ($montoUsd === null && $tramo && (float) $tramo->precio_dolar_tonelada > 0 && $toneladas > 0) {
+            $montoUsd = round($toneladas * (float) $tramo->precio_dolar_tonelada, 2);
+        }
+
+        if ($montoUsd === null && $monto > 0) {
+            $tc = app(\App\Services\ConfiguracionService::class)
+                ->tipoCambioParaFecha($this->date('fecha_ingreso')->format('Y-m-d'));
+
+            $montoUsd = $tc > 0 ? round($monto / $tc, 2) : null;
         }
 
         return [
@@ -92,9 +119,11 @@ class StoreFleteRequest extends FormRequest
             'concepto' => $this->filled('concepto')
                 ? $this->string('concepto')->trim()->value()
                 : 'TRANSPORTE DE SOYA',
-            'monto' => round((float) $this->input('monto'), 2),
+            'monto' => $monto,
+            // El monto del flete en dolares (toneladas x US$/Ton).
+            'monto_usd' => $montoUsd,
             // El tipo de cambio con el que se factura. Si el formulario no
-            // lo manda, el controlador usa el vigente de configuracion.
+            // lo manda, el controlador usa el de la FECHA del flete.
             'tipo_cambio' => $this->filled('tipo_cambio')
                 ? round((float) $this->input('tipo_cambio'), 2)
                 : null,

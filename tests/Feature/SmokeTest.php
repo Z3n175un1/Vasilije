@@ -53,7 +53,7 @@ class SmokeTest extends TestCase
         // Un gasto de unidad y uno general, para que las vistas tengan contenido.
         $this->actingAs($this->usuarioConRol('admin'))->post('/gastos', [
             'id_vehiculo' => $vehiculo,
-            'id_clasificador' => $this->clasificadorDeUnidad('Combustible'),
+            'id_grupo_gasto' => $this->grupoDeGasto('Combustible'),
             'monto' => 4200.50,
             'fecha_gasto' => now()->format('Y-m-d'),
             'concepto' => 'Carga de combustible diesel',
@@ -65,7 +65,7 @@ class SmokeTest extends TestCase
         ]);
 
         $this->actingAs($this->usuarioConRol('admin'))->post('/gastos-generales', [
-            'id_clasificador' => $this->clasificadorGeneral('ServiciosBasicos'),
+            'id_grupo_gasto' => $this->grupoDeGasto('ServiciosBasicos'),
             'concepto' => 'Factura de energia electrica',
             'monto' => 1850.00,
             'fecha_gasto' => now()->format('Y-m-d'),
@@ -164,9 +164,10 @@ class SmokeTest extends TestCase
             '/facturacion', '/facturacion/nuevo',
             '/gastos/nuevo',
             '/gastos-generales', '/gastos-generales/nuevo',
+            '/grupos-gastos', '/grupos-gastos/nuevo',
             '/bancos', '/bancos/nuevo',
             '/proveedores', '/proveedores/nuevo',
-            '/reportes', '/clasificadores', '/clasificadores/nuevo',
+            '/reportes',
             '/mantenimiento',
         ]);
     }
@@ -333,29 +334,33 @@ class SmokeTest extends TestCase
         );
 
         $this->assertMatchesRegularExpression(
-            '/TRANSACCIONES.*?UNIDADES.*?GASTOS.*?CLASIFICADOR DE GASTOS/s',
+            '/TRANSACCIONES.*?UNIDADES.*?GASTOS.*?GRUPOS GASTOS/s',
             $contenido,
-            'Transacciones debe contener Unidades, Gastos y el Clasificador.'
+            'Transacciones debe contener Unidades, Gastos y los Grupos de gastos.'
         );
     }
 
     #[Test]
     public function el_menu_no_ofrece_a_lectura_lo_que_solo_usa_el_admin(): void
     {
-        $contenido = $this->actingAs($this->usuarioConRol('lectura'))->get('/dashboard')->assertOk()->getContent();
+        // Lectura ahora navega desde /documentos: su detalle de modulos
+        // consulta es reportes y almacen, nada mas.
+        $contenido = $this->actingAs($this->usuarioConRol('lectura'))->get('/documentos')->assertOk()->getContent();
 
-        // Usuarios y Configuración son de solo admin y no aparecen. El
-        // clasificador sí se enlaza: lectura puede consultarlo, lo que no
-        // puede es modificarlo, y eso se resuelve en la vista, no ocultando
-        // el catálogo entero.
+        // Administracion nunca aparece.
         $this->assertStringNotContainsString(route('usuarios.index'), $contenido);
         $this->assertStringNotContainsString(route('configuracion.index'), $contenido);
 
-        $this->assertStringContainsString(route('clasificadores.index'), $contenido);
-
-        // Los catálogos sí se consultan con solo lectura: deben estar.
-        $this->assertStringContainsString(route('personal.index'), $contenido);
+        // Del resto del negocio, solo REPORTES y MOV. ALMACEN quedan.
+        $this->assertStringContainsString(route('reportes.index'), $contenido);
         $this->assertStringContainsString(route('almacen.index'), $contenido);
+        $this->assertStringNotContainsString(route('facturacion.index'), $contenido);
+        $this->assertStringNotContainsString(route('grupos-gastos.index'), $contenido);
+        $this->assertStringNotContainsString(route('gastos-generales.index'), $contenido);
+
+        // Los catalogos tampoco: lectura no consulta maestros.
+        $this->assertStringNotContainsString(route('personal.index'), $contenido);
+        $this->assertStringNotContainsString(route('tramos.index'), $contenido);
     }
 
     #[Test]
@@ -411,7 +416,7 @@ class SmokeTest extends TestCase
             '/api/items', '/api/grupos', '/api/tramos', '/api/bancos', '/api/proveedores',
             '/api/gastos', '/api/gastos-generales', '/api/facturacion',
             '/api/facturacion/listado', '/api/facturacion/pendientes',
-            '/api/clasificadores', '/api/clasificadores/1', '/api/config',
+            '/api/grupos-gastos', '/api/config',
             '/api/reportes/filtro', '/api/reportes/financiero',
             '/api/reportes/almacen', '/api/reportes/estadisticas',
         ]);
@@ -491,18 +496,18 @@ class SmokeTest extends TestCase
                 'id_vehiculo', 'id_personal', 'nro_documento', 'concepto',
                 'monto', 'fecha_ingreso', 'fecha_vencimiento', 'observaciones',
                 'cliente_nombre', 'cliente_nit', 'cliente_telefono', 'origen', 'destino',
-                'toneladas', 'kilometraje_conducido', 'tipo_pago',
+                'toneladas', 'kilometraje_conducido', 'tipo_pago', 'monto_usd',
                 'estado_factura', 'numero_factura', 'fecha_factura', 'fecha_registro',
             ]],
 
             ['global.gastos', [
-                'id_vehiculo', 'id_clasificador', 'monto', 'fecha_gasto', 'concepto',
+                'id_vehiculo', 'id_grupo_gasto', 'id_clasificador', 'monto', 'fecha_gasto', 'concepto',
                 'condicion_pago', 'id_banco', 'es_devolucion', 'nro_documento',
                 'creado_por', 'fecha_registro',
             ]],
 
             ['global.gastos_generales', [
-                'id_clasificador', 'concepto', 'monto', 'fecha_gasto',
+                'id_grupo_gasto', 'id_clasificador', 'concepto', 'monto', 'fecha_gasto',
                 'condicion_pago', 'id_banco', 'es_devolucion', 'nro_documento',
             ]],
 
@@ -567,77 +572,29 @@ class SmokeTest extends TestCase
     }
 
     #[Test]
-    public function la_regla_de_alcance_del_clasificador_se_respeta(): void
+    public function el_gasto_de_unidad_queda_amarrado_al_grupo_y_su_tipo(): void
     {
         // `RefreshDatabase` vacia la base entre tests, asi que sin esto no habria
         // nada que comprobar.
         $this->seedMinimo();
 
-        // El seed no garantiza un clasificador de alcance general puro: el helper
-        // los crea con `afecta_unidad`, asi que aqui se aseguran dos.
-        $soloGeneralId = $this->clasificador([
-            'tipo_gasto' => 'CajaChica',
-            'afecta_unidad' => false,
-            'afecta_general' => true,
-        ]);
+        $grupoId = $this->grupoDeGasto('Peaje');
 
-        $soloUnidadId = $this->clasificador([
-            'tipo_gasto' => 'Peaje',
-            'afecta_unidad' => true,
-            'afecta_general' => false,
-        ]);
+        $this->actingAs($this->usuarioConRol('admin'))->post('/gastos', [
+            'id_vehiculo' => $this->vehiculo(),
+            'id_grupo_gasto' => $grupoId,
+            'monto' => 100,
+            'fecha_gasto' => now()->format('Y-m-d'),
+            'concepto' => 'Peaje de prueba',
+            'condicion_pago' => 'CONTADO',
+            'id_banco' => $this->banco(),
+        ])->assertSessionHasNoErrors();
 
-        $svc = app(\App\Services\ClasificadorGastoService::class);
+        $gasto = \Illuminate\Support\Facades\DB::table('global.gastos')->latest('id_gasto')->first();
 
-        $soloGeneral = \Illuminate\Support\Facades\DB::table('global.clasificador_gastos')
-            ->where('id_clasificador', $soloGeneralId)->first();
-
-        $soloUnidad = \Illuminate\Support\Facades\DB::table('global.clasificador_gastos')
-            ->where('id_clasificador', $soloUnidadId)->first();
-
-        $this->assertNotNull($soloGeneral, 'Se creo un clasificador de alcance general.');
-        $this->assertNotNull($soloUnidad, 'Se creo un clasificador de alcance unidad.');
-
-        // Un clasificador de alcance general NO puede usarse en un gasto de
-        // unidad: es la regla funcional del modulo.
-        $rechazado = false;
-
-        try {
-            $svc->validarAlcance($soloGeneral->id_clasificador, 'unidad');
-        } catch (Throwable) {
-            $rechazado = true;
-        }
-
-        $this->assertTrue(
-            $rechazado,
-            'Un clasificador de alcance general deberia rechazarse en gastos de unidad.'
-        );
-
-        // Y uno de unidad tampoco en gastos generales.
-        $rechazado = false;
-
-        try {
-            $svc->validarAlcance($soloUnidad->id_clasificador, 'general');
-        } catch (Throwable) {
-            $rechazado = true;
-        }
-
-        $this->assertTrue(
-            $rechazado,
-            'Un clasificador de alcance unidad deberia rechazarse en gastos generales.'
-        );
-
-        // En su propio alcance, si: `validarAlcance` devuelve la fila o
-        // lanza, no devuelve null.
-        $this->assertSame(
-            'CajaChica',
-            $svc->validarAlcance($soloGeneral->id_clasificador, 'general')->tipo_gasto
-        );
-
-        $this->assertSame(
-            $soloUnidad->tipo_gasto,
-            $svc->validarAlcance($soloUnidad->id_clasificador, 'unidad')->tipo_gasto
-        );
+        $this->assertSame((int) $grupoId, (int) $gasto->id_grupo_gasto);
+        $this->assertNull($gasto->id_clasificador);
+        $this->assertSame('Peaje', $gasto->tipo_gasto);
     }
 
     #[Test]
@@ -708,27 +665,9 @@ class SmokeTest extends TestCase
     }
 
     #[Test]
-    public function el_clasificador_muestra_las_tres_dimensiones(): void
+    public function el_formulario_de_grupos_ofrece_los_tipos_canonicos(): void
     {
-        $contenido = $this->actingAs($this->usuarioConRol('admin'))->get('/clasificadores')->getContent();
-
-        $this->assertStringContainsString('CLASIFICADOR DE GASTOS', $contenido);
-        $this->assertStringContainsString('CÓDIGO ID', $contenido);
-        $this->assertStringContainsString('DESCRIPCIÓN', $contenido);
-        $this->assertStringContainsString('TIPO DE GASTO', $contenido);
-        $this->assertStringContainsString('AFECTA UNIDAD', $contenido);
-        $this->assertStringContainsString('AFECTA GENERAL', $contenido);
-
-        // Las acciones llevan texto, no solo un icono: el operador tiene que
-        // poder leer qué hace cada botón sin interpretar el glifo.
-        $this->assertStringContainsString('EDITAR', $contenido);
-        $this->assertStringContainsString('QUITAR', $contenido);
-    }
-
-    #[Test]
-    public function el_formulario_de_clasificador_ofrece_los_tipos_canonicos(): void
-    {
-        $contenido = $this->actingAs($this->usuarioConRol('admin'))->get('/clasificadores/nuevo')->getContent();
+        $contenido = $this->actingAs($this->usuarioConRol('admin'))->get('/grupos-gastos/nuevo')->getContent();
 
         foreach (\App\Enums\TipoGasto::values() as $tipo) {
             $this->assertStringContainsString('value="' . $tipo . '"', $contenido, "Falta el tipo {$tipo}.");
@@ -736,13 +675,11 @@ class SmokeTest extends TestCase
     }
 
     #[Test]
-    public function la_vista_de_gastos_generales_ofrece_los_clasificadores_generales(): void
+    public function la_vista_de_gastos_generales_ofrece_los_grupos_de_gastos(): void
     {
         $contenido = $this->actingAs($this->usuarioConRol('admin'))->get('/gastos-generales/nuevo')->getContent();
 
-        $this->assertStringContainsString('CLASIFICADOR DE GASTO', $contenido);
-        // Solo los de alcance general (texto de la propia plantilla).
-        $this->assertStringContainsString('afectan en forma general', $contenido);
+        $this->assertStringContainsString('GRUPO GASTO', $contenido);
     }
 
     #[Test]
@@ -898,10 +835,10 @@ class SmokeTest extends TestCase
         // total de la carga anterior cuando el campo quedaba vacio. La
         // guarda sigue, pero ahora tiene salida.
         $this->assertMatchesRegularExpression(
-            '/if \(toneladas > 0 && precioTon > 0\) \{.*?return;.*?\}/s',
+            '/if \(toneladas > 0 && tarifaUsd > 0\) \{.*?\} else \{.*?montoUsd\.value = .0\.00.;.*?\}/s',
             $js
         );
-        $this->assertStringContainsString("monto.value = '0.00'", $js);
+        $this->assertStringContainsString("montoUsd.value = '0.00'", $js);
 
         // Volver a "SELECCIONE RUTA..." debe limpiar, no dejar datos viejos.
         $this->assertStringContainsString("if (!opt || !opt.value)", $js);
@@ -942,12 +879,12 @@ class SmokeTest extends TestCase
         // salida: antes no habia `else` y el monto se quedaba con el de la
         // carga anterior cuando las toneladas estaban vacias.
         $this->assertMatchesRegularExpression(
-            '/if \(ton > 0 && precioTon > 0\) \{.*?return;.*?\}/s',
+            '/if \(ton > 0 && precioTon > 0\) \{.*?\} else \{\s*\/\/ Sin datos suficientes.*?montoUsd\.value = .0.;/s',
             $html
         );
 
         // Sin datos suficientes el total va a 0, no un numero viejo.
-        $this->assertStringContainsString("monto.value = '0';", $html);
+        $this->assertStringContainsString("montoUsd.value = '0';", $html);
 
         // Volver a "SELECCIONE RUTA..." tiene que limpiar los campos.
         $this->assertStringContainsString('if (!opt || !opt.value)', $html);
@@ -970,17 +907,17 @@ class SmokeTest extends TestCase
 
         // Y ahora el monto se deriva, no se restaura.
         $this->assertMatchesRegularExpression(
-            '/function recalcularMontoDash\(\).*?ton > 0 && precioTon > 0.*?return;.*?\}/s',
+            '/function recalcularMontoDash\(\).*?ton > 0 && precioTon > 0.*?\} else \{\s*\/\/ Sin datos suficientes.*?montoUsd\.value = .0.;.*?\}/s',
             $html
         );
-        $this->assertStringContainsString("monto.value = '0';", $html);
+        $this->assertStringContainsString("montoUsd.value = '0';", $html);
 
         // Al abrir el modal se aplica la ruta guardada y se recalcula.
         $this->assertStringContainsString('seleccionarRuta(selTramo)', $html);
         $this->assertStringContainsString('recalcularMontoDash();', $html);
 
         // Sin esto la busqueda en `tramos` fallaba en silencio si el fetch
-        // todavia no habia vuelto, y no rellenaba origen ni destino.
+        // todavia no habia vuelto, y la tarifa US$/TON no aparecia.
         $this->assertStringContainsString('data-origen="${window.esc(t.origen', $html);
         $this->assertStringContainsString('data-destino="${window.esc(t.destino', $html);
 
@@ -990,7 +927,13 @@ class SmokeTest extends TestCase
             $html
         );
 
-        // El monto no debe guardarse: es derivado de toneladas x Bs/TON.
+        // El flete ahora se factura en dolar: el alta tambien manda monto_usd.
+        $this->assertMatchesRegularExpression(
+            '/monto_usd:\s*document\.getElementById\(.fd_monto_usd.\)/',
+            $html
+        );
+
+        // El monto no debe guardarse: es derivado de toneladas x US$/TON.
         $this->assertStringContainsString("const derivados = ['fd_monto'", $html);
     }
 

@@ -16,8 +16,14 @@ final class ConfiguracionService
 {
     public const TIPO_CAMBIO = 'tipo_cambio';
     public const PRECIO_TONELADA = 'precio_tonelada_usd';
-    /** Fuente del valor registrado en fletes: 'MANUAL' o 'BCB' (oficial). */
+    /** Fuente del tipo de cambio para fletes: 'BCB' (oficial de hoy) o 'HISTORICO' (por fecha del flete). */
     public const FUENTE_TIPO_CAMBIO = 'fuente_tipo_cambio';
+
+    /** Valor oficial fijo antes del corte del tarifario BCB automatico. */
+    public const TC_FIJO = 6.96;
+
+    /** Ultima fecha con el valor fijo 6,96 (a partir de la siguiente rige el historico BCB). */
+    public const CUTOFF_TC_AUTO = '2025-09-30';
 
     private ?BcbService $bcb = null;
 
@@ -54,10 +60,17 @@ final class ConfiguracionService
         return $this->numero(self::TIPO_CAMBIO, 6.96);
     }
 
-    /** ¿El usuario fija el cambio a mano o usa el oficial del BCB? */
+    /** ¿El sistema usa el oficial del BCB de hoy o el de la fecha del flete? */
     public function fuenteTipoCambio(): string
     {
-        return mb_strtoupper($this->obtener(self::FUENTE_TIPO_CAMBIO, 'MANUAL') ?? 'MANUAL');
+        // Las instalaciones viejas guardaban 'MANUAL' (digitar el valor a
+        // mano), opcion ya retirada por causar errores de digitacion: cae a
+        // HISTORICO, la fuente que respeta la fecha de cada flete.
+        $fuente = $this->obtener(self::FUENTE_TIPO_CAMBIO, 'HISTORICO');
+
+        return in_array(mb_strtoupper($fuente ?? 'HISTORICO'), ['BCB', 'HISTORICO'], true)
+            ? mb_strtoupper($fuente ?? 'HISTORICO')
+            : 'HISTORICO';
     }
 
     private ?HistoricoTipoCambio $historico = null;
@@ -106,24 +119,26 @@ final class ConfiguracionService
     }
 
     /**
-     * Valor que el sistema USARIA para registrar un flete de la fecha X.
+     * Valor que el sistema USA para registrar un flete de la fecha X.
      *
-     * Con fuente 'HISTORICO' es el registro oficial guardado para esa
-     * fecha (sabado/domingo resuelven al viernes); sin registro en la
-     * tabla recurre al BCB del dia y luego al manual. Con 'BCB'/'MANUAL'
-     * es el vigente de siempre.
+     * REGLA AUTOMATICA, sin digitacion manual:
+     *  - Hasta el 30 de septiembre de 2025 (corte del tarifario viejo) el
+     *    oficial fijo es 6,96 Bs/USD.
+     *  - Fechas posteriores usan el registro oficial del historico BCB de
+     *    ESA fecha (sabado/domingo resuelven al viernes). Si la tabla no
+     *    tiene valor para esa fecha aun, respaldo 6,96 para que el
+     *    registro nunca se bloquee.
      */
     public function tipoCambioParaFecha(?string $fechaIso = null): float
     {
-        if ($this->fuenteTipoCambio() === 'HISTORICO') {
-            $historico = $this->historico()->valorPara($this->historico()->fechaParam($fechaIso));
+        $fecha = \Illuminate\Support\Carbon::parse($fechaIso ?? now()->toDateString())->toDateString();
 
-            if ($historico !== null) {
-                return $historico;
-            }
+        if ($fecha <= self::CUTOFF_TC_AUTO) {
+            return self::TC_FIJO;
         }
 
-        return $this->tipoCambioVigente($fechaIso);
+        return $this->historico()->valorPara($this->historico()->fechaParam($fecha))
+            ?? self::TC_FIJO;
     }
 
     public function precioTonelada(): float

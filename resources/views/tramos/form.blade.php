@@ -18,6 +18,7 @@
         <form method="POST" action="{{ $tramo ? route('tramos.update', $tramo->id_tramo) : route('tramos.store') }}" class="form-bento">
             @csrf
             @if($tramo) @method('PUT') @endif
+            @php $tcTrabajo = $tipoCambio ?? 6.96; @endphp
 
             <div class="row g-4 mb-4">
                 <div class="col-md-6">
@@ -43,14 +44,18 @@
                 </div>
                 <div class="col-md-4">
                     <div class="form-group mb-0">
-                        <label>PRECIO TOTAL (Bs) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="precio_total" value="{{ old('precio_total', $tramo->precio_total ?? '') }}" required min="0" placeholder="0.00">
+                        <label>TARIFA US$/TON <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" name="precio_dolar_tonelada" value="{{ old('precio_dolar_tonelada', $tramo->precio_dolar_tonelada ?? $precioTonUsd ?? 13) }}" required min="0" placeholder="0.00" id="tarifaUsdTon">
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group mb-0">
-                        <label>PRECIO Bs/TONELADA <small class="text-muted">(Default: Bs {{ $precioTonUsd ?? 13 }})</small></label>
-                        <input type="number" step="0.01" name="precio_dolar_tonelada" value="{{ old('precio_dolar_tonelada', $tramo->precio_dolar_tonelada ?? $precioTonUsd ?? 13) }}" min="0" placeholder="0.00">
+                        <label>BS/TON (calculado)</label>
+                        <input type="text" value="{{ number_format(($tramo->precio_dolar_tonelada ?? old('precio_dolar_tonelada', $precioTonUsd ?? 13)) * $tcTrabajo, 2, '.', '') }}"
+                               readonly id="bsPorTon" style="background:var(--primary-soft)!important;cursor:not-allowed;">
+                        <small class="d-block mt-2 text-black-50">
+                            = US$/TON &times; TC ({{ number_format($tcTrabajo, 2) }} Bs/USD)
+                        </small>
                     </div>
                 </div>
             </div>
@@ -86,3 +91,27 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+/** BS/TON = TARIFA US$/TON x TC de trabajo. */
+function recalcularBsTon() {
+    const usd = parseFloat(document.getElementById('tarifaUsdTon')?.value) || 0;
+    const tc = {{ $tcTrabajo }};
+
+    const salida = document.getElementById('bsPorTon');
+
+    if (salida) {
+        salida.value = (usd * tc).toFixed(2);
+    }
+}
+
+document.addEventListener('input', function (e) {
+    if (e.target.id === 'tarifaUsdTon') {
+        recalcularBsTon();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', recalcularBsTon);
+</script>
+@endpush

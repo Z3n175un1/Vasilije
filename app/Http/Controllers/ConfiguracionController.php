@@ -34,7 +34,7 @@ class ConfiguracionController extends Controller
     {
         // Se aseguran las llaves nuevas para que existan aunque la base sea
         // de una instalacion anterior a esta migracion.
-        foreach (['tipo_cambio' => '6.96', 'precio_tonelada_usd' => '13', 'valor_flota_por_unidad' => '0', 'saldo_inicial_proveedores' => '0', ConfiguracionService::FUENTE_TIPO_CAMBIO => 'MANUAL'] as $llave => $valor) {
+        foreach (['tipo_cambio' => '6.96', 'precio_tonelada_usd' => '13', 'valor_flota_por_unidad' => '0', 'saldo_inicial_proveedores' => '0', ConfiguracionService::FUENTE_TIPO_CAMBIO => 'HISTORICO'] as $llave => $valor) {
             if (!$this->config->obtener($llave)) {
                 \Illuminate\Support\Facades\DB::table('global.configuracion')
                     ->insertOrIgnore(['llave' => $llave, 'valor' => $valor, 'descripcion' => $llave, 'created_at' => now()]);
@@ -114,7 +114,7 @@ class ConfiguracionController extends Controller
             'precio_tonelada_usd' => ['required', 'numeric', 'gt:0', 'max:100000'],
             'valor_flota_por_unidad' => ['nullable', 'numeric', 'min:0', 'max:10000000'],
             'saldo_inicial_proveedores' => ['nullable', 'numeric', 'min:0', 'max:100000000'],
-            'fuente_tipo_cambio' => ['nullable', 'string', 'in:MANUAL,BCB,HISTORICO'],
+            'fuente_tipo_cambio' => ['nullable', 'string', 'in:BCB,HISTORICO'],
         ]);
 
         $antes = $this->config->todo();

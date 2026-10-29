@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-/** Rutas origen -> destino con su tarifado. */
+use App\Services\ConfiguracionService;
+
+/** Rutas origen -> destino con su tarifado EN DOLARES (US$/Ton). */
+
 class StoreTramoRequest extends MaestroRequest
 {
     public function authorize(): bool
@@ -20,11 +23,21 @@ class StoreTramoRequest extends MaestroRequest
             'origen' => ['required', 'string', 'max:200'],
             'destino' => ['required', 'string', 'max:200'],
             'kilometros' => ['required', 'numeric', 'min:0'],
-            'precio_total' => ['required', 'numeric', 'min:0'],
-            'precio_dolar_tonelada' => ['nullable', 'numeric', 'min:0'],
+            // El tarifario se define en dolares; el precio total en Bs ya no
+            // se pide: se calcula (US$/Ton x TC) solo para compatibilidad.
+            'precio_dolar_tonelada' => ['required', 'numeric', 'min:0'],
+            'precio_total' => ['nullable', 'numeric', 'min:0'],
             'gasolina_promedio' => ['nullable', 'numeric', 'min:0'],
             'diesel_promedio' => ['nullable', 'numeric', 'min:0'],
             'gas_promedio' => ['nullable', 'numeric', 'min:0'],
+        ];
+    }
+
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        return [
+            'precio_dolar_tonelada.required' => 'La tarifa por tonelada (US$) es obligatoria.',
         ];
     }
 
@@ -51,7 +64,16 @@ class StoreTramoRequest extends MaestroRequest
             $datos['kilometros'] = $this->input('distancia_km');
         }
 
-        $datos['precio_dolar_tonelada'] ??= 0;
+        // La tarifa del tramo es US$/Ton (obligatoria). El precio total en
+        // Bs es un dato de compatibilidad: si no llega del formulario se
+        // calcula con el tipo de cambio de trabajo.
+        $dolar = (float) ($datos['precio_dolar_tonelada'] ?? 0);
+        $tc = app(ConfiguracionService::class)->tipoCambio();
+
+        $datos['precio_dolar_tonelada'] = $dolar;
+        $datos['precio_total'] = $this->filled('precio_total')
+            ? round((float) $this->input('precio_total'), 2)
+            : round($dolar * $tc, 2);
 
         return $datos;
     }
@@ -59,6 +81,10 @@ class StoreTramoRequest extends MaestroRequest
     /** @return array<string, string> */
     public function attributes(): array
     {
-        return ['kilometros' => 'distancia (km)', 'precio_total' => 'precio total', 'precio_dolar_tonelada' => 'Bs por tonelada'];
+        return [
+            'kilometros' => 'distancia (km)',
+            'precio_total' => 'precio total (Bs)',
+            'precio_dolar_tonelada' => 'tarifa por tonelada (US$)',
+        ];
     }
 }

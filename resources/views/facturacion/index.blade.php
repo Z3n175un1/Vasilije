@@ -241,7 +241,7 @@
                         <button type="button" id="btnAplicarRutaNF" class="btn btn-sm fw-bold mt-2 w-100" style="border-radius:999px;border:3px solid var(--line-strong);padding:8px;background:var(--primary);color:#fff;">
                             <i class="fas fa-rotate-right me-1"></i> APLICAR RUTA
                         </button>
-                        <small class="d-block mt-2 fw-bold" style="color:#666;">Al elegir la ruta se completan origen, destino, km y Bs/TON.</small>
+                        <small class="d-block mt-2 fw-bold" style="color:#666;">Al elegir la ruta se completan origen, destino, km y US$/TON.</small>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
@@ -260,8 +260,8 @@
                         <input type="number" step="0.01" class="form-control fw-bold" id="nf_kilometraje" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;" min="0" value="0">
                     </div>
                     <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">BS X TON</label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_precio_ton" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;" min="0" placeholder="Bs por tonelada">
+                        <label class="fw-bold small text-uppercase">TARIFA (US$/TON)</label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_precio_ton" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;" min="0" placeholder="US$ por tonelada">
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
@@ -270,14 +270,20 @@
                         <input type="number" step="0.01" class="form-control fw-bold" id="nf_toneladas" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;" min="0" value="0">
                     </div>
                     <div class="col-md-6">
-                        <label class="fw-bold small text-uppercase">MONTO (Bs) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_monto" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;background:var(--primary-soft)!important;cursor:not-allowed;" required min="0" placeholder="0.00" readonly>
+                        <label class="fw-bold small text-uppercase">MONTO (US$) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_monto_usd" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;" required min="0" placeholder="0.00">
+                        <small class="d-block mt-1 fw-bold" style="color:#666;">= TONELADAS x US$/TON</small>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
+                        <label class="fw-bold small text-uppercase">MONTO (Bs)</label>
+                        <input type="number" step="0.01" class="form-control fw-bold" id="nf_monto" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;background:var(--primary-soft)!important;cursor:not-allowed;" min="0" placeholder="0.00" readonly>
+                    </div>
+                    <div class="col-md-6">
                         <label class="fw-bold small text-uppercase">TIPO DE CAMBIO (Bs/USD)</label>
                         <input type="number" step="0.01" class="form-control fw-bold" id="nf_tipo_cambio" style="border-radius:10px;border:3px solid var(--line-strong);padding:10px;background:var(--primary-soft)!important;cursor:not-allowed;" min="0" placeholder="6.96" readonly value="{{ $tipoCambioVigente ?? old('tipo_cambio', '') }}">
+                        <small class="d-block mt-1 fw-bold" style="color:#666;">Automatico por la fecha del flete</small>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
@@ -420,7 +426,7 @@ function cargarCombos() {
             // abajo. Sin ellos el modal mostraba la ruta en el select pero
             // dejaba ORIGEN y DESTINO en su placeholder.
             selT.innerHTML = '<option value="">SELECCIONE RUTA...</option>' +
-                tramosList.map(t => `<option value="${t.id_tramo}" data-origen="${window.esc(t.origen || '')}" data-destino="${window.esc(t.destino || '')}" data-precio-ton="${t.precio_dolar_tonelada || 0}" data-km="${t.kilometros || 0}">${window.esc(t.origen || '')} → ${window.esc(t.destino || '')} (Bs. ${t.precio_total})</option>`).join('');
+                tramosList.map(t => `<option value="${t.id_tramo}" data-origen="${window.esc(t.origen || '')}" data-destino="${window.esc(t.destino || '')}" data-precio-ton="${t.precio_dolar_tonelada || 0}" data-km="${t.kilometros || 0}">${window.esc(t.origen || '')} → ${window.esc(t.destino || '')}</option>`).join('');
         }
     });
 }
@@ -576,7 +582,7 @@ function seleccionarRutaNF(select) {
 }
 
 /**
- * MONTO = TONELADAS x BS/TON.
+ * MONTO US$ = TONELADAS x US$/TON y MONTO Bs = US$ x TC de trabajo.
  *
  * Antes solo recalculaba con toneladas > 0, dejando el monto de la carga
  * anterior cuando el campo quedaba vacio: por eso el total no se actualizaba
@@ -585,19 +591,23 @@ function seleccionarRutaNF(select) {
 function recalcularMontoNF() {
     const ton = parseFloat(document.getElementById('nf_toneladas').value) || 0;
     const precioTon = parseFloat(document.getElementById('nf_precio_ton').value) || 0;
-    const monto = document.getElementById('nf_monto');
+    const tc = parseFloat(document.getElementById('nf_tipo_cambio').value) || 0;
+
+    const montoUsd = document.getElementById('nf_monto_usd');
+    const montoBs = document.getElementById('nf_monto');
 
     if (ton > 0 && precioTon > 0) {
-        monto.value = (ton * precioTon).toFixed(2);
-        return;
+        montoUsd.value = (ton * precioTon).toFixed(2);
+    } else {
+        // Sin datos suficientes se pone 0 en vez de conservar un total viejo.
+        montoUsd.value = '0';
     }
 
-    // Sin datos suficientes se pone 0 en vez de conservar un total viejo.
-    monto.value = '0';
+    montoBs.value = ((parseFloat(montoUsd.value) || 0) * tc).toFixed(2);
 }
 
 document.addEventListener('input', function(e) {
-    if (e.target.id === 'nf_toneladas' || e.target.id === 'nf_precio_ton') {
+    if (['nf_toneladas', 'nf_precio_ton', 'nf_monto_usd'].includes(e.target.id)) {
         recalcularMontoNF();
     }
 });
@@ -618,6 +628,7 @@ function abrirModalNuevoFlete() {
     document.getElementById('nf_toneladas').value = '0';
     document.getElementById('nf_kilometraje').value = '0';
     document.getElementById('nf_precio_ton').value = '';
+    document.getElementById('nf_monto_usd').value = '';
     const selR = document.getElementById('nf_id_tramo');
     if (selR) selR.value = '';
     // `reset()` no siempre limpia los campos readonly que rellena el script.
@@ -642,6 +653,7 @@ function guardarFlete(event) {
         // se le habia olvidado el campo, aunque el select viniera elegido.
         id_tramo: document.getElementById('nf_id_tramo').value || null,
         cliente_nombre: document.getElementById('nf_cliente_nombre').value,
+        monto_usd: document.getElementById('nf_monto_usd').value || null,
         monto: document.getElementById('nf_monto').value,
         tipo_cambio: document.getElementById('nf_tipo_cambio').value || null,
         origen: document.getElementById('nf_origen').value,
@@ -657,7 +669,7 @@ function guardarFlete(event) {
 
     if (!data.id_vehiculo) { Swal.fire('Requerido', 'Seleccione una unidad', 'warning'); return; }
     if (!data.concepto) { Swal.fire('Requerido', 'El concepto es obligatorio', 'warning'); return; }
-    if (!data.monto || parseFloat(data.monto) <= 0) { Swal.fire('Requerido', 'El monto debe ser mayor a 0', 'warning'); return; }
+    if (!data.monto_usd || parseFloat(data.monto_usd) <= 0) { Swal.fire('Requerido', 'El monto en US$ debe ser mayor a 0', 'warning'); return; }
 
     document.getElementById('btnGuardarFlete').disabled = true;
     document.getElementById('btnGuardarFlete').innerHTML = '<i class="fas fa-spinner fa-spin"></i> GUARDANDO...';

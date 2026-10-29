@@ -14,8 +14,13 @@
         ? 'Bs ' . $bcb['valor_texto'] . ' / USD'
         : null;
 
-    $fuenteActual = old('fuente_tipo_cambio', $fuenteTipoCambio);
-    $conBcb       = in_array($fuenteActual, ['BCB', 'HISTORICO'], true);
+    // La opcion MANUAL (digitar el valor a mano) se retiro: es la puerta de
+    // entrada a errores de digitacion. Si la base todavia guarda 'MANUAL'
+    // (instalaciones viejas), se muestra HISTORICO por defecto.
+    $fuenteActual = old('fuente_tipo_cambio', in_array($fuenteTipoCambio, ['BCB', 'HISTORICO'], true) ? $fuenteTipoCambio : 'HISTORICO');
+    // Duplicado de $conBcb ya no se usa: la visibilidad del panel dependa
+    // EXCLUSIVAMENTE de si la fuente activa es BCB.
+    $conBcb       = $fuenteActual === 'BCB';
 @endphp
 
 @section('content')
@@ -64,18 +69,6 @@
             <p class="cfg-question">¿Con qué tipo de cambio quieres registrar los fletes?</p>
 
             <div class="cfg-options" role="radiogroup" aria-label="Fuente del tipo de cambio">
-                <label class="cfg-option {{ $fuenteActual === 'MANUAL' ? 'is-selected' : '' }}" data-fuente="MANUAL">
-                    <input type="radio" name="fuente_tipo_cambio" value="MANUAL"
-                           onchange="cambiarFuenteTipoCambio('MANUAL')"
-                           @checked($fuenteActual === 'MANUAL')>
-                    <span>
-                        <span class="cfg-option-title">Ingresarlo manualmente</span>
-                        <span class="cfg-option-desc">
-                            Tú escribes el valor en el campo de abajo. Los fletes se registran con ese monto.
-                        </span>
-                    </span>
-                </label>
-
                 <label class="cfg-option {{ $fuenteActual === 'BCB' ? 'is-selected' : '' }}" data-fuente="BCB">
                     <input type="radio" name="fuente_tipo_cambio" value="BCB"
                            onchange="cambiarFuenteTipoCambio('BCB')"
@@ -108,7 +101,7 @@
             @enderror
 
             {{-- Valor oficial de hoy (BCB e HISTORICO) --}}
-            <div id="bcb-box" class="cfg-bcb {{ $conBcb ? 'is-visible' : '' }}">
+                <div id="bcb-box" class="cfg-bcb {{ $fuenteActual === 'BCB' ? 'is-visible' : '' }}">
                 <div>
                     <div class="cfg-bcb-label">Valor oficial del Banco Central</div>
                     <div class="cfg-bcb-value" id="bcb-valor">—</div>
@@ -149,26 +142,31 @@
                     <div class="form-group mb-0">
                         <label for="tipo_cambio">Tipo de cambio <span class="text-danger">*</span></label>
                         <div class="cfg-unit-wrap">
-                            <input type="number"
-                                   step="0.01"
-                                   name="tipo_cambio"
-                                   id="tipo_cambio"
-                                   class="@error('tipo_cambio') is-invalid @enderror"
-                                   value="{{ old('tipo_cambio', $tipoCambio) }}"
-                                   min="0.01"
-                                   required
-                                   placeholder="7.50">
-                            <span class="cfg-unit">Bs / USD</span>
-                        </div>
-                        @error('tipo_cambio')
-                            <p class="cfg-error mt-2 mb-0">{{ $message }}</p>
-                        @enderror
-                        <p class="cfg-help">
-                            Cuántos bolivianos equivalen a un dólar. Sirve para pasar a bolivianos los montos que están en dólares.
-                        </p>
-                        <p id="tc-bloqueado" class="cfg-lock {{ $conBcb ? '' : 'd-none' }}">
+                        <input type="number"
+                               step="0.01"
+                               name="tipo_cambio"
+                               id="tipo_cambio"
+                               class="@error('tipo_cambio') is-invalid @enderror"
+                               value="{{ old('tipo_cambio', $tipoCambio) }}"
+                               min="0.01"
+                               required
+                               readonly
+                               placeholder="7.50">
+                        <span class="cfg-unit">Bs / USD</span>
+                    </div>
+                    @error('tipo_cambio')
+                        <p class="cfg-error mt-2 mb-0">{{ $message }}</p>
+                    @enderror
+                    <p class="cfg-help" id="tc-help">
+                        Cuántos bolivianos equivalen a un dólar. El valor se toma del Banco Central: ya no se digita a mano.
+                    </p>
+                    <p id="tc-bloqueado" class="cfg-lock">
+                        @if($fuenteActual === 'HISTORICO')
+                            Bloqueado: cada flete usa el valor oficial de su fecha
+                        @else
                             Bloqueado: el valor se toma del Banco Central
-                        </p>
+                        @endif
+                    </p>
                         <span class="cfg-impact"><span>Afecta a</span> Fletes y reportes financieros</span>
                     </div>
                 </div>
@@ -792,12 +790,21 @@
             card.classList.toggle('is-selected', card.dataset.fuente === fuente);
         });
 
-        document.getElementById('bcb-box').classList.toggle('is-visible', bloquear);
+        // El panel del valor oficial de HOY solo tiene sentido con la fuente
+        // BCB: con HISTORICO el operador consulta un dia concreto mas abajo,
+        // y mostrar el de hoy seria confuso (la fecha del flete manda).
+        document.getElementById('bcb-box').classList.toggle('is-visible', esBcb);
         document.getElementById('hist-consulta').classList.toggle('is-visible', esHistorico);
         document.getElementById('tc-bloqueado').classList.toggle('d-none', !bloquear);
+        document.getElementById('tc-help').classList.toggle('d-none', bloquear);
         document.getElementById('tipo_cambio').readOnly = bloquear;
 
-        if (bloquear) {
+        // Texto del aviso segun la fuente activa.
+        document.getElementById('tc-bloqueado').textContent = esHistorico
+            ? 'Bloqueado: cada flete usa el valor oficial de SU fecha'
+            : 'Bloqueado: el valor se toma del Banco Central';
+
+        if (esBcb) {
             actualizarBcb(false);
         }
 
@@ -880,7 +887,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        const fuente = document.querySelector('input[name="fuente_tipo_cambio"]:checked')?.value || 'MANUAL';
+        const fuente = document.querySelector('input[name="fuente_tipo_cambio"]:checked')?.value || 'HISTORICO';
         cambiarFuenteTipoCambio(fuente);
 
         const textoBcb = @json($textoBcb);

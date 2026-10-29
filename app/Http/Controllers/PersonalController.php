@@ -152,18 +152,18 @@ class PersonalController extends Controller
         $monto = round((float) $validado['monto'], 2);
         $esDevolucion = GastoService::esDevolucion($monto);
 
-        // Localiza el clasificador de alcance unidad para el tipo indicado.
-        $clasificadorId = DB::table('global.clasificador_gastos')
+        // Localiza el GRUPO DE GASTOS para el tipo indicado (Sueldo o
+        // Viatico). El modulo de clasificadores fue eliminado: el gasto
+        // referencia al grupo y el tipo vive en el grupo.
+        $grupoId = DB::table('global.grupos_gastos')
             ->where('tipo_gasto', $validado['tipo_gasto'])
-            ->where('afecta_unidad', true)
-            ->where('estado', 'ACTIVO')
-            ->orderBy('id_clasificador')
-            ->value('id_clasificador');
+            ->orderBy('id_grupo_gasto')
+            ->value('id_grupo_gasto');
 
         DB::table('global.gastos')->insert([
             'id_vehiculo' => $validado['id_vehiculo'] ?? null,
             'id_personal' => $validado['id_personal'],
-            'id_clasificador' => $clasificadorId,
+            'id_grupo_gasto' => $grupoId,
             'tipo_gasto' => $validado['tipo_gasto'],
             'tipo_viatico' => $validado['tipo_viatico'] ?? null,
             'concepto' => $validado['concepto'],

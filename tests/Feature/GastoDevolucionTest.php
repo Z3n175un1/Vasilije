@@ -44,7 +44,7 @@ class GastoDevolucionTest extends TestCase
     {
         return array_merge([
             'id_vehiculo' => $this->vehiculo(),
-            'id_clasificador' => $this->clasificadorDeUnidad(TipoGasto::Combustible->value),
+            'id_grupo_gasto' => $this->grupoDeGasto(TipoGasto::Combustible->value),
             'monto' => $monto,
             'fecha_gasto' => now()->format('Y-m-d'),
             'concepto' => $monto < 0 ? 'Devolucion por carga sobrante' : 'Compra de combustible',
@@ -141,7 +141,7 @@ class GastoDevolucionTest extends TestCase
         $admin = $this->usuarioConRol('admin');
 
         $this->actingAs($admin)->post('/gastos-generales', [
-            'id_clasificador' => $this->clasificadorGeneral(TipoGasto::Impuestos->value),
+            'id_grupo_gasto' => $this->grupoDeGasto(TipoGasto::Impuestos->value),
             'concepto' => 'Devolucion de impuesto',
             'monto' => -300.00,
             'fecha_gasto' => now()->format('Y-m-d'),
@@ -162,7 +162,7 @@ class GastoDevolucionTest extends TestCase
         $admin = $this->usuarioConRol('admin');
 
         $this->actingAs($admin)->post('/gastos-generales', [
-            'id_clasificador' => $this->clasificadorGeneral(TipoGasto::Impuestos->value),
+            'id_grupo_gasto' => $this->grupoDeGasto(TipoGasto::Impuestos->value),
             'concepto' => 'Importe en cero',
             'monto' => 0,
             'fecha_gasto' => now()->format('Y-m-d'),
@@ -171,12 +171,12 @@ class GastoDevolucionTest extends TestCase
     }
 
     #[Test]
-    public function el_gasto_general_deriva_la_categoria_del_clasificador(): void
+    public function el_gasto_general_deriva_la_categoria_del_grupo(): void
     {
         $admin = $this->usuarioConRol('admin');
 
         $this->actingAs($admin)->post('/gastos-generales', [
-            'id_clasificador' => $this->clasificadorGeneral(TipoGasto::Alquiler->value),
+            'id_grupo_gasto' => $this->grupoDeGasto(TipoGasto::Alquiler->value),
             'concepto' => 'Alquiler del galpon',
             'monto' => 1200.00,
             'fecha_gasto' => now()->format('Y-m-d'),
@@ -198,7 +198,7 @@ class GastoDevolucionTest extends TestCase
         // La caja chica ES efectivo en mano: exigir una cuenta bancaria
         // seria un error de dominio, no una validacion.
         $this->actingAs($admin)->post('/gastos-generales', [
-            'id_clasificador' => $this->clasificadorGeneral(TipoGasto::CajaChica->value),
+            'id_grupo_gasto' => $this->grupoDeGasto(TipoGasto::CajaChica->value),
             'concepto' => 'Compra de papelería',
             'monto' => 80.00,
             'fecha_gasto' => now()->format('Y-m-d'),
@@ -209,12 +209,12 @@ class GastoDevolucionTest extends TestCase
     }
 
     #[Test]
-    public function un_gasto_general_contado_sin_clasificador_de_caja_chica_si_exige_banco(): void
+    public function un_gasto_general_contado_sin_grupo_de_caja_chica_si_exige_banco(): void
     {
         $admin = $this->usuarioConRol('admin');
 
         $this->actingAs($admin)->post('/gastos-generales', [
-            'id_clasificador' => $this->clasificadorGeneral(TipoGasto::ServiciosBasicos->value),
+            'id_grupo_gasto' => $this->grupoDeGasto(TipoGasto::ServiciosBasicos->value),
             'concepto' => 'Factura de luz',
             'monto' => 450.00,
             'fecha_gasto' => now()->format('Y-m-d'),
@@ -232,11 +232,11 @@ class GastoDevolucionTest extends TestCase
         $admin = $this->usuarioConRol('admin');
         $vehiculo = $this->vehiculo();
         $banco = $this->banco();
-        $clasificador = $this->clasificadorDeUnidad(TipoGasto::Combustible->value);
+        $grupo = $this->grupoDeGasto(TipoGasto::Combustible->value);
 
         $base = [
             'id_vehiculo' => $vehiculo,
-            'id_clasificador' => $clasificador,
+            'id_grupo_gasto' => $grupo,
             'fecha_gasto' => now()->format('Y-m-d'),
             'condicion_pago' => 'CONTADO',
             'id_banco' => $banco,

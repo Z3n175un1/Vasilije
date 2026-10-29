@@ -58,30 +58,6 @@ abstract class TestCase extends BaseTestCase
         ], $atributos));
     }
 
-    /** Clasificador de gasto de prueba. Devuelve el id insertado. */
-    protected function clasificador(array $atributos = []): int
-    {
-        static $n = 0;
-        $n++;
-
-        // `codigo` es NOT NULL sin default en la base, asi que el fixture
-        // debe enviarlo. Usa la misma correlatividad del servicio en vez de
-        // inventar un código propio: si no, `siguienteCodigo()` calcularía un
-        // número distinto al real y los tests de secuencia no probarían nada.
-        $siguiente = app(\App\Services\ClasificadorGastoService::class)->siguienteCodigo();
-
-        return \Illuminate\Support\Facades\DB::table('global.clasificador_gastos')->insertGetId(array_merge([
-            'codigo' => $siguiente,
-            'descripcion' => 'Clasificador de prueba ' . $n,
-            'tipo_gasto' => 'Varios',
-            'afecta_unidad' => true,
-            'afecta_general' => false,
-            'estado' => 'ACTIVO',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $atributos), 'id_clasificador');
-    }
-
     /** Unidad de prueba en estado activo. Devuelve el id insertado. */
     protected function vehiculo(array $atributos = []): int
     {
@@ -163,31 +139,23 @@ abstract class TestCase extends BaseTestCase
         ], $atributos), 'id_personal');
     }
 
-    /** Id del clasificador activo de alcance `unidad` para el tipo dado. */
-    protected function clasificadorDeUnidad(string $tipo = 'Varios'): int
+    /** GRUPO DE GASTOS del tipo dado (crea el grupo si no existe). */
+    protected function grupoDeGasto(string $tipo = 'Varios'): int
     {
-        $existente = \Illuminate\Support\Facades\DB::table('global.clasificador_gastos')
+        $existente = \Illuminate\Support\Facades\DB::table('global.grupos_gastos')
             ->where('tipo_gasto', $tipo)
-            ->where('afecta_unidad', true)
-            ->where('estado', 'ACTIVO')
-            ->value('id_clasificador');
+            ->orderBy('id_grupo_gasto')
+            ->value('id_grupo_gasto');
 
-        return $existente ?: $this->clasificador(['tipo_gasto' => $tipo, 'afecta_unidad' => true]);
-    }
+        if ($existente) {
+            return (int) $existente;
+        }
 
-    /** Id del clasificador activo de alcance `general` para el tipo dado. */
-    protected function clasificadorGeneral(string $tipo = 'Varios'): int
-    {
-        $existente = \Illuminate\Support\Facades\DB::table('global.clasificador_gastos')
-            ->where('tipo_gasto', $tipo)
-            ->where('afecta_general', true)
-            ->where('estado', 'ACTIVO')
-            ->value('id_clasificador');
-
-        return $existente ?: $this->clasificador([
+        return (int) \Illuminate\Support\Facades\DB::table('global.grupos_gastos')->insertGetId([
+            'nombre' => 'Grupo Test ' . $tipo . ' ' . uniqid(),
             'tipo_gasto' => $tipo,
-            'afecta_unidad' => false,
-            'afecta_general' => true,
-        ]);
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], 'id_grupo_gasto');
     }
 }

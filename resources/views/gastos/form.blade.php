@@ -34,34 +34,23 @@
                     </div>
                 </div>
 
-                {{-- CLASIFICADOR DE GASTO: solo los de alcance UNIDAD --}}
+                {{-- GRUPO DE GASTOS: el tipo se deriva del grupo --}}
                 <div class="col-md-5">
                     <div class="form-group mb-0">
-                        <label>CLASIFICADOR DE GASTO <span class="text-danger">*</span></label>
-                        <select name="id_clasificador" id="idClasificador" required
-                                onchange="aplicarClasificador()">
+                        <label>GRUPO GASTO <span class="text-danger">*</span></label>
+                        <select name="id_grupo_gasto" id="idGrupoGasto" required
+                                onchange="aplicarGrupo()">
                             <option value="">SELECCIONE...</option>
-                            @php
-                                $clasificadoresGrupados = $clasificadores->groupBy(
-                                    fn ($c) => $c->grupo_gasto ?? 'SIN GRUPO',
-                                );
-                            @endphp
-                            @foreach($clasificadoresGrupados as $grupoNombre => $porGrupo)
-                                <optgroup label="{{ $grupoNombre }}">
-                                @foreach($porGrupo as $c)
-                                    <option value="{{ $c->id_clasificador }}"
-                                            data-tipo="{{ $c->tipo_gasto }}"
-                                            data-codigo="{{ $c->codigo }}"
-                                            {{ old('id_clasificador', $gasto->id_clasificador ?? '') == $c->id_clasificador ? 'selected' : '' }}>
-                                        {{ $c->codigo }} — {{ $c->descripcion }} [{{ $c->tipo_gasto }}]
-                                    </option>
-                                @endforeach
-                                </optgroup>
+                            @foreach($gruposGastos as $grupo)
+                                <option value="{{ $grupo->id_grupo_gasto }}"
+                                        data-tipo="{{ $grupo->tipo_gasto ?? '' }}"
+                                        {{ old('id_grupo_gasto', $gasto->id_grupo_gasto ?? '') == $grupo->id_grupo_gasto ? 'selected' : '' }}>
+                                    {{ $grupo->nombre }} @if($grupo->tipo_gasto)[{{ $grupo->tipo_gasto }}]@endif
+                                </option>
                             @endforeach
                         </select>
                         <small class="d-block mt-2 text-black-50">
-                            Solo se muestran los clasificadores que <strong>afectan a unidad</strong>.
-                            El tipo de gasto se deriva del clasificador.
+                            El tipo de gasto se deriva del <strong>grupo</strong>.
                         </small>
                     </div>
                 </div>
@@ -81,13 +70,13 @@
             </div>
 
             <div class="row g-4 mb-4">
-                <div class="col-md-8">
+                <div class="col-md-6">
                     <div class="form-group mb-0">
                         <label>CONCEPTO <span class="text-danger">*</span></label>
                         <input type="text" name="concepto" value="{{ old('concepto', $gasto->concepto ?? '') }}" required placeholder="DESCRIPCIÓN DEL GASTO">
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="form-group mb-0">
                         <label>MONTO (Bs) <span class="text-danger">*</span></label>
                         <input type="number" step="0.01" name="monto" id="montoInput"
@@ -95,6 +84,14 @@
                         <small class="d-block mt-2 text-black-50">
                             Un monto <strong>negativo</strong> registra una <strong>devolución</strong>.
                         </small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group mb-0">
+                        <label>N° COMPROBANTE</label>
+                        <input type="text" name="comprobante" maxlength="100"
+                               value="{{ old('comprobante', $gasto->comprobante ?? '') }}"
+                               placeholder="N° FACTURA/RECIBO">
                     </div>
                 </div>
             </div>
@@ -198,8 +195,8 @@
             </div>
 
             <div class="form-group mb-4">
-                <label>DESCRIPCIÓN</label>
-                <textarea name="descripcion" rows="3" placeholder="DETALLE ADICIONAL...">{{ old('descripcion', $gasto->descripcion ?? '') }}</textarea>
+                <label>OBSERVACIONES</label>
+                <textarea name="observaciones" rows="3" placeholder="DETALLE ADICIONAL...">{{ old('observaciones', $gasto->observaciones ?? $gasto->descripcion ?? '') }}</textarea>
             </div>
 
             <div class="d-flex justify-content-end gap-3 mt-5">
@@ -219,7 +216,7 @@ const proveedores = @json($proveedores);
 
 /**
  * tipo_gasto -> tipo_proveedor. El tipo ya no viene de un select propio:
- * se deriva del clasificador seleccionado.
+ * se deriva del GRUPO DE GASTOS seleccionado.
  */
 const tipoMap = {
     'Combustible': 'COMBUSTIBLE',
@@ -230,19 +227,19 @@ const tipoMap = {
     'Peaje': 'PEAJE',
 };
 
-function clasificadorActual() {
-    const sel = document.getElementById('idClasificador');
+function grupoActual() {
+    const sel = document.getElementById('idGrupoGasto');
     if (!sel || !sel.value) return null;
     return sel.options[sel.selectedIndex];
 }
 
 /**
- * Sincroniza la UI con el tipo del clasificador: muestra el bloque de
+ * Sincroniza la UI con el tipo del grupo: muestra el bloque de
  * combustible y filtra los proveedores por rubro.
  */
-function aplicarClasificador() {
-    const opcion = clasificadorActual();
-    const tipo = opcion ? opcion.dataset.tipo : '';
+function aplicarGrupo() {
+    const opcion = grupoActual();
+    const tipo = opcion ? (opcion.dataset.tipo || '') : '';
 
     document.getElementById('combustibleSection').style.display =
         (tipo === 'Combustible') ? 'flex' : 'none';
@@ -251,7 +248,7 @@ function aplicarClasificador() {
     const texto = document.getElementById('avisoTipoTexto');
     if (tipo) {
         aviso.style.display = 'block';
-        texto.textContent = opcion.dataset.codigo + ' / ' + tipo;
+        texto.textContent = opcion.textContent.trim().replace(/\[.*\]/, '').trim() + ' / ' + tipo;
     } else {
         aviso.style.display = 'none';
     }
@@ -285,7 +282,7 @@ function calcMontoCombustible() {
 
 document.addEventListener('input', function(e) {
     if (e.target.id === 'litros' || e.target.id === 'precioLitro') {
-        const opcion = clasificadorActual();
+        const opcion = grupoActual();
         if (opcion && opcion.dataset.tipo === 'Combustible') {
             calcMontoCombustible();
         }
@@ -339,9 +336,9 @@ function revisarDevolucion() {
 
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('condicionPago')?.addEventListener('change', toggleCondicionPago);
-    document.getElementById('idClasificador')?.addEventListener('change', aplicarClasificador);
+    document.getElementById('idGrupoGasto')?.addEventListener('change', aplicarGrupo);
 
-    aplicarClasificador();
+    aplicarGrupo();
     toggleCondicionPago();
     revisarDevolucion();
 

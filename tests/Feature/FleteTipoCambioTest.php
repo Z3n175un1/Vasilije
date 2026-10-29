@@ -45,14 +45,18 @@ class FleteTipoCambioTest extends TestCase
     }
 
     #[Test]
-    public function si_el_formulario_no_manda_cambio_se_usa_el_vigente(): void
+    public function si_el_formulario_no_manda_cambio_se_usa_el_automatico_por_fecha(): void
     {
         [, $respuesta] = $this->crearFlete();
 
-        $vigente = (new ConfiguracionService())->tipoCambioVigente();
+        // El TC ya no se digita ni se toma de la config de HOY: la regla es
+        // automatica por la fecha del flete (6,96 hasta el 30/09/2025 y el
+        // registro oficial BCB de esa fecha despues).
+        $automatico = (new ConfiguracionService())
+            ->tipoCambioParaFecha(now()->format('Y-m-d'));
         $registro = $this->datosUltimoFlete($respuesta->json('id_ingreso'));
 
-        $this->assertSame($vigente, (float) $registro->tipo_cambio);
+        $this->assertSame($automatico, (float) $registro->tipo_cambio);
     }
 
     #[Test]

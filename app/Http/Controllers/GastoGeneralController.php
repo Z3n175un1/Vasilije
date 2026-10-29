@@ -7,7 +7,6 @@ namespace App\Http\Controllers;
 use App\Enums\TipoGasto;
 use App\Http\Requests\Gasto\StoreGastoGeneralRequest;
 use App\Services\AuditoriaService;
-use App\Services\ClasificadorGastoService;
 use App\Services\DocumentoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -23,21 +22,15 @@ use Illuminate\View\View;
  *
  * CAMBIOS RESPECTO A LA VERSION ANTERIOR
  * --------------------------------------
- *  1. El `<select>` de categoria (con los literales 'Caja Chiva' y
- *     'Servicios B{sicos', mojibake incluido) se sustituye por el
- *     CLASIFICADOR. Solo se ofrecen los que tienen afecta_general = true.
- *  2. `categoria` pasa a ser el codigo canonico derivado del clasificador,
- *     no texto libre.
- *  3. El monto admite negativos (devolucion): la validacion anterior
- *     exigia min:0, de modo que la devolucion era imposible pese a que la
- *     vista ya Offeria el boton de confirmacion.
- *  4. Numeracion atomica serie GG_.
+ *  1. El gasto se clasifica por GRUPO DE GASTOS (el modulo CLASIFICADOR
+ *     se elimino). La categoria canonica se deriva del grupo.
+ *  2. El monto admite negativos (devolucion).
+ *  3. Numeracion atomica serie GG_.
  */
 class GastoGeneralController extends Controller
 {
     public function __construct(
         private readonly DocumentoService $documentos,
-        private readonly ClasificadorGastoService $clasificadores,
         private readonly AuditoriaService $auditoria,
     ) {}
 
@@ -64,7 +57,7 @@ class GastoGeneralController extends Controller
 
     public function store(StoreGastoGeneralRequest $request): RedirectResponse
     {
-        $datos = $request->datosNormalizados($this->clasificadores);
+        $datos = $request->datosNormalizados();
         $datos['nro_documento'] = $this->documentos->siguiente('GG');
         $datos['estado'] = 'ACTIVO';
 
@@ -92,7 +85,7 @@ class GastoGeneralController extends Controller
             return redirect()->route('gastos-generales.index')->with('error', 'Gasto general no encontrado.');
         }
 
-        $datos = $request->datosNormalizados($this->clasificadores);
+        $datos = $request->datosNormalizados();
         $datos['updated_at'] = now();
 
         // El numero de documento y el estado son inmutables desde el formulario.
@@ -145,7 +138,7 @@ class GastoGeneralController extends Controller
         $nuevos = DB::table('global.gastos_generales as gg')
             ->leftJoin('global.bancos as b', 'gg.id_banco', '=', 'b.id_banco')
             ->leftJoin('global.proveedores as p', 'gg.id_proveedor', '=', 'p.id_proveedor')
-            ->leftJoin('global.clasificador_gastos as c', 'gg.id_clasificador', '=', 'c.id_clasificador')
+            ->leftJoin('global.grupos_gastos as ggr', 'gg.id_grupo_gasto', '=', 'ggr.id_grupo_gasto')
             ->select(
                 'gg.id_gasto_general as id',
                 'gg.nro_documento',
@@ -158,12 +151,11 @@ class GastoGeneralController extends Controller
                 'gg.observaciones',
                 'gg.estado',
                 'gg.es_devolucion',
-                'gg.id_clasificador',
+                'gg.id_grupo_gasto',
+                'ggr.nombre as grupo_gasto',
                 'b.nombre_banco',
                 'p.nombre_proveedor',
-                'c.codigo as clasificador_codigo',
-                'c.descripcion as clasificador_descripcion',
-                DB::raw("'CLASIFICADOR' as origen")
+                DB::raw("'GRUPO' as origen")
             )
             ->where('gg.estado', '<>', 'ANULADO');
 
@@ -186,11 +178,10 @@ class GastoGeneralController extends Controller
                 'g.descripcion as observaciones',
                 DB::raw("'ACTIVO' as estado"),
                 'g.es_devolucion',
-                'g.id_clasificador',
+                'g.id_grupo_gasto',
                 DB::raw("NULL as nombre_banco"),
                 'p.nombre_proveedor',
-                DB::raw("NULL as clasificador_codigo"),
-                DB::raw("NULL as clasificador_descripcion"),
+                DB::raw("NULL as grupo_gasto"),
                 DB::raw("'LEGACY' as origen")
             );
 
@@ -236,8 +227,8 @@ class GastoGeneralController extends Controller
             $query->where('gg.categoria', $request->string('categoria')->value());
         }
 
-        if ($request->filled('id_clasificador')) {
-            $query->where('gg.id_clasificador', $request->integer('id_clasificador'));
+        if ($request->filled('id_grupo_gasto')) {
+            $query->where('gg.id_grupo_gasto', $request->integer('id_grupo_gasto'));
         }
 
         if ($request->filled('es_devolucion')) {
@@ -259,8 +250,8 @@ class GastoGeneralController extends Controller
         return [
             'bancos' => DB::table('global.bancos')->where('estado', 'ACTIVO')->orderBy('nombre_banco')->get(),
             'proveedores' => DB::table('global.proveedores')->where('estado', 1)->orderBy('nombre_proveedor')->get(),
-            // SOLO los clasificadores de alcance general.
-            'clasificadores' => $this->clasificadores->listar('general'),
+            // GRUPOS DE GASTOS: el gasto se clasifica por grupo.
+            'gruposGastos' => DB::table('global.grupos_gastos')->orderBy('nombre')->get(),
             'tipos' => TipoGasto::values(),
         ];
     }

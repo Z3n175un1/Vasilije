@@ -9,7 +9,6 @@ use App\Enums\Rol;
 use App\Enums\TipoGasto;
 use App\Http\Requests\Gasto\StoreGastoUnidadRequest;
 use App\Services\AuditoriaService;
-use App\Services\ClasificadorGastoService;
 use App\Services\DocumentoService;
 use App\Services\GastoService;
 use Illuminate\Http\JsonResponse;
@@ -24,23 +23,18 @@ use Illuminate\View\View;
  *
  * CAMBIOS RESPECTO A LA VERSION ANTERIOR
  * --------------------------------------
- *  1. El tipo de gasto se elige de un CLASIFICADOR, no de un <select> con
- *     literales. Solo aparecen los clasificadores con afecta_unidad = true.
- *  2. El tipo se DERIVA del clasificador, lo que elimina de raiz la
- *     contradiccion entre el enum de PHP ('Sueldo') y el CHECK de la BD
- *     ('Sueldos').
- *  3. El monto admite negativos: es una DEVOLUCION. Antes el formulario
- *     permitia escribirlo pero la validacion del general lo rechazaba con
- *     min:0, y el estado de pago quedaba incoherente.
- *  4. La numeracion usa la secuencia atomica de la serie E_.
- *  5. Se respeta el rol: un usuario de solo lectura no registra gastos.
+ *  1. El gasto se clasifica por GRUPO DE GASTOS (el modulo CLASIFICADOR
+ *     se elimino). El tipo canonico lo lleva el grupo y se deriva al
+ *     guardar: nunca lo ingresan a mano.
+ *  2. El monto admite negativos: es una DEVOLUCION.
+ *  3. La numeracion usa la secuencia atomica de la serie E_.
+ *  4. Se respeta el rol: un usuario de solo lectura no registra gastos.
  */
 class GastoController extends Controller
 {
     public function __construct(
         private readonly DocumentoService $documentos,
         private readonly GastoService $gastos,
-        private readonly ClasificadorGastoService $clasificadores,
         private readonly AuditoriaService $auditoria,
     ) {}
 
@@ -79,10 +73,9 @@ class GastoController extends Controller
 
     public function store(StoreGastoUnidadRequest $request): JsonResponse|RedirectResponse
     {
-        $datos = $request->datosNormalizados($this->clasificadores);
+        $datos = $request->datosNormalizados();
 
-        $idGasto = DB::transaction(function () use ($datos, $request): int {
-            $datos['nro_documento'] = $this->documentos->siguiente('E');
+        $idGasto = DB::transaction(function () use ($datos, $request): int {            $datos['nro_documento'] = $this->documentos->siguiente('E');
             $datos['creado_por'] = $request->user()?->id;
             $datos['fecha_registro'] = now();
             $datos['fecha_actualizacion'] = now();
@@ -123,7 +116,7 @@ class GastoController extends Controller
             return $this->error($request, 'Gasto no encontrado.', 404);
         }
 
-        $datos = $request->datosNormalizados($this->clasificadores);
+        $datos = $request->datosNormalizados();
 
         // El numero de documento es inmutable: los reportes y el estado de
         // cuenta lo referencian.
@@ -178,12 +171,12 @@ class GastoController extends Controller
     {
         $query = DB::table('global.gastos')
             ->leftJoin('global.vehiculos', 'global.gastos.id_vehiculo', '=', 'global.vehiculos.id_vehiculo')
-            ->leftJoin('global.clasificador_gastos', 'global.gastos.id_clasificador', '=', 'global.clasificador_gastos.id_clasificador')
+            ->leftJoin('global.grupos_gastos', 'global.gastos.id_grupo_gasto', '=', 'global.grupos_gastos.id_grupo_gasto')
             ->select(
                 'global.gastos.*',
                 'global.vehiculos.placa_vehiculo as placa',
-                'global.clasificador_gastos.codigo as clasificador_codigo',
-                'global.clasificador_gastos.descripcion as clasificador_descripcion'
+                'global.grupos_gastos.nombre as grupo_gasto',
+                'global.grupos_gastos.tipo_gasto as grupo_tipo'
             );
 
         if ($request->filled('id_vehiculo')) {
@@ -217,8 +210,8 @@ class GastoController extends Controller
     public function apiShow(string $id): JsonResponse
     {
         $gasto = DB::table('global.gastos')
-            ->leftJoin('global.clasificador_gastos', 'global.gastos.id_clasificador', '=', 'global.clasificador_gastos.id_clasificador')
-            ->select('global.gastos.*', 'global.clasificador_gastos.codigo as clasificador_codigo', 'global.clasificador_gastos.descripcion as clasificador_descripcion')
+            ->leftJoin('global.grupos_gastos', 'global.gastos.id_grupo_gasto', '=', 'global.grupos_gastos.id_grupo_gasto')
+            ->select('global.gastos.*', 'global.grupos_gastos.nombre as grupo_gasto', 'global.grupos_gastos.tipo_gasto as grupo_tipo')
             ->where('global.gastos.id_gasto', $id)
             ->first();
 
@@ -249,8 +242,9 @@ class GastoController extends Controller
                 ->where('estado', 1)->orderBy('nombre_proveedor')->get(),
             'bancos' => DB::table('global.bancos')
                 ->where('estado', 'ACTIVO')->orderBy('nombre_banco')->get(),
-            // SOLO los clasificadores que aplican a unidad.
-            'clasificadores' => $this->clasificadores->listar('unidad'),
+            // GRUPOS DE GASTOS: el gasto se clasifica por grupo.
+            'gruposGastos' => DB::table('global.grupos_gastos')
+                ->orderBy('nombre')->get(),
         ];
     }
 

@@ -39,34 +39,21 @@
             @if($gasto) @method('PUT') @endif
 
             <div class="row g-4 mb-4">
-                {{-- CLASIFICADOR: solo los de alcance GENERAL --}}
+                {{-- GRUPO DE GASTOS: la categoria se deriva del grupo --}}
                 <div class="col-md-6">
                     <div class="form-group mb-0">
-                        <label>CLASIFICADOR DE GASTO <span class="text-danger">*</span></label>
-                        <select name="id_clasificador" id="idClasificador" required
-                                onchange="aplicarClasificador()">
+                        <label>GRUPO GASTO <span class="text-danger">*</span></label>
+                        <select name="id_grupo_gasto" id="idGrupoGasto" required
+                                onchange="aplicarGrupo()">
                             <option value="">SELECCIONE...</option>
-                            @php
-                                $clasificadoresGrupados = $clasificadores->groupBy(
-                                    fn ($c) => $c->grupo_gasto ?? 'SIN GRUPO',
-                                );
-                            @endphp
-                            @foreach($clasificadoresGrupados as $grupoNombre => $porGrupo)
-                                <optgroup label="{{ $grupoNombre }}">
-                                @foreach($porGrupo as $c)
-                                    <option value="{{ $c->id_clasificador }}"
-                                            data-tipo="{{ $c->tipo_gasto }}"
-                                            data-codigo="{{ $c->codigo }}"
-                                            {{ old('id_clasificador', $gasto->id_clasificador ?? '') == $c->id_clasificador ? 'selected' : '' }}>
-                                        {{ $c->codigo }} — {{ $c->descripcion }} [{{ $c->tipo_gasto }}]
-                                    </option>
-                                @endforeach
-                                </optgroup>
+                            @foreach($gruposGastos as $grupo)
+                                <option value="{{ $grupo->id_grupo_gasto }}"
+                                        data-tipo="{{ $grupo->tipo_gasto ?? '' }}"
+                                        {{ old('id_grupo_gasto', $gasto->id_grupo_gasto ?? $gasto->id_grupo_gasto ?? '') == $grupo->id_grupo_gasto ? 'selected' : '' }}>
+                                    {{ $grupo->nombre }} @if($grupo->tipo_gasto)[{{ $grupo->tipo_gasto }}]@endif
+                                </option>
                             @endforeach
                         </select>
-                        <small class="d-block mt-2 text-black-50">
-                            Solo los clasificadores que <strong>afectan en forma general</strong>.
-                        </small>
                     </div>
                 </div>
 
@@ -194,20 +181,20 @@
 
 @push('scripts')
 <script>
-function clasificadorActual() {
-    const sel = document.getElementById('idClasificador');
+function grupoActual() {
+    const sel = document.getElementById('idGrupoGasto');
     if (!sel || !sel.value) return null;
     return sel.options[sel.selectedIndex];
 }
 
-function aplicarClasificador() {
-    const opcion = clasificadorActual();
+function aplicarGrupo() {
+    const opcion = grupoActual();
     const aviso = document.getElementById('avisoTipo');
     const texto = document.getElementById('avisoTipoTexto');
 
-    if (opcion) {
+    if (opcion && opcion.value) {
         aviso.style.display = 'block';
-        texto.textContent = opcion.dataset.codigo + ' / ' + opcion.dataset.tipo;
+        texto.textContent = opcion.textContent.trim().replace(/\[.*\]/, '').trim();
     } else {
         aviso.style.display = 'none';
     }
@@ -240,7 +227,7 @@ function revisarDevolucion() {
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('montoInput').addEventListener('input', revisarDevolucion);
 
-    aplicarClasificador();
+    aplicarGrupo();
     toggleCamposPago();
     revisarDevolucion();
 

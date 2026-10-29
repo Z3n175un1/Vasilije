@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Gasto;
 
-use App\Services\ClasificadorGastoService;
+use App\Enums\TipoGasto;
 use App\Services\GastoService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -12,11 +12,12 @@ use Illuminate\Validation\Rule;
 /**
  * Gasto GENERAL de la empresa (no atribuible a una unidad).
  *
- * El campo `categoria` desaparece como entrada del usuario: ahora es el
- * `tipo_gasto` del clasificador seleccionado. La columna sigue existiendo
- * porque los reportes la consumen, pero se deriva del clasificador.
+ * REGLA: el gasto se clasifica por GRUPO DE GASTOS. La columna
+ * `categoria` se deriva del tipo del grupo (los reportes la consumen),
+ * nunca de texto libre ni de un clasificador aparte.
  *
- * REGLA: solo clasificadores con `afecta_general = true`.
+ * REGLA: la CAJA CHICA es efectivo en mano y por definicion no sale de
+ * una cuenta bancaria.
  */
 class StoreGastoGeneralRequest extends FormRequest
 {
@@ -32,14 +33,9 @@ class StoreGastoGeneralRequest extends FormRequest
 
         $reglas['monto'] = ['required', 'numeric', 'not_in:0'];
 
-        // Misma coherencia de pago que en el gasto de unidad, con una
-        // excepcion de dominio: la CAJA CHICA es efectivo en mano y por
-        // definicion no sale de una cuenta bancaria.
+        // Coherencia de la condicion de pago.
         $esCredito = $this->input('condicion_pago') === 'CREDITO';
-        $esCajaChica = \App\Enums\TipoGasto::normalizar(
-            (string) $this->input('tipo_gasto', '')
-        ) === \App\Enums\TipoGasto::CajaChica
-            || $this->clasificadorEsCajaChica();
+        $esCajaChica = $this->grupoEsCajaChica();
 
         $reglas['id_proveedor'] = [
             $esCredito ? 'required' : 'nullable',
@@ -54,11 +50,10 @@ class StoreGastoGeneralRequest extends FormRequest
         ];
 
         return $reglas + [
-            'id_clasificador' => [
+            'id_grupo_gasto' => [
                 'required',
                 'integer',
-                Rule::exists('clasificador_gastos', 'id_clasificador')
-                    ->where(fn ($q) => $q->where('afecta_general', true)->where('estado', 'ACTIVO')),
+                Rule::exists('grupos_gastos', 'id_grupo_gasto'),
             ],
         ];
     }
@@ -67,8 +62,8 @@ class StoreGastoGeneralRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'id_clasificador.required' => 'Seleccione el clasificador del gasto.',
-            'id_clasificador.exists' => 'El clasificador seleccionado no aplica a gastos generales.',
+            'id_grupo_gasto.required' => 'Seleccione el grupo del gasto.',
+            'id_grupo_gasto.exists' => 'El grupo de gastos seleccionado no existe.',
             'monto.not_in' => 'El monto no puede ser cero. Use un monto positivo o uno negativo para una devolucion.',
             'condicion_pago.required' => 'Seleccione la condicion de pago.',
         ];
@@ -78,29 +73,43 @@ class StoreGastoGeneralRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'id_clasificador' => 'clasificador de gasto',
+            'id_grupo_gasto' => 'grupo de gastos',
             'id_banco' => 'cuenta bancaria',
             'id_proveedor' => 'proveedor',
             'nro_comprobante' => 'numero de comprobante',
         ];
     }
 
+    /** El grupo seleccionado, tal como vive en la base. */
+    public function grupo(): ?object
+    {
+        $id = $this->integer('id_grupo_gasto');
+
+        if ($id <= 0) {
+            return null;
+        }
+
+        return \Illuminate\Support\Facades\DB::table('grupos_gastos')
+            ->where('id_grupo_gasto', $id)
+            ->first(['id_grupo_gasto', 'nombre', 'tipo_gasto']);
+    }
+
     /**
      * @return array<string, mixed>
      */
-    public function datosNormalizados(ClasificadorGastoService $clasificadores): array
+    public function datosNormalizados(): array
     {
-        $clasificador = $clasificadores->validarAlcance(
-            $this->integer('id_clasificador'),
-            'general',
-        );
+        $grupo = $this->grupo();
 
         $monto = (float) $this->input('monto');
+        $tipo = TipoGasto::normalizar((string) ($grupo->tipo_gasto ?? ''))?->value;
 
         return [
-            'id_clasificador' => $clasificador->id_clasificador,
-            // `categoria` es el codigo canonico del tipo, no texto libre.
-            'categoria' => $clasificador->tipo_gasto,
+            // El clasificador queda como legado: no se vuelve a asignar.
+            'id_clasificador' => null,
+            'id_grupo_gasto' => $grupo->id_grupo_gasto ?? null,
+            // `categoria` es el codigo canonico derivado del grupo.
+            'categoria' => $tipo ?? 'Otro',
             'concepto' => $this->string('concepto')->trim()->value(),
             'monto' => round($monto, 2),
             'fecha_gasto' => $this->date('fecha_gasto')->format('Y-m-d'),
@@ -118,17 +127,11 @@ class StoreGastoGeneralRequest extends FormRequest
         return (float) $this->input('monto') < 0;
     }
 
-    /** El clasificador seleccionado es de tipo Caja Chica. */
-    private function clasificadorEsCajaChica(): bool
+    /** El grupo seleccionado es de tipo Caja Chica. */
+    private function grupoEsCajaChica(): bool
     {
-        if (!$this->filled('id_clasificador')) {
-            return false;
-        }
-
         return \App\Enums\TipoGasto::normalizar(
-            (string) \Illuminate\Support\Facades\DB::table('global.clasificador_gastos')
-                ->where('id_clasificador', $this->integer('id_clasificador'))
-                ->value('tipo_gasto')
+            (string) ($this->grupo()?->tipo_gasto ?? '')
         ) === \App\Enums\TipoGasto::CajaChica;
     }
 }

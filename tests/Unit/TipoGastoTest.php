@@ -176,16 +176,20 @@ class TipoGastoTest extends TestCase
     public function el_operador_captura_pero_no_ni_borra_ni_anula(): void
     {
         // En este sistema todo registro se asienta de inmediato: no hay
-        // estado "borrador". Por tanto un borrado ES una anulacion
-        // contable y le corresponde a un supervisor, no al capturista.
+        // estado "borrador". Por tanto un borrado es una decision
+        // contable final: SOLO administrador elimina registros; el
+        // supervisor revisa y aprueba (anula/emite bajas).
         $this->assertTrue(Rol::Operador->puedeCrear());
         $this->assertTrue(Rol::Operador->puedeEditar());
         $this->assertFalse(Rol::Operador->puedeEliminar());
         $this->assertFalse(Rol::Operador->puedeAnular());
         $this->assertFalse(Rol::Operador->esAdmin());
 
-        $this->assertTrue(Rol::Supervisor->puedeEliminar());
         $this->assertTrue(Rol::Supervisor->puedeAnular());
+        $this->assertFalse(Rol::Supervisor->puedeEliminar());
+
+        $this->assertTrue(Rol::Admin->puedeEliminar());
+        $this->assertTrue(Rol::Admin->puedeAnular());
     }
 
     #[Test]

@@ -785,7 +785,6 @@
         'grupos'         => url('api/grupos'),
         'items'          => url('api/items'),
         'tramos'         => url('api/tramos'),
-        'clasificadores' => url('api/clasificadores'),
     ];
     if ($puedeVerFinanzas) {
         $endpoints['bancos'] = url('api/bancos');
@@ -1152,10 +1151,6 @@
                 <span class="db-opt-ico"><i class="fas fa-route"></i></span>
                 <span><span class="db-opt-name">Rutas</span><span class="db-opt-desc">Tramos y distancias</span></span>
             </button>
-            <button type="button" class="db-opt" data-tabla="clasificadores">
-                <span class="db-opt-ico"><i class="fas fa-receipt"></i></span>
-                <span><span class="db-opt-name">Clasificador de gastos</span><span class="db-opt-desc">Tipos de gasto y su alcance</span></span>
-            </button>
 
             @if($puedeVerFinanzas)
                 <button type="button" class="db-opt" data-tabla="bancos">
@@ -1318,8 +1313,8 @@
     const rutasCols  = ['Origen', 'Destino', 'Kilómetros'];
     const rutasRight = [];
     if (FINANZAS) {
-        rutasCols.push('Precio total', 'Precio por tonelada');
-        rutasRight.push(3, 4);
+        rutasCols.push('Tarifa US$ por tonelada');
+        rutasRight.push(3);
     }
 
     const ESQUEMAS = {
@@ -1350,17 +1345,9 @@
             fila: (r) => {
                 const base = [celda(r.origen), celda(r.destino), celda(r.kilometros)];
                 return FINANZAS
-                    ? base.concat([dinero(r.precio_total), dinero(r.precio_dolar_tonelada)])
+                    ? base.concat([dinero(r.precio_dolar_tonelada)])
                     : base;
             }
-        },
-        clasificadores: {
-            cols: ['Código', 'Descripción', 'Tipo de gasto', 'Afecta unidad', 'Afecta general'],
-            right: [],
-            fila: (r) => [
-                celda(r.codigo), celda(r.descripcion), celda(r.tipo_gasto),
-                siNo(r.afecta_unidad), siNo(r.afecta_general)
-            ]
         }
     };
 

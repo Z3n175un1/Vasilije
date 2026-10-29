@@ -82,11 +82,14 @@ final class GastoService
     {
         return [
             'id_vehiculo' => ['required', 'integer', 'exists:vehiculos,id_vehiculo'],
-            'id_clasificador' => ['nullable', 'integer'],
+            // GRUPO DE GASTOS: el tipo ya no se elige aparte, se deriva del
+            // grupo (la columna id_clasificador queda solo como legado).
+            'id_grupo_gasto' => ['nullable', 'integer'],
             'tipo_gasto' => ['nullable', 'string', 'in:' . implode(',', TipoGasto::values())],
             'concepto' => ['required', 'string', 'max:200'],
             'monto' => ['required', 'numeric'],
             'fecha_gasto' => ['required', 'date'],
+            'comprobante' => ['nullable', 'string', 'max:100'],
             'descripcion' => ['nullable', 'string', 'max:2000'],
             'id_proveedor' => ['nullable', 'integer', 'exists:proveedores,id_proveedor'],
             'id_banco' => ['nullable', 'integer', 'exists:bancos,id_banco'],
@@ -111,7 +114,8 @@ final class GastoService
     public static function reglasGeneral(): array
     {
         return [
-            'id_clasificador' => ['required', 'integer'],
+            // GRUPO DE GASTOS: el tipo/categoria se deriva del grupo.
+            'id_grupo_gasto' => ['required', 'integer'],
             'concepto' => ['required', 'string', 'max:255'],
             'monto' => ['required', 'numeric'],
             'fecha_gasto' => ['required', 'date'],

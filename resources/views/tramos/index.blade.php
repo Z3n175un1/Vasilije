@@ -25,7 +25,7 @@
                         <th>Origen</th>
                         <th>Destino</th>
                         <th>Km</th>
-                        <th>Precio Total</th>
+                        <th>US$/Ton</th>
                         <th>Bs/Ton</th>
                         <th>Gasolina</th>
                         <th>Diesel</th>
@@ -44,6 +44,9 @@
 
 @push('scripts')
 <script>
+/** TC de trabajo del sistema: el tramo verde Bs/Ton = US$/Ton x TC. */
+window.tcTrabajo = {{ $tipoCambio ?? 6.96 }};
+
 document.addEventListener('DOMContentLoaded', loadTramos);
 
 function loadTramos() {
@@ -58,13 +61,14 @@ function loadTramos() {
             tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5 opacity-50">NO HAY TRAMOS REGISTRADOS</td></tr>';
             return;
         }
-            tbody.innerHTML = res.data.map(t => `
+        const tc = window.tcTrabajo || 0;
+        tbody.innerHTML = res.data.map(t => `
             <tr>
                 <td class="font-bold">${t.origen}</td>
                 <td class="font-bold">${t.destino}</td>
                 <td class="font-bold">${parseFloat(t.kilometros || 0).toFixed(2)}</td>
-                <td class="font-bold" style="color:var(--success);">Bs. ${parseFloat(t.precio_total || 0).toFixed(2)}</td>
-                <td class="font-bold">Bs. ${parseFloat(t.precio_dolar_tonelada || 0).toFixed(2)}</td>
+                <td class="font-bold">US$ ${parseFloat(t.precio_dolar_tonelada || 0).toFixed(2)}</td>
+                <td class="font-bold" style="color:var(--success);">Bs. ${(parseFloat(t.precio_dolar_tonelada || 0) * tc).toFixed(2)}</td>
                 <td class="font-bold">Bs. ${parseFloat(t.gasolina_promedio || 0).toFixed(2)}</td>
                 <td class="font-bold">Bs. ${parseFloat(t.diesel_promedio || 0).toFixed(2)}</td>
                 <td class="font-bold">Bs. ${parseFloat(t.gas_promedio || 0).toFixed(2)}</td>
